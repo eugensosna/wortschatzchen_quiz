@@ -16,12 +16,12 @@ class Languages extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get shortName => text().withLength(min: 2, max: 15)();
-  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
 }
 
 class Words extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
 
   TextColumn get name => text()();
   TextColumn get description => text()();
@@ -29,13 +29,12 @@ class Words extends Table {
   TextColumn get mean => text().nullable()();
   IntColumn get baselang => integer().nullable().references(Languages, #id)();
   IntColumn get rootWordID => integer().nullable()();
-  TextColumn get shortName => text().withLength(min: 2, max: 15)();
 }
 
 @DataClassName('translatedwords')
 class TranslatedWords extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   IntColumn get baselang => integer().nullable().references(Languages, #id)();
   IntColumn get targetLang => integer().nullable().references(Languages, #id)();
 
@@ -46,7 +45,7 @@ class TranslatedWords extends Table {
 @DataClassName('synonyms')
 class Synonyms extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   IntColumn get baseWord => integer().nullable().references(Words, #id)();
   IntColumn get synonymWord => integer().nullable().references(Words, #id)();
 
@@ -59,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {

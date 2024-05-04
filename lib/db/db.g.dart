@@ -38,7 +38,7 @@ class $LanguagesTable extends Languages
       'uuid', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      clientDefault: () => Uuid().v4());
+      clientDefault: () => const Uuid().v4());
   @override
   List<GeneratedColumn> get $columns => [id, name, shortName, uuid];
   @override
@@ -271,7 +271,7 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
       'uuid', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      clientDefault: () => Uuid().v4());
+      clientDefault: () => const Uuid().v4());
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -303,18 +303,9 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
   late final GeneratedColumn<int> rootWordID = GeneratedColumn<int>(
       'root_word_i_d', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _shortNameMeta =
-      const VerificationMeta('shortName');
-  @override
-  late final GeneratedColumn<String> shortName = GeneratedColumn<String>(
-      'short_name', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 2, maxTextLength: 15),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, uuid, name, description, mean, baselang, rootWordID, shortName];
+      [id, uuid, name, description, mean, baselang, rootWordID];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -360,12 +351,6 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           rootWordID.isAcceptableOrUnknown(
               data['root_word_i_d']!, _rootWordIDMeta));
     }
-    if (data.containsKey('short_name')) {
-      context.handle(_shortNameMeta,
-          shortName.isAcceptableOrUnknown(data['short_name']!, _shortNameMeta));
-    } else if (isInserting) {
-      context.missing(_shortNameMeta);
-    }
     return context;
   }
 
@@ -389,8 +374,6 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           .read(DriftSqlType.int, data['${effectivePrefix}baselang']),
       rootWordID: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}root_word_i_d']),
-      shortName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}short_name'])!,
     );
   }
 
@@ -408,7 +391,6 @@ class Word extends DataClass implements Insertable<Word> {
   final String? mean;
   final int? baselang;
   final int? rootWordID;
-  final String shortName;
   const Word(
       {required this.id,
       required this.uuid,
@@ -416,8 +398,7 @@ class Word extends DataClass implements Insertable<Word> {
       required this.description,
       this.mean,
       this.baselang,
-      this.rootWordID,
-      required this.shortName});
+      this.rootWordID});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -434,7 +415,6 @@ class Word extends DataClass implements Insertable<Word> {
     if (!nullToAbsent || rootWordID != null) {
       map['root_word_i_d'] = Variable<int>(rootWordID);
     }
-    map['short_name'] = Variable<String>(shortName);
     return map;
   }
 
@@ -451,7 +431,6 @@ class Word extends DataClass implements Insertable<Word> {
       rootWordID: rootWordID == null && nullToAbsent
           ? const Value.absent()
           : Value(rootWordID),
-      shortName: Value(shortName),
     );
   }
 
@@ -466,7 +445,6 @@ class Word extends DataClass implements Insertable<Word> {
       mean: serializer.fromJson<String?>(json['mean']),
       baselang: serializer.fromJson<int?>(json['baselang']),
       rootWordID: serializer.fromJson<int?>(json['rootWordID']),
-      shortName: serializer.fromJson<String>(json['shortName']),
     );
   }
   @override
@@ -480,7 +458,6 @@ class Word extends DataClass implements Insertable<Word> {
       'mean': serializer.toJson<String?>(mean),
       'baselang': serializer.toJson<int?>(baselang),
       'rootWordID': serializer.toJson<int?>(rootWordID),
-      'shortName': serializer.toJson<String>(shortName),
     };
   }
 
@@ -491,8 +468,7 @@ class Word extends DataClass implements Insertable<Word> {
           String? description,
           Value<String?> mean = const Value.absent(),
           Value<int?> baselang = const Value.absent(),
-          Value<int?> rootWordID = const Value.absent(),
-          String? shortName}) =>
+          Value<int?> rootWordID = const Value.absent()}) =>
       Word(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
@@ -501,7 +477,6 @@ class Word extends DataClass implements Insertable<Word> {
         mean: mean.present ? mean.value : this.mean,
         baselang: baselang.present ? baselang.value : this.baselang,
         rootWordID: rootWordID.present ? rootWordID.value : this.rootWordID,
-        shortName: shortName ?? this.shortName,
       );
   @override
   String toString() {
@@ -512,15 +487,14 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baselang: $baselang, ')
-          ..write('rootWordID: $rootWordID, ')
-          ..write('shortName: $shortName')
+          ..write('rootWordID: $rootWordID')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, uuid, name, description, mean, baselang, rootWordID, shortName);
+  int get hashCode =>
+      Object.hash(id, uuid, name, description, mean, baselang, rootWordID);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -531,8 +505,7 @@ class Word extends DataClass implements Insertable<Word> {
           other.description == this.description &&
           other.mean == this.mean &&
           other.baselang == this.baselang &&
-          other.rootWordID == this.rootWordID &&
-          other.shortName == this.shortName);
+          other.rootWordID == this.rootWordID);
 }
 
 class WordsCompanion extends UpdateCompanion<Word> {
@@ -543,7 +516,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<String?> mean;
   final Value<int?> baselang;
   final Value<int?> rootWordID;
-  final Value<String> shortName;
   const WordsCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
@@ -552,7 +524,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.mean = const Value.absent(),
     this.baselang = const Value.absent(),
     this.rootWordID = const Value.absent(),
-    this.shortName = const Value.absent(),
   });
   WordsCompanion.insert({
     this.id = const Value.absent(),
@@ -562,10 +533,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.mean = const Value.absent(),
     this.baselang = const Value.absent(),
     this.rootWordID = const Value.absent(),
-    required String shortName,
   })  : name = Value(name),
-        description = Value(description),
-        shortName = Value(shortName);
+        description = Value(description);
   static Insertable<Word> custom({
     Expression<int>? id,
     Expression<String>? uuid,
@@ -574,7 +543,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<String>? mean,
     Expression<int>? baselang,
     Expression<int>? rootWordID,
-    Expression<String>? shortName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -584,7 +552,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (mean != null) 'mean': mean,
       if (baselang != null) 'baselang': baselang,
       if (rootWordID != null) 'root_word_i_d': rootWordID,
-      if (shortName != null) 'short_name': shortName,
     });
   }
 
@@ -595,8 +562,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       Value<String>? description,
       Value<String?>? mean,
       Value<int?>? baselang,
-      Value<int?>? rootWordID,
-      Value<String>? shortName}) {
+      Value<int?>? rootWordID}) {
     return WordsCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
@@ -605,7 +571,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
       mean: mean ?? this.mean,
       baselang: baselang ?? this.baselang,
       rootWordID: rootWordID ?? this.rootWordID,
-      shortName: shortName ?? this.shortName,
     );
   }
 
@@ -633,9 +598,6 @@ class WordsCompanion extends UpdateCompanion<Word> {
     if (rootWordID.present) {
       map['root_word_i_d'] = Variable<int>(rootWordID.value);
     }
-    if (shortName.present) {
-      map['short_name'] = Variable<String>(shortName.value);
-    }
     return map;
   }
 
@@ -648,8 +610,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baselang: $baselang, ')
-          ..write('rootWordID: $rootWordID, ')
-          ..write('shortName: $shortName')
+          ..write('rootWordID: $rootWordID')
           ..write(')'))
         .toString();
   }
@@ -675,7 +636,7 @@ class $SynonymsTable extends Synonyms with TableInfo<$SynonymsTable, synonyms> {
       'uuid', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      clientDefault: () => Uuid().v4());
+      clientDefault: () => const Uuid().v4());
   static const VerificationMeta _baseWordMeta =
       const VerificationMeta('baseWord');
   @override
@@ -1012,7 +973,7 @@ class $TranslatedWordsTable extends TranslatedWords
       'uuid', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      clientDefault: () => Uuid().v4());
+      clientDefault: () => const Uuid().v4());
   static const VerificationMeta _baselangMeta =
       const VerificationMeta('baselang');
   @override

@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
 late AppDatabase db;
 void main() async {
@@ -59,37 +61,82 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    int counttest = 10;
     final theme = Theme.of(context);
-    return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      //   title: Text(widget.title),
-      // ),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            snap: true,
-            floating: true,
-            title: const Text("test"),
-            backgroundColor: theme.primaryColor,
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(70),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(),
-                child: const Text("Пошук ..."),
-              ),
-            ),
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Add',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    return MaterialApp(
+      title: "Wortschatzchen",
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const WordsList(),
+
+      
     );
   }
+
+//     return Scaffold(
+//         /*appBar: AppBar(
+//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+//         title: Text(widget.title),
+//       ),
+//     );
+//   }
+// }
+// */
+
+//         body = CustomScrollView(
+//           slivers: [
+//             SliverAppBar(
+//               pinned: true,
+//               snap: true,
+//               floating: true,
+//               title: const Text("test"),
+//               backgroundColor: theme.primaryColor,
+//               bottom: PreferredSize(
+//                 preferredSize: const Size.fromHeight(70),
+//                 child: Container(
+//                   width: double.infinity,
+//                   margin: const EdgeInsets.symmetric(horizontal: 70),
+//                   decoration: const BoxDecoration(),
+//                   child: TextFormField(
+//                     controller: TextEditingController(),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             SliverList.builder(
+//                 itemCount: counttest,
+//                 itemBuilder: (context, index) {
+//                   return Container(
+//                     width: double.infinity,
+//                     height: 40,
+//                     margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+//                     child: const Text("data"),
+//                   );
+//                 }
+//             )
+
+//           ],
+//         ),
+//       floatingActionButton = FloatingActionButton(
+//           onPressed: () {
+//             debugPrint("jljljljl");
+//           },
+//           tooltip: 'Add',
+//         child: const Icon(Icons.add),
+//         )
+//     );
 }
+
+
+
+
+
+//       ),
+//       floatingActionButton: FloatingActionButton(
+//         onPressed: () {},
+//         tooltip: 'Add',
+//         child: const Icon(Icons.add),
+//       ), // This trailing comma makes auto-formatting nicer for build methods.
+//     )
+//   }
+// }
