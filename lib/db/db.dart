@@ -1,0 +1,101 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'package:uuid/uuid.dart';
+import 'package:sqlite3/sqlite3.dart';
+
+import 'package:path/path.dart' as p;
+import 'package:wortschatzchen_quiz/main.dart';
+
+part 'db.g.dart';
+
+class Languages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get shortName => text().withLength(min: 2, max: 15)();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+}
+
+class Words extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+
+  TextColumn get name => text()();
+  TextColumn get description => text()();
+
+  TextColumn get mean => text().nullable()();
+  IntColumn get baselang => integer().nullable().references(Languages, #id)();
+  IntColumn get rootWordID => integer().nullable()();
+}
+
+@DataClassName('translatedwords')
+class TranslatedWords extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baselang => integer().nullable().references(Languages, #id)();
+  IntColumn get targetLang => integer().nullable().references(Languages, #id)();
+
+  TextColumn get name => text().unique()();
+  TextColumn get translatedName => text().unique()();
+}
+
+@DataClassName('synonyms')
+class Synonyms extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baseWord => integer().nullable().references(Words, #id)();
+  IntColumn get synonymWord => integer().nullable().references(Words, #id)();
+
+  TextColumn get name => text()();
+  IntColumn get baselang => integer().nullable().references(Languages, #id)();
+}
+
+@DriftDatabase(tables: [Languages, Words, Synonyms, TranslatedWords])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+
+  @override
+  int get schemaVersion => 2;
+  @override
+  // TODO: implement migration
+  MigrationStrategy get migration {
+    return MigrationStrategy(onCreate: (Migrator m) async {
+      await m.createAll();
+      // m.database
+      //     .into(m.database.languages)
+      //     .insert(LanguagesCompanion.insert(name: "German", shortName: "de"));
+
+      // database
+      //     .into(database.languages)
+      //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
+    });
+
+    super.migration;
+  }
+}
+
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    // put the database file, called db.sqlite here, into the documents folder
+    // for your app.
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'worts.sqlite'));
+
+    // Also work around limitations on old Android versions
+    if (Platform.isAndroid) {
+      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    }
+
+    // Make sqlite3 pick a more suitable location for temporary files - the
+    // one from the system may be inaccessible due to sandboxing.
+    final cachebase = (await getTemporaryDirectory()).path;
+    // We can't access /tmp on Android, which sqlite3 would try by default.
+    // Explicitly tell it about the correct temporary directory.
+    sqlite3.tempDirectory = cachebase;
+
+    return NativeDatabase.createInBackground(file);
+  });
+}
