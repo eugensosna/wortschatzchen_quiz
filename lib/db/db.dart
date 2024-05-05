@@ -25,31 +25,30 @@ class Words extends Table {
   TextColumn get name => text()();
   TextColumn get description => text()();
 
-  TextColumn get mean => text().nullable()();
-  IntColumn get baselang => integer().nullable().references(Languages, #id)();
-  IntColumn get rootWordID => integer().nullable()();
+  TextColumn get mean => text()();
+  IntColumn get baseLang => integer().references(Languages, #id)();
+  IntColumn get rootWordID => integer()();
 }
 
 @DataClassName('translatedwords')
 class TranslatedWords extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
-  IntColumn get baselang => integer().nullable().references(Languages, #id)();
-  IntColumn get targetLang => integer().nullable().references(Languages, #id)();
+  IntColumn get baseLang => integer().references(Languages, #id)();
+  IntColumn get targetLang => integer().references(Languages, #id)();
 
-  TextColumn get name => text().unique()();
-  TextColumn get translatedName => text().unique()();
+  TextColumn get name => text()();
+  TextColumn get translatedName => text()();
 }
 
-@DataClassName('synonyms')
 class Synonyms extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
-  IntColumn get baseWord => integer().nullable().references(Words, #id)();
-  IntColumn get synonymWord => integer().nullable().references(Words, #id)();
+  IntColumn get baseWord => integer().references(Words, #id)();
+  IntColumn get synonymWord => integer().references(Words, #id)();
 
   TextColumn get name => text()();
-  IntColumn get baselang => integer().nullable().references(Languages, #id)();
+  IntColumn get baseLang => integer().references(Languages, #id)();
 }
 
 @DriftDatabase(tables: [Languages, Words, Synonyms, TranslatedWords])
@@ -90,10 +89,10 @@ LazyDatabase _openConnection() {
 
     // Make sqlite3 pick a more suitable location for temporary files - the
     // one from the system may be inaccessible due to sandboxing.
-    final cachebase = (await getTemporaryDirectory()).path;
+    final cacheBase = (await getTemporaryDirectory()).path;
     // We can't access /tmp on Android, which sqlite3 would try by default.
     // Explicitly tell it about the correct temporary directory.
-    sqlite3.tempDirectory = cachebase;
+    sqlite3.tempDirectory = cacheBase;
 
     return NativeDatabase.createInBackground(file);
   });
