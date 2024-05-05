@@ -8,7 +8,6 @@ import 'package:uuid/uuid.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import 'package:path/path.dart' as p;
-import 'package:wortschatzchen_quiz/main.dart';
 
 part 'db.g.dart';
 
@@ -73,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
       //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
     });
 
-    super.migration;
+    // super.migration();
   }
 }
 

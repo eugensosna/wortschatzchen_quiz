@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
@@ -17,6 +18,23 @@ class WordsListState extends State<WordsList> {
   List<Word> listWords = [];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    updateListWords();
+    super.initState();
+  }
+
+  Future<void> _AddNewWord() async {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return const WordsDetail();
+    }));
+    if (result) {
+      updateListWords();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -25,10 +43,7 @@ class WordsListState extends State<WordsList> {
       body: getWordsListView(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          debugPrint("kkk");
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return const WordsDetail();
-          }));
+          _AddNewWord();
         },
         tooltip: "Add note",
         child: const Icon(Icons.add),
@@ -61,7 +76,7 @@ class WordsListState extends State<WordsList> {
         itemWord.name,
         style: const TextStyle(fontSize: 16),
       ),
-      subtitle: Text(itemWord.name),
+      subtitle: Text(itemWord.description),
       trailing: const Icon(
         Icons.delete,
         color: Colors.grey,
@@ -69,9 +84,15 @@ class WordsListState extends State<WordsList> {
     );
   }
 
+  @override
+  void didChangeDependencies() {
+    updateListWords();
+    super.didChangeDependencies();
+  }
+
   void updateListWords() {
-    Future<List<Word>> flistWords = db.select(db.words).get();
-    flistWords.then((value) {
+    Future<List<Word>> fListWords = db.select(db.words).get();
+    fListWords.then((value) {
       setState(() {
         listWords = value;
       });

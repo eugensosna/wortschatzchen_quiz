@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 
 class WordsDetail extends StatefulWidget {
   const WordsDetail({super.key});
@@ -10,8 +11,31 @@ class WordsDetail extends StatefulWidget {
 
 class _WordsDetailState extends State<WordsDetail> {
   static final List<String> _prioretys = ["Hight", "Low"];
-  TextEditingController titleControler = TextEditingController();
+  TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  final db = DbHelper();
+  late Language baseLang;
+  @override
+  void initState() {
+    // TODO: implement initState
+    // final result().getDefauiltBaseLang();
+    super.initState();
+    setBaseSetings().then((value) => print(value));
+  }
+
+  Future<String> setBaseSetings() async {
+    var baseLang1 = await DbHelper().getLangByShortName("de");
+    if (baseLang1 == null) {
+      int id = (await db
+          .into(db.languages)
+          .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
+      baseLang1 = db.getLangById(id) as Language?;
+    }
+    setState(() {
+      baseLang = baseLang1!;
+    });
+    return "Ok";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +58,8 @@ class _WordsDetailState extends State<WordsDetail> {
             ListTile(
               title: DropdownButton(
                 items: _prioretys
-                    .map((String value) => DropdownMenuItem(value: value, child: Text(value)))
+                    .map((String value) =>
+                        DropdownMenuItem(value: value, child: Text(value)))
                     .toList(),
                 onChanged: (String? value) {
                   setState(() {
@@ -49,14 +74,15 @@ class _WordsDetailState extends State<WordsDetail> {
                 bottom: 15,
               ),
               child: TextField(
-                  controller: titleControler,
+                  controller: titleController,
                   style: textStyle,
                   onChanged: (value) {
                     debugPrint('Someting changed in Title $value');
                   },
                   decoration: InputDecoration(
                       label: const Text('Title'),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5)))),
             ),
             // 3 element
 
@@ -72,7 +98,8 @@ class _WordsDetailState extends State<WordsDetail> {
                 decoration: InputDecoration(
                     labelText: 'Description',
                     labelStyle: textStyle,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0))),
               ),
             ),
           ],
@@ -84,9 +111,13 @@ class _WordsDetailState extends State<WordsDetail> {
   void _addWord() {}
 
   void moveToLastScreen() async {
-    final db = AppDatabase();
-    await db.into(db.words).insert(
-        WordsCompanion.insert(name: titleControler.text, description: descriptionController.text));
-    Navigator.pop(context, true);
+    if (titleController.text.isEmpty && descriptionController.text.isEmpty) {
+      Navigator.pop(context, false);
+      return;
+    } else {
+      final result = await db.into(db.words).insert(WordsCompanion.insert(
+          name: titleController.text, description: descriptionController.text));
+      Navigator.pop(context, true);
+    }
   }
 }
