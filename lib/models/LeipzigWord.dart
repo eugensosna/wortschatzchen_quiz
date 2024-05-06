@@ -12,7 +12,9 @@ class LeipzigWord {
 
   Future<String> getFromInternet() async {
     String body = await getLeipzigHtml(this.name);
+    if (body.isNotEmpty) {
     parseHtml(body, this);
+    }
     return "Ok";
   }
 }

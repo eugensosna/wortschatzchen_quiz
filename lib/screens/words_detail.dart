@@ -18,18 +18,18 @@ class WordsDetail extends StatefulWidget {
 
 class WordsDetailState extends State<WordsDetail> {
   late Word editWord;
-  final String AppBarText;
-  WordsDetailState(this.editWord, this.AppBarText);
+  final String appBarText;
+  WordsDetailState(this.editWord, this.appBarText);
 
   String inputLanguage = 'de';
-  String outputLanuage = 'uk';
+  String outputLanguage = 'uk';
 
   final translator = GoogleTranslator();
+  bool isLoading = false;
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  Word? wordEditing =
-      const Word(
+  Word? wordEditing = const Word(
       id: 0,
       uuid: "",
       name: "",
@@ -39,54 +39,59 @@ class WordsDetailState extends State<WordsDetail> {
       rootWordID: 0);
   List<Synonym> listSynonyms = [];
 
-
-Future<String> translateText(String inputText) async {
-    final translated =
-        await translator.translate(inputText, from: inputLanguage, to: outputLanuage);
+  Future<String> translateText(String inputText) async {
+    final translated = await translator.translate(inputText,
+        from: inputLanguage, to: outputLanguage);
 
     //setState(() {    });
     return translated.text;
   }
+
   final db = DbHelper();
   late Language baseLang;
   @override
   void initState() {
+    titleController.text = editWord.name;
+    descriptionController.text = editWord.description;
+
     super.initState();
-    setBaseSetings().then((value) => print(value));
+    setBaseSettings().then((value) {
+      setState(() {});
+    });
   }
 
-  Future<String> setBaseSetings() async {
-    var baseLang1 = await DbHelper().getLangByShortName("de");
-    if (baseLang1 == null) {
-      int id = (await db
-          .into(db.languages)
-          .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
-      baseLang1 = await db.getLangById(id);
+  Future<String> setBaseSettings() async {
+    if (editWord.baseLang > 0) {
+      baseLang = (await db.getLangById(editWord.baseLang))!;
+    } else {
+      var baseLang1 = await DbHelper().getLangByShortName("de");
+      if (baseLang1 == null) {
+        int id = (await db.into(db.languages).insert(
+            LanguagesCompanion.insert(name: "German", shortName: "de")));
+        baseLang = (await db.getLangById(id))!;
+      }
+      if (editWord.name.isNotEmpty && editWord.id <= 0) {
+        titleController.text = editWord.name;
+        descriptionController.text = editWord.description;
+        await addWord();
+      }
     }
-    if (editWord.name.isNotEmpty && editWord.id <= 0) {
-      titleController.text = editWord.name;
-      _addUpdateWord();
-    }
+
     db.getSynonymsByWord(editWord.id).then((value) {
       listSynonyms = value;
       setState(() {});
     });
-    setState(() {
-      baseLang = baseLang1!;
-     
-    });
+    
     return "Ok";
   }
 
   @override
   Widget build(BuildContext context) {
     TextStyle? textStyle = Theme.of(context).textTheme.displayMedium;
-    titleController.text = editWord.name;
-    descriptionController.text = editWord.description;
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppBarText),
+        title: Text(appBarText),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () async {
@@ -95,14 +100,11 @@ Future<String> translateText(String inputText) async {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.only(top: 15, left: 10, right: 10),
+        padding: const EdgeInsets.all(15),
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(
-                top: 15,
-                bottom: 15,
-              ),
+              padding: const EdgeInsets.all(12),
               child: TextField(
                   controller: titleController,
                   style: textStyle,
@@ -130,39 +132,65 @@ Future<String> translateText(String inputText) async {
                         borderRadius: BorderRadius.circular(5.0))),
               ),
             ),
-            IconButton(
-                onPressed: _fillData, icon: const Icon(Icons.downloading)),
+            if (isLoading)
+              const LinearProgressIndicator()
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton(
+                      onPressed: _fillData,
+                      icon: const Icon(Icons.downloading)),
+                  IconButton(
+                      onPressed: () {
+                        addWord();
+                      },
+                      icon: Icon(Icons.save)),
+                ],
+              ),
           ],
         ),
       ),
     );
   }
 
-Widget _addListTitleSynonym(String title1, String description) {
+  Widget _addListTitleSynonym(String title1, String description) {
+    String tempTitle = title1;
     return ListTile(
-      title: Text(title1),
-      subtitle: Text(description),
-      onLongPress: () {
-        debugPrint("lljj");
-      },
-      // onTap: () {
+        title: Text(title1),
+        subtitle: Text(description),
+        onLongPress: () {
+          debugPrint(tempTitle);
+        },
+        onTap: () {
+          String onTapeString = tempTitle;
+          navigateToDetail(
+              Word(
+                  id: -99,
+                  uuid: "",
+                  name: onTapeString,
+                  description: description,
+                  mean: "",
+                  baseLang: baseLang.id,
+                  rootWordID: editWord.id),
+              "Add synonyme");
+        }
 
-      //   navigateToDetail(
-      //       const Word(
-      //           id: -99,
-      //           uuid: "",
-      //           name: title1,
-      //           description: description,
-      //           mean: "",
-      //           baseLang: 0,
-      //           rootWordID: 0),
-      //       "Add synonym");
-      // },
-    );
+        //   navigateToDetail(
+        //       const Word(
+        //           id: -99,
+        //           uuid: "",
+        //           name: title1,
+        //           description: description,
+        //           mean: "",
+        //           baseLang: 0,
+        //           rootWordID: 0),
+        //       "Add synonym");
+        // },
+        );
   }
 
   Widget buildSynonyms(List<Synonym> listSynonyms) {
-
     List<Widget> listChildren = [];
     String titleList = "";
     if (listSynonyms.isNotEmpty) {
@@ -176,7 +204,8 @@ Widget _addListTitleSynonym(String title1, String description) {
           .join(", ");
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
       for (var _item in listSynonymsSliced) {
-        listChildren.add(_addListTitleSynonym(_item.name, _item.translatedName));
+        listChildren
+            .add(_addListTitleSynonym(_item.name, _item.translatedName));
         // ListTile(
         //   title: Text(_item.name),
         //   subtitle: const Text("translate"),
@@ -206,56 +235,68 @@ Widget _addListTitleSynonym(String title1, String description) {
   }
 
   Future<String> _fillData() async {
-    _addUpdateWord();
+    setState(() {
+      isLoading = true;
+    });
+    if (descriptionController.text.isEmpty) {
+      descriptionController.text = await translateText(titleController.text);
+    }
+    _addUpdateWord().then((value) {
+      setState(() {
+        isLoading = false;
+      });
+    });
 
     return "ok";
   }
 
-  void _addUpdateWord() async {
+  Future<Word> addWord() async {
     if (editWord.id <= 0) {
-      descriptionController.text = await translateText(titleController.text);
       var word = await db.getWordByName(titleController.text);
-      int id = await db.into(db.words).insert(WordsCompanion.insert(
-            name: titleController.text,
-            description: descriptionController.text,
-            mean: "",
-            rootWordID: 0,
-            baseLang: baseLang.id,
-          ));
-      word = await db.getWordById(id);
-      if (word != null) {
-        editWord = word;
-      }
-      var leipzigSynonyms = LeipzigWord(word!.name);
-      await leipzigSynonyms.getFromInternet();
-      if (leipzigSynonyms.Synonym.isNotEmpty) {
-        db.deleteSynonymsByWord(editWord);
-      }
-      for (var item in leipzigSynonyms.Synonym) {
-        String translated = await translateText(item.name);
-
-        var idSyn = await db.into(db.synonyms).insert(SynonymsCompanion.insert(
-            name: item.name,
-            translatedName: translated,
-            baseWord: editWord.id,
-            synonymWord: 0,
-            baseLang: word.baseLang));
+      if (word == null) {
+        int id = await db.into(db.words).insert(WordsCompanion.insert(
+              name: titleController.text,
+              description: descriptionController.text,
+              mean: "",
+              rootWordID: editWord.rootWordID,
+              baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
+            ));
+        word = await db.getWordById(id);
+        if (word != null) {
+          editWord = word.copyWith();
+        }
       }
     } else {
-      Word toUpdate =
-          editWord.copyWith(name: titleController.text, description: descriptionController.text);
+      Word toUpdate = editWord.copyWith(
+          name: titleController.text, description: descriptionController.text);
 
       bool result = await db.updateWord(toUpdate);
       if (result) {
         editWord = toUpdate.copyWith();
       }
     }
-    
+    return editWord;
+  }
 
+  Future<bool> _addUpdateWord() async {
+    editWord = await addWord();
+
+    var leipzigSynonyms = LeipzigWord(editWord.name);
+    await leipzigSynonyms.getFromInternet();
+    if (leipzigSynonyms.Synonym.isNotEmpty) {
+      await db.deleteSynonymsByWord(editWord);
+    }
+    for (var item in leipzigSynonyms.Synonym) {
+      var idSyn = await db.into(db.synonyms).insert(SynonymsCompanion.insert(
+          name: item.name,
+          baseWord: editWord.id,
+          synonymWord: 0,
+          baseLang: editWord.baseLang,
+          translatedName: await translateText(item.name)));
+    }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
-    setState(() {
-    });
+    return true;
   }
 
   void moveToLastScreen() async {
@@ -263,24 +304,16 @@ Widget _addListTitleSynonym(String title1, String description) {
       Navigator.pop(context, false);
       return;
     } else {
-      final result = await db.into(db.words).insert(WordsCompanion.insert(
-          name: titleController.text,
-          description: descriptionController.text,
-          mean: '',
-          baseLang: baseLang.id,
-          rootWordID: 0));
       Navigator.pop(context, true);
     }
   }
 
-
-
-Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+  Future<void> navigateToDetail(Word wordToEdit, String title) async {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
       print(wordToEdit.id);
       return WordsDetail(wordToEdit, title);
     }));
     if (result) {}
   }
-
 }
