@@ -34,12 +34,15 @@ class DbHelper extends AppDatabase {
     return (select(words)..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 
-  void getDefauiltBaseLang() {
-    select(languages)
-      ..where((tbl) => tbl.shortName.equals("de"))
-      ..get().then((value) {
-        print("object");
-        print(value);
-      });
+  Future deleteWord(Word item) async {
+    return (delete(words)..where((tbl) => tbl.id.equals(item.id))).go();
+  }
+
+  Future deleteSynonymsByWord(Word item) async {
+    return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id))).go();
+  }
+
+  Future<bool> updateWord(Word item) async {
+    return update(words).replace(item);
   }
 }
