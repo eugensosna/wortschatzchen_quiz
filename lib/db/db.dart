@@ -49,6 +49,8 @@ class Synonyms extends Table {
 
   TextColumn get name => text()();
   IntColumn get baseLang => integer().references(Languages, #id)();
+  TextColumn get translatedName => text()();
+
 }
 
 @DriftDatabase(tables: [Languages, Words, Synonyms, TranslatedWords])

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -24,10 +25,13 @@ class WordsListState extends State<WordsList> {
     super.initState();
   }
 
-  Future<void> _AddNewWord() async {
+  Future<void> navigateToDetail(Word wordToEdit, String title) async {
+
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return const WordsDetail();
+      print(wordToEdit.id);
+      return WordsDetail(wordToEdit, title);
+      
     }));
     if (result) {
       updateListWords();
@@ -43,7 +47,16 @@ class WordsListState extends State<WordsList> {
       body: getWordsListView(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _AddNewWord();
+          navigateToDetail(
+              const Word(
+                  id: -99,
+                  uuid: "",
+                  name: "",
+                  description: "",
+                  mean: "",
+                  baseLang: 0,
+                  rootWordID: 0),
+              "Add new");
         },
         tooltip: "Add note",
         child: const Icon(Icons.add),
@@ -52,7 +65,6 @@ class WordsListState extends State<WordsList> {
   }
 
   ListView getWordsListView() {
-    TextStyle? titleStile = Theme.of(context).textTheme.labelLarge;
     return ListView.builder(
       itemCount: listWords.length,
       itemBuilder: (context, index) {
@@ -74,13 +86,22 @@ class WordsListState extends State<WordsList> {
       ),
       title: Text(
         itemWord.name,
-        style: const TextStyle(fontSize: 16),
+        //style: const TextStyle(fontSize: 6),
       ),
       subtitle: Text(itemWord.description),
-      trailing: const Icon(
+      trailing: GestureDetector(
+        child: const Icon(
         Icons.delete,
         color: Colors.grey,
       ),
+        onTap: () {
+          _delete(itemWord);
+        },
+      ),
+      onTap: () {
+        debugPrint("lit Tap");
+        navigateToDetail(itemWord, "View ${itemWord.name}");
+      },
     );
   }
 
@@ -96,6 +117,12 @@ class WordsListState extends State<WordsList> {
       setState(() {
         listWords = value;
       });
+    });
+  }
+  
+  void _delete(Word itemWord) async {
+    DbHelper().deleteWord(itemWord).then((value) {
+      updateListWords();
     });
   }
 }

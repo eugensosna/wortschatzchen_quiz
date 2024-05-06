@@ -668,9 +668,15 @@ class $SynonymsTable extends Synonyms with TableInfo<$SynonymsTable, Synonym> {
       requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES languages (id)'));
+  static const VerificationMeta _translatedNameMeta =
+      const VerificationMeta('translatedName');
+  @override
+  late final GeneratedColumn<String> translatedName = GeneratedColumn<String>(
+      'translated_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, uuid, baseWord, synonymWord, name, baseLang];
+      [id, uuid, baseWord, synonymWord, name, baseLang, translatedName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -714,6 +720,14 @@ class $SynonymsTable extends Synonyms with TableInfo<$SynonymsTable, Synonym> {
     } else if (isInserting) {
       context.missing(_baseLangMeta);
     }
+    if (data.containsKey('translated_name')) {
+      context.handle(
+          _translatedNameMeta,
+          translatedName.isAcceptableOrUnknown(
+              data['translated_name']!, _translatedNameMeta));
+    } else if (isInserting) {
+      context.missing(_translatedNameMeta);
+    }
     return context;
   }
 
@@ -735,6 +749,8 @@ class $SynonymsTable extends Synonyms with TableInfo<$SynonymsTable, Synonym> {
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       baseLang: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}base_lang'])!,
+      translatedName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}translated_name'])!,
     );
   }
 
@@ -751,13 +767,15 @@ class Synonym extends DataClass implements Insertable<Synonym> {
   final int synonymWord;
   final String name;
   final int baseLang;
+  final String translatedName;
   const Synonym(
       {required this.id,
       required this.uuid,
       required this.baseWord,
       required this.synonymWord,
       required this.name,
-      required this.baseLang});
+      required this.baseLang,
+      required this.translatedName});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -767,6 +785,7 @@ class Synonym extends DataClass implements Insertable<Synonym> {
     map['synonym_word'] = Variable<int>(synonymWord);
     map['name'] = Variable<String>(name);
     map['base_lang'] = Variable<int>(baseLang);
+    map['translated_name'] = Variable<String>(translatedName);
     return map;
   }
 
@@ -778,6 +797,7 @@ class Synonym extends DataClass implements Insertable<Synonym> {
       synonymWord: Value(synonymWord),
       name: Value(name),
       baseLang: Value(baseLang),
+      translatedName: Value(translatedName),
     );
   }
 
@@ -791,6 +811,7 @@ class Synonym extends DataClass implements Insertable<Synonym> {
       synonymWord: serializer.fromJson<int>(json['synonymWord']),
       name: serializer.fromJson<String>(json['name']),
       baseLang: serializer.fromJson<int>(json['baseLang']),
+      translatedName: serializer.fromJson<String>(json['translatedName']),
     );
   }
   @override
@@ -803,6 +824,7 @@ class Synonym extends DataClass implements Insertable<Synonym> {
       'synonymWord': serializer.toJson<int>(synonymWord),
       'name': serializer.toJson<String>(name),
       'baseLang': serializer.toJson<int>(baseLang),
+      'translatedName': serializer.toJson<String>(translatedName),
     };
   }
 
@@ -812,7 +834,8 @@ class Synonym extends DataClass implements Insertable<Synonym> {
           int? baseWord,
           int? synonymWord,
           String? name,
-          int? baseLang}) =>
+          int? baseLang,
+          String? translatedName}) =>
       Synonym(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
@@ -820,6 +843,7 @@ class Synonym extends DataClass implements Insertable<Synonym> {
         synonymWord: synonymWord ?? this.synonymWord,
         name: name ?? this.name,
         baseLang: baseLang ?? this.baseLang,
+        translatedName: translatedName ?? this.translatedName,
       );
   @override
   String toString() {
@@ -829,14 +853,15 @@ class Synonym extends DataClass implements Insertable<Synonym> {
           ..write('baseWord: $baseWord, ')
           ..write('synonymWord: $synonymWord, ')
           ..write('name: $name, ')
-          ..write('baseLang: $baseLang')
+          ..write('baseLang: $baseLang, ')
+          ..write('translatedName: $translatedName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, uuid, baseWord, synonymWord, name, baseLang);
+  int get hashCode => Object.hash(
+      id, uuid, baseWord, synonymWord, name, baseLang, translatedName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -846,7 +871,8 @@ class Synonym extends DataClass implements Insertable<Synonym> {
           other.baseWord == this.baseWord &&
           other.synonymWord == this.synonymWord &&
           other.name == this.name &&
-          other.baseLang == this.baseLang);
+          other.baseLang == this.baseLang &&
+          other.translatedName == this.translatedName);
 }
 
 class SynonymsCompanion extends UpdateCompanion<Synonym> {
@@ -856,6 +882,7 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
   final Value<int> synonymWord;
   final Value<String> name;
   final Value<int> baseLang;
+  final Value<String> translatedName;
   const SynonymsCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
@@ -863,6 +890,7 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
     this.synonymWord = const Value.absent(),
     this.name = const Value.absent(),
     this.baseLang = const Value.absent(),
+    this.translatedName = const Value.absent(),
   });
   SynonymsCompanion.insert({
     this.id = const Value.absent(),
@@ -871,10 +899,12 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
     required int synonymWord,
     required String name,
     required int baseLang,
+    required String translatedName,
   })  : baseWord = Value(baseWord),
         synonymWord = Value(synonymWord),
         name = Value(name),
-        baseLang = Value(baseLang);
+        baseLang = Value(baseLang),
+        translatedName = Value(translatedName);
   static Insertable<Synonym> custom({
     Expression<int>? id,
     Expression<String>? uuid,
@@ -882,6 +912,7 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
     Expression<int>? synonymWord,
     Expression<String>? name,
     Expression<int>? baseLang,
+    Expression<String>? translatedName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -890,6 +921,7 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
       if (synonymWord != null) 'synonym_word': synonymWord,
       if (name != null) 'name': name,
       if (baseLang != null) 'base_lang': baseLang,
+      if (translatedName != null) 'translated_name': translatedName,
     });
   }
 
@@ -899,7 +931,8 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
       Value<int>? baseWord,
       Value<int>? synonymWord,
       Value<String>? name,
-      Value<int>? baseLang}) {
+      Value<int>? baseLang,
+      Value<String>? translatedName}) {
     return SynonymsCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
@@ -907,6 +940,7 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
       synonymWord: synonymWord ?? this.synonymWord,
       name: name ?? this.name,
       baseLang: baseLang ?? this.baseLang,
+      translatedName: translatedName ?? this.translatedName,
     );
   }
 
@@ -931,6 +965,9 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
     if (baseLang.present) {
       map['base_lang'] = Variable<int>(baseLang.value);
     }
+    if (translatedName.present) {
+      map['translated_name'] = Variable<String>(translatedName.value);
+    }
     return map;
   }
 
@@ -942,7 +979,8 @@ class SynonymsCompanion extends UpdateCompanion<Synonym> {
           ..write('baseWord: $baseWord, ')
           ..write('synonymWord: $synonymWord, ')
           ..write('name: $name, ')
-          ..write('baseLang: $baseLang')
+          ..write('baseLang: $baseLang, ')
+          ..write('translatedName: $translatedName')
           ..write(')'))
         .toString();
   }
