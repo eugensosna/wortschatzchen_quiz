@@ -15,7 +15,7 @@ class WordsList extends StatefulWidget {
 
 class WordsListState extends State<WordsList> {
   int count = 2;
-  final db = AppDatabase();
+  final db = DbHelper();
   List<Word> listWords = [];
 
   @override
@@ -26,12 +26,10 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       print(wordToEdit.id);
       return WordsDetail(wordToEdit, title);
-      
     }));
     if (result) {
       updateListWords();
@@ -80,9 +78,9 @@ class WordsListState extends State<WordsList> {
 
   ListTile listWordView(Word itemWord) {
     return ListTile(
-      leading: const CircleAvatar(
-        backgroundColor: Colors.yellow,
-        child: Icon(Icons.keyboard_arrow_right),
+      leading: CircleAvatar(
+        backgroundColor: getKeyboardColor(itemWord),
+        child: const Icon(Icons.keyboard_arrow_right),
       ),
       title: Text(
         itemWord.name,
@@ -91,9 +89,9 @@ class WordsListState extends State<WordsList> {
       subtitle: Text(itemWord.description),
       trailing: GestureDetector(
         child: const Icon(
-        Icons.delete,
-        color: Colors.grey,
-      ),
+          Icons.delete,
+          color: Colors.grey,
+        ),
         onTap: () {
           _delete(itemWord);
         },
@@ -112,14 +110,23 @@ class WordsListState extends State<WordsList> {
   }
 
   void updateListWords() {
-    Future<List<Word>> fListWords = db.select(db.words).get();
+    Future<List<Word>> fListWords =
+        db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) {
       setState(() {
         listWords = value;
       });
     });
   }
-  
+
+  Color getKeyboardColor(Word word) {
+    if (word.rootWordID > 0) {
+      return Colors.yellow;
+    } else {
+      return Colors.red;
+    }
+  }
+
   void _delete(Word itemWord) async {
     DbHelper().deleteWord(itemWord).then((value) {
       updateListWords();

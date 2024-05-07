@@ -206,22 +206,7 @@ class WordsDetailState extends State<WordsDetail> {
       for (var _item in listSynonymsSliced) {
         listChildren
             .add(_addListTitleSynonym(_item.name, _item.translatedName));
-        // ListTile(
-        //   title: Text(_item.name),
-        //   subtitle: const Text("translate"),
-        //     onTap: () {
-        //       navigateToDetail(
-        //           const Word(
-        //               id: -99,
-        //               uuid: "",
-        //               name: _item.name,
-        //               description: "",
-        //               mean: "",
-        //               baseLang: 0,
-        //               rootWordID: 0),
-        //           "Add synonym");
-        //     },
-
+        
         // ))
       }
     }
@@ -229,7 +214,7 @@ class WordsDetailState extends State<WordsDetail> {
     return ExpansionTile(
       title: const Text("Synonyms: "),
       subtitle: Text(titleList),
-      initiallyExpanded: true,
+      initiallyExpanded: false,
       children: listChildren,
     );
   }

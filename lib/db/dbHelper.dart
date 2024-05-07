@@ -41,6 +41,14 @@ class DbHelper extends AppDatabase {
   Future deleteSynonymsByWord(Word item) async {
     return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id))).go();
   }
+  Future<List<Word>> getOrdersWordList() {
+    return (select(words)
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: (tbl.rootWordID)),
+            ((tbl) => OrderingTerm(expression: tbl.id))
+          ]))
+        .get();
+  }
 
   Future<bool> updateWord(Word item) async {
     return update(words).replace(item);
