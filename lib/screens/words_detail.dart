@@ -81,7 +81,7 @@ class WordsDetailState extends State<WordsDetail> {
       listSynonyms = value;
       setState(() {});
     });
-    
+
     return "Ok";
   }
 
@@ -206,7 +206,7 @@ class WordsDetailState extends State<WordsDetail> {
       for (var _item in listSynonymsSliced) {
         listChildren
             .add(_addListTitleSynonym(_item.name, _item.translatedName));
-        
+
         // ))
       }
     }
@@ -272,12 +272,17 @@ class WordsDetailState extends State<WordsDetail> {
       await db.deleteSynonymsByWord(editWord);
     }
     for (var item in leipzigSynonyms.Synonym) {
+      Word? wordsynonum = await db.getWordByName(item.name);
+
+
       var idSyn = await db.into(db.synonyms).insert(SynonymsCompanion.insert(
           name: item.name,
           baseWord: editWord.id,
-          synonymWord: 0,
+          synonymWord: wordsynonum == null ? 0 : wordsynonum.id,
           baseLang: editWord.baseLang,
-          translatedName: await translateText(item.name)));
+          translatedName: wordsynonum == null
+              ? await translateText(item.name)
+              : wordsynonum.description));
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 

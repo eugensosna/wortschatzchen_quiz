@@ -66,7 +66,7 @@ class WordsListState extends State<WordsList> {
     );
   }
 
-  ListView getWordsListView() async {
+  ListView getWordsListView() {
     return ListView.builder(
       itemCount: listWords.length,
       itemBuilder: (context, index) {
