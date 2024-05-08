@@ -18,10 +18,14 @@ class WordsListState extends State<WordsList> {
   final db = DbHelper();
   List<Word> listWords = [];
 
+  List<Word> orderslistWords = [];
+
   @override
   void initState() {
     // TODO: implement initState
-    updateListWords();
+    updateListWords().then((value) {
+      return;
+    });
     super.initState();
   }
 
@@ -62,11 +66,12 @@ class WordsListState extends State<WordsList> {
     );
   }
 
-  ListView getWordsListView() {
+  ListView getWordsListView() async {
     return ListView.builder(
       itemCount: listWords.length,
       itemBuilder: (context, index) {
         Word wordItem = listWords[index];
+        if (wordItem.rootWordID > 0) {}
         return Card(
           color: Colors.white,
           elevation: 2.0,
@@ -78,10 +83,14 @@ class WordsListState extends State<WordsList> {
 
   ListTile listWordView(Word itemWord) {
     return ListTile(
+      isThreeLine: true,
       leading: CircleAvatar(
         backgroundColor: getKeyboardColor(itemWord),
         child: const Icon(Icons.keyboard_arrow_right),
+
       ),
+      
+      
       title: Text(
         itemWord.name,
         //style: const TextStyle(fontSize: 6),
@@ -96,10 +105,12 @@ class WordsListState extends State<WordsList> {
           _delete(itemWord);
         },
       ),
+
       onTap: () {
         debugPrint("lit Tap");
         navigateToDetail(itemWord, "View ${itemWord.name}");
       },
+      
     );
   }
 
@@ -109,14 +120,38 @@ class WordsListState extends State<WordsList> {
     super.didChangeDependencies();
   }
 
-  void updateListWords() {
+  Future<List<Word>> getRecursiveWordTree(
+      List<Word> treeOrder, List<int> ids, Word root) async {
+    if (ids.contains(root.id)) {
+      return treeOrder;
+    }
+    treeOrder.add(root);
+    ids.add(root.id);
+
+    List<Word> childs = await db.getChildrenWordList(root);
+    for (var item in childs) {
+      var newtreeOrder = await getRecursiveWordTree(treeOrder, ids, item);
+    }
+
+    return treeOrder;
+  }
+
+  Future<List<Word>> updateListWords() async {
     Future<List<Word>> fListWords =
         db.getOrdersWordList(); //db.select(db.words).get();
-    fListWords.then((value) {
+    fListWords.then((value) async {
+      // List<int> idsin = [];
+      // for (var item in value) {
+      //   orderslistWords =
+      //       await getRecursiveWordTree(orderslistWords, idsin, item);
+      // }
+      listWords = value;
       setState(() {
         listWords = value;
       });
+      return orderslistWords;
     });
+    return listWords;
   }
 
   Color getKeyboardColor(Word word) {

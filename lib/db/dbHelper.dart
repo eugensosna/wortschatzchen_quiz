@@ -49,6 +49,11 @@ class DbHelper extends AppDatabase {
           ]))
         .get();
   }
+  Future<List<Word>> getChildrenWordList(Word item) {
+    return (select(words)..where((tbl) => tbl.rootWordID.equals(item.id)))
+        .get();
+  }
+
 
   Future<bool> updateWord(Word item) async {
     return update(words).replace(item);
