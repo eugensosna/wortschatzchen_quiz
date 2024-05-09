@@ -1,7 +1,6 @@
 import 'package:html/dom.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
-import 'package:wortschatzchen_quiz/db/db.dart';
 import '../models/LeipzigWord.dart';
 
 Future<String> getLeipzigHtml(String word) async {
@@ -9,8 +8,7 @@ Future<String> getLeipzigHtml(String word) async {
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
   String url =
-      "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=" +
-          Uri.encodeFull(word);
+      "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=${Uri.encodeFull(word)}";
   final response = await http.get(Uri.parse(url));
 
   //print('Response status: ${response.statusCode}');

@@ -15,6 +15,7 @@ class WordsList extends StatefulWidget {
 
 class WordsListState extends State<WordsList> {
   int count = 2;
+  int selectedIndex = 2;
   final db = DbHelper();
   List<Word> listWords = [];
 
@@ -27,6 +28,20 @@ class WordsListState extends State<WordsList> {
       return;
     });
     super.initState();
+  }
+
+  static List<Widget> tabBarPages = [
+    const WordsList(),
+    const WordsList(),
+    const WordsList(),
+    const WordsList(),
+    const WordsList(),
+  ];
+
+  void onItemTapped(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
@@ -47,6 +62,7 @@ class WordsListState extends State<WordsList> {
         title: const Text('Words'),
       ),
       body: getWordsListView(),
+      bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           navigateToDetail(
@@ -87,10 +103,7 @@ class WordsListState extends State<WordsList> {
       leading: CircleAvatar(
         backgroundColor: getKeyboardColor(itemWord),
         child: const Icon(Icons.keyboard_arrow_right),
-
       ),
-      
-      
       title: Text(
         itemWord.name,
         //style: const TextStyle(fontSize: 6),
@@ -105,12 +118,10 @@ class WordsListState extends State<WordsList> {
           _delete(itemWord);
         },
       ),
-
       onTap: () {
         debugPrint("lit Tap");
         navigateToDetail(itemWord, "View ${itemWord.name}");
       },
-      
     );
   }
 
@@ -166,5 +177,24 @@ class WordsListState extends State<WordsList> {
     DbHelper().deleteWord(itemWord).then((value) {
       updateListWords();
     });
+  }
+  
+  bottomNavigationBar(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.shifting,
+      unselectedItemColor: Colors.grey,
+      selectedItemColor: Colors.black,
+      currentIndex: selectedIndex,
+      onTap: onItemTapped,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.play_arrow), label: "Quiz"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.circle_outlined), label: "Repeat"),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.account_box), label: "Profile"),
+      ],
+    );
   }
 }

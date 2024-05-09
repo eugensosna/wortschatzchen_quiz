@@ -48,7 +48,8 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   final db = DbHelper();
-  late Language baseLang;
+  Language baseLang =
+      Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
   @override
   void initState() {
     titleController.text = editWord.name;
@@ -70,18 +71,19 @@ class WordsDetailState extends State<WordsDetail> {
             LanguagesCompanion.insert(name: "German", shortName: "de")));
         baseLang = (await db.getLangById(id))!;
       }
-      if (editWord.name.isNotEmpty && editWord.id <= 0) {
+      if (editWord.name.isNotEmpty && editWord.id > 0) {
         titleController.text = editWord.name;
         descriptionController.text = editWord.description;
         await addWord();
-      }
+
+        db.getSynonymsByWord(editWord.id).then((value) {
+          listSynonyms = value;
+          setState(() {});
+        });
+      } else {}
     }
 
-    db.getSynonymsByWord(editWord.id).then((value) {
-      listSynonyms = value;
-      setState(() {});
-    });
-
+    
     return "Ok";
   }
 
@@ -113,7 +115,7 @@ class WordsDetailState extends State<WordsDetail> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5)))),
             ),
-            buildSynonyms(listSynonyms),
+            buildWidgetSynonymsView(listSynonyms),
             // 3 element
 
             Padding(
@@ -122,7 +124,7 @@ class WordsDetailState extends State<WordsDetail> {
                 controller: descriptionController,
                 style: textStyle,
                 onChanged: (value) {
-                  debugPrint('Something changed in Description Text Field');
+                  //FIXME: add save
                   // updateDescription();
                 },
                 decoration: InputDecoration(
@@ -203,7 +205,7 @@ class WordsDetailState extends State<WordsDetail> {
         );
   }
 
-  Widget buildSynonyms(List<Synonym> listSynonyms) {
+  Widget buildWidgetSynonymsView(List<Synonym> listSynonyms) {
     List<Widget> listChildren = [];
     int maxLengthSynonymsList = 100;
     String titleList = "";
@@ -269,7 +271,9 @@ class WordsDetailState extends State<WordsDetail> {
       }
     } else {
       Word toUpdate = editWord.copyWith(
-          name: titleController.text, description: descriptionController.text);
+          name: titleController.text,
+          description: descriptionController.text,
+          baseLang: baseLang.id == 0 ? editWord.baseLang : baseLang.id);
 
       bool result = await db.updateWord(toUpdate);
       if (result) {
