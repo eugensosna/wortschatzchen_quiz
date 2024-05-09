@@ -154,26 +154,39 @@ class WordsDetailState extends State<WordsDetail> {
     );
   }
 
-  Widget _addListTitleSynonym(String title1, String description) {
+  Widget _addListTitleSynonym(String title1, String description, Synonym item) {
     String tempTitle = title1;
     return ListTile(
+        // leading: item.synonymWord > 0
+        //     ? const CircleAvatar(
+        //         backgroundColor: Colors.red,
+        //         child: Icon(Icons.keyboard_arrow_right),
+        //       )
+        //     : Container(),
         title: Text(title1),
         subtitle: Text(description),
         onLongPress: () {
           debugPrint(tempTitle);
         },
-        onTap: () {
+        onTap: () async {
           String onTapeString = tempTitle;
+          Word? wordToEdit;
+          if (item.synonymWord > 0) {
+            wordToEdit = await db.getWordById(item.synonymWord);
+          }
           navigateToDetail(
-              Word(
-                  id: -99,
-                  uuid: "",
-                  name: onTapeString,
-                  description: description,
-                  mean: "",
-                  baseLang: baseLang.id,
-                  rootWordID: editWord.id),
-              "Add synonyme");
+              wordToEdit ??
+                  Word(
+                      id: -99,
+                      uuid: "",
+                      name: onTapeString,
+                      description: description,
+                      mean: "",
+                      baseLang: baseLang.id,
+                      rootWordID: editWord.id),
+              wordToEdit != null
+                  ? "View synonyme for '${editWord.name}'"
+                  : "Add synonyme for ${editWord.name}");
         }
 
         //   navigateToDetail(
@@ -192,9 +205,12 @@ class WordsDetailState extends State<WordsDetail> {
 
   Widget buildSynonyms(List<Synonym> listSynonyms) {
     List<Widget> listChildren = [];
+    int maxLengthSynonymsList = 100;
     String titleList = "";
     if (listSynonyms.isNotEmpty) {
-      int maxCount = listSynonyms.length > 10 ? 10 : listSynonyms.length;
+      int maxCount = listSynonyms.length > maxLengthSynonymsList
+          ? maxLengthSynonymsList
+          : listSynonyms.length;
       titleList = listSynonyms
           .map((e) {
             return " ${e.name}";
@@ -205,7 +221,7 @@ class WordsDetailState extends State<WordsDetail> {
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
       for (var _item in listSynonymsSliced) {
         listChildren
-            .add(_addListTitleSynonym(_item.name, _item.translatedName));
+            .add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
 
         // ))
       }
@@ -272,17 +288,16 @@ class WordsDetailState extends State<WordsDetail> {
       await db.deleteSynonymsByWord(editWord);
     }
     for (var item in leipzigSynonyms.Synonym) {
-      Word? wordsynonum = await db.getWordByName(item.name);
+      Word? elemWordSynonym = await db.getWordByName(item.name);
 
-
-      var idSyn = await db.into(db.synonyms).insert(SynonymsCompanion.insert(
+      await db.into(db.synonyms).insert(SynonymsCompanion.insert(
           name: item.name,
           baseWord: editWord.id,
-          synonymWord: wordsynonum == null ? 0 : wordsynonum.id,
+          synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym.id,
           baseLang: editWord.baseLang,
-          translatedName: wordsynonum == null
+          translatedName: elemWordSynonym == null
               ? await translateText(item.name)
-              : wordsynonum.description));
+              : elemWordSynonym.description));
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
@@ -301,7 +316,6 @@ class WordsDetailState extends State<WordsDetail> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      print(wordToEdit.id);
       return WordsDetail(wordToEdit, title);
     }));
     if (result) {}
