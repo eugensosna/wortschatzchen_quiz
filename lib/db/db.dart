@@ -53,12 +53,25 @@ class Synonyms extends Table {
   TextColumn get translatedName => text()();
 }
 
-@DriftDatabase(tables: [Languages, Words, Synonyms, TranslatedWords])
+class LeipzigData extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baseWord => integer().references(Words, #id)();
+
+  TextColumn get url => text()();
+  TextColumn get html => text()();
+  TextColumn get article => text()();
+  TextColumn get KindOfWort => text()();
+  TextColumn get wordOfBase => text()();
+}
+
+@DriftDatabase(
+    tables: [Languages, Words, Synonyms, TranslatedWords, LeipzigData])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
@@ -71,11 +84,27 @@ class AppDatabase extends _$AppDatabase {
       // database
       //     .into(database.languages)
       //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
-    });
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 3 && to == 3) {
+          // await m.create(leipzigData);
+        }
+      },
+      beforeOpen: (details) async {
+        if (details.wasCreated) {
+          (await into(languages).insert(
+              LanguagesCompanion.insert(name: "German", shortName: "de")));
+          (await into(languages).insert(
+              LanguagesCompanion.insert(name: "Ukrainian", shortName: "uk")));
+        }
+      },
+    );
 
     // super.migration();
   }
 }
+
+
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {

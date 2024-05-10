@@ -1319,6 +1319,407 @@ class TranslatedWordsCompanion extends UpdateCompanion<translatedwords> {
   }
 }
 
+class $LeipzigDataTable extends LeipzigData
+    with TableInfo<$LeipzigDataTable, LeipzigDataData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LeipzigDataTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  static const VerificationMeta _baseWordMeta =
+      const VerificationMeta('baseWord');
+  @override
+  late final GeneratedColumn<int> baseWord = GeneratedColumn<int>(
+      'base_word', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES words (id)'));
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+      'url', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _htmlMeta = const VerificationMeta('html');
+  @override
+  late final GeneratedColumn<String> html = GeneratedColumn<String>(
+      'html', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _articleMeta =
+      const VerificationMeta('article');
+  @override
+  late final GeneratedColumn<String> article = GeneratedColumn<String>(
+      'article', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _KindOfWortMeta =
+      const VerificationMeta('KindOfWort');
+  @override
+  late final GeneratedColumn<String> KindOfWort = GeneratedColumn<String>(
+      'kind_of_wort', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _wordOfBaseMeta =
+      const VerificationMeta('wordOfBase');
+  @override
+  late final GeneratedColumn<String> wordOfBase = GeneratedColumn<String>(
+      'word_of_base', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, uuid, baseWord, url, html, article, KindOfWort, wordOfBase];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'leipzig_data';
+  @override
+  VerificationContext validateIntegrity(Insertable<LeipzigDataData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('base_word')) {
+      context.handle(_baseWordMeta,
+          baseWord.isAcceptableOrUnknown(data['base_word']!, _baseWordMeta));
+    } else if (isInserting) {
+      context.missing(_baseWordMeta);
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+          _urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('html')) {
+      context.handle(
+          _htmlMeta, html.isAcceptableOrUnknown(data['html']!, _htmlMeta));
+    } else if (isInserting) {
+      context.missing(_htmlMeta);
+    }
+    if (data.containsKey('article')) {
+      context.handle(_articleMeta,
+          article.isAcceptableOrUnknown(data['article']!, _articleMeta));
+    } else if (isInserting) {
+      context.missing(_articleMeta);
+    }
+    if (data.containsKey('kind_of_wort')) {
+      context.handle(
+          _KindOfWortMeta,
+          KindOfWort.isAcceptableOrUnknown(
+              data['kind_of_wort']!, _KindOfWortMeta));
+    } else if (isInserting) {
+      context.missing(_KindOfWortMeta);
+    }
+    if (data.containsKey('word_of_base')) {
+      context.handle(
+          _wordOfBaseMeta,
+          wordOfBase.isAcceptableOrUnknown(
+              data['word_of_base']!, _wordOfBaseMeta));
+    } else if (isInserting) {
+      context.missing(_wordOfBaseMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LeipzigDataData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LeipzigDataData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      baseWord: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}base_word'])!,
+      url: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
+      html: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}html'])!,
+      article: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}article'])!,
+      KindOfWort: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind_of_wort'])!,
+      wordOfBase: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}word_of_base'])!,
+    );
+  }
+
+  @override
+  $LeipzigDataTable createAlias(String alias) {
+    return $LeipzigDataTable(attachedDatabase, alias);
+  }
+}
+
+class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
+  final int id;
+  final String uuid;
+  final int baseWord;
+  final String url;
+  final String html;
+  final String article;
+  final String KindOfWort;
+  final String wordOfBase;
+  const LeipzigDataData(
+      {required this.id,
+      required this.uuid,
+      required this.baseWord,
+      required this.url,
+      required this.html,
+      required this.article,
+      required this.KindOfWort,
+      required this.wordOfBase});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['base_word'] = Variable<int>(baseWord);
+    map['url'] = Variable<String>(url);
+    map['html'] = Variable<String>(html);
+    map['article'] = Variable<String>(article);
+    map['kind_of_wort'] = Variable<String>(KindOfWort);
+    map['word_of_base'] = Variable<String>(wordOfBase);
+    return map;
+  }
+
+  LeipzigDataCompanion toCompanion(bool nullToAbsent) {
+    return LeipzigDataCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      baseWord: Value(baseWord),
+      url: Value(url),
+      html: Value(html),
+      article: Value(article),
+      KindOfWort: Value(KindOfWort),
+      wordOfBase: Value(wordOfBase),
+    );
+  }
+
+  factory LeipzigDataData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LeipzigDataData(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      baseWord: serializer.fromJson<int>(json['baseWord']),
+      url: serializer.fromJson<String>(json['url']),
+      html: serializer.fromJson<String>(json['html']),
+      article: serializer.fromJson<String>(json['article']),
+      KindOfWort: serializer.fromJson<String>(json['KindOfWort']),
+      wordOfBase: serializer.fromJson<String>(json['wordOfBase']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'baseWord': serializer.toJson<int>(baseWord),
+      'url': serializer.toJson<String>(url),
+      'html': serializer.toJson<String>(html),
+      'article': serializer.toJson<String>(article),
+      'KindOfWort': serializer.toJson<String>(KindOfWort),
+      'wordOfBase': serializer.toJson<String>(wordOfBase),
+    };
+  }
+
+  LeipzigDataData copyWith(
+          {int? id,
+          String? uuid,
+          int? baseWord,
+          String? url,
+          String? html,
+          String? article,
+          String? KindOfWort,
+          String? wordOfBase}) =>
+      LeipzigDataData(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        baseWord: baseWord ?? this.baseWord,
+        url: url ?? this.url,
+        html: html ?? this.html,
+        article: article ?? this.article,
+        KindOfWort: KindOfWort ?? this.KindOfWort,
+        wordOfBase: wordOfBase ?? this.wordOfBase,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('LeipzigDataData(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('url: $url, ')
+          ..write('html: $html, ')
+          ..write('article: $article, ')
+          ..write('KindOfWort: $KindOfWort, ')
+          ..write('wordOfBase: $wordOfBase')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, uuid, baseWord, url, html, article, KindOfWort, wordOfBase);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LeipzigDataData &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.baseWord == this.baseWord &&
+          other.url == this.url &&
+          other.html == this.html &&
+          other.article == this.article &&
+          other.KindOfWort == this.KindOfWort &&
+          other.wordOfBase == this.wordOfBase);
+}
+
+class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<int> baseWord;
+  final Value<String> url;
+  final Value<String> html;
+  final Value<String> article;
+  final Value<String> KindOfWort;
+  final Value<String> wordOfBase;
+  const LeipzigDataCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.baseWord = const Value.absent(),
+    this.url = const Value.absent(),
+    this.html = const Value.absent(),
+    this.article = const Value.absent(),
+    this.KindOfWort = const Value.absent(),
+    this.wordOfBase = const Value.absent(),
+  });
+  LeipzigDataCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required int baseWord,
+    required String url,
+    required String html,
+    required String article,
+    required String KindOfWort,
+    required String wordOfBase,
+  })  : baseWord = Value(baseWord),
+        url = Value(url),
+        html = Value(html),
+        article = Value(article),
+        KindOfWort = Value(KindOfWort),
+        wordOfBase = Value(wordOfBase);
+  static Insertable<LeipzigDataData> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<int>? baseWord,
+    Expression<String>? url,
+    Expression<String>? html,
+    Expression<String>? article,
+    Expression<String>? KindOfWort,
+    Expression<String>? wordOfBase,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (baseWord != null) 'base_word': baseWord,
+      if (url != null) 'url': url,
+      if (html != null) 'html': html,
+      if (article != null) 'article': article,
+      if (KindOfWort != null) 'kind_of_wort': KindOfWort,
+      if (wordOfBase != null) 'word_of_base': wordOfBase,
+    });
+  }
+
+  LeipzigDataCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? uuid,
+      Value<int>? baseWord,
+      Value<String>? url,
+      Value<String>? html,
+      Value<String>? article,
+      Value<String>? KindOfWort,
+      Value<String>? wordOfBase}) {
+    return LeipzigDataCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      baseWord: baseWord ?? this.baseWord,
+      url: url ?? this.url,
+      html: html ?? this.html,
+      article: article ?? this.article,
+      KindOfWort: KindOfWort ?? this.KindOfWort,
+      wordOfBase: wordOfBase ?? this.wordOfBase,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (baseWord.present) {
+      map['base_word'] = Variable<int>(baseWord.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (html.present) {
+      map['html'] = Variable<String>(html.value);
+    }
+    if (article.present) {
+      map['article'] = Variable<String>(article.value);
+    }
+    if (KindOfWort.present) {
+      map['kind_of_wort'] = Variable<String>(KindOfWort.value);
+    }
+    if (wordOfBase.present) {
+      map['word_of_base'] = Variable<String>(wordOfBase.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LeipzigDataCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('url: $url, ')
+          ..write('html: $html, ')
+          ..write('article: $article, ')
+          ..write('KindOfWort: $KindOfWort, ')
+          ..write('wordOfBase: $wordOfBase')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $LanguagesTable languages = $LanguagesTable(this);
@@ -1326,10 +1727,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SynonymsTable synonyms = $SynonymsTable(this);
   late final $TranslatedWordsTable translatedWords =
       $TranslatedWordsTable(this);
+  late final $LeipzigDataTable leipzigData = $LeipzigDataTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [languages, words, synonyms, translatedWords];
+      [languages, words, synonyms, translatedWords, leipzigData];
 }

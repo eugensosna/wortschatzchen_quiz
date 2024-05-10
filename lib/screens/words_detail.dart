@@ -115,7 +115,6 @@ class WordsDetailState extends State<WordsDetail> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5)))),
             ),
-            buildWidgetSynonymsView(listSynonyms),
             // 3 element
 
             Padding(
@@ -134,6 +133,8 @@ class WordsDetailState extends State<WordsDetail> {
                         borderRadius: BorderRadius.circular(5.0))),
               ),
             ),
+            buildWidgetSynonymsView(listSynonyms),
+            
             if (isLoading)
               const LinearProgressIndicator()
             else
