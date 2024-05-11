@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+
 import 'package:html/dom.dart' as dom;
 
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import '../models/LeipzigWord.dart';
 
-Future<String> getLeipzigHtml(String word) async {
+Future<Response> getLeipzigHtml(String word) async {
   String result = "";
+  final dio = Dio();
+
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
   String url =
       "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=${Uri.encodeFull(word)}";
-  final response = await http.get(Uri.parse(url));
+  final response = await dio.get(Uri.parse(url).toString());
 
   //print('Response status: ${response.statusCode}');
   // print('Response body: ${response.body}');
   result = "";
   if (response.statusCode == 200) {
-    result = response.body;
+    result = response.data;
   }
 
-  return result;
+  return response;
 }
 
 LeipzigWord parseHtml(String text, LeipzigWord wortObj) {
@@ -99,8 +103,8 @@ Map<String, dynamic> getBaseHeaders(
         }
       case "Artikel:":
         {
-          wortObj.KindOfWort = (value as List<String>).isNotEmpty
-              ? (value).toString().trim()
+          wortObj.Artikel = (value as List<String>).isNotEmpty
+              ? (value[0]).toString().trim()
               : "";
         }
       case "Beschreibung:":

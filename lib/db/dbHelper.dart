@@ -1,6 +1,8 @@
 import 'package:drift/src/dsl/dsl.dart';
+import 'package:drift/src/runtime/data_class.dart';
 
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
+import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
 
 import 'db.dart';
 
@@ -39,8 +41,10 @@ class DbHelper extends AppDatabase {
   }
 
   Future deleteSynonymsByWord(Word item) async {
-    return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id))).go();
+    return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id)))
+        .go();
   }
+
   Future<List<Word>> getOrdersWordList() {
     return (select(words)
           ..orderBy([
@@ -49,13 +53,28 @@ class DbHelper extends AppDatabase {
           ]))
         .get();
   }
+
   Future<List<Word>> getChildrenWordList(Word item) {
     return (select(words)..where((tbl) => tbl.rootWordID.equals(item.id)))
         .get();
   }
 
-
   Future<bool> updateWord(Word item) async {
     return update(words).replace(item);
   }
+
+  Future<bool> updateLeipzigData(LeipzigDataFromIntranetData item) async {
+    return update(leipzigDataFromIntranet).replace(item);
+  }
+
+  Future<LeipzigDataFromIntranetData?> getLeipzigDataByWord(Word item) async {
+    return (select(leipzigDataFromIntranet)
+          ..where((tbl) => tbl.baseWord.equals(item.id)))
+        .getSingleOrNull();
+  }
+  
+  Future<TranslatedWords?> getTranslatedWords(String inputText, int ) async {
+    return (select(translatedWords)..where((tbl) => tbl.name.equals(inputText)).get
+  }
+      
 }

@@ -28,7 +28,6 @@ class Words extends Table {
   TextColumn get mean => text()();
   IntColumn get baseLang => integer().references(Languages, #id)();
   IntColumn get rootWordID => integer()();
-  
 }
 
 @DataClassName('translatedwords')
@@ -53,7 +52,7 @@ class Synonyms extends Table {
   TextColumn get translatedName => text()();
 }
 
-class LeipzigData extends Table {
+class LeipzigDataFromIntranet extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   IntColumn get baseWord => integer().references(Words, #id)();
@@ -65,28 +64,38 @@ class LeipzigData extends Table {
   TextColumn get wordOfBase => text()();
 }
 
-@DriftDatabase(
-    tables: [Languages, Words, Synonyms, TranslatedWords, LeipzigData])
+@DriftDatabase(tables: [
+  Languages,
+  Words,
+  Synonyms,
+  TranslatedWords,
+  LeipzigDataFromIntranet
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
-    return MigrationStrategy(onCreate: (Migrator m) async {
-      await m.createAll();
-      // m.database
-      //     .into(m.database.languages)
-      //     .insert(LanguagesCompanion.insert(name: "German", shortName: "de"));
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+        // m.database
+        //     .into(m.database.languages)
+        //     .insert(LanguagesCompanion.insert(name: "German", shortName: "de"));
 
-      // database
-      //     .into(database.languages)
-      //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
+        // database
+        //     .into(database.languages)
+        //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
       },
       onUpgrade: (m, from, to) async {
         if (from < 3 && to == 3) {
+          // await m.create(leipzigData);
+        }
+        if (from < 3 && to == 3) {
+          await m.createTable(leipzigDataFromIntranet);
           // await m.create(leipzigData);
         }
       },
@@ -103,8 +112,6 @@ class AppDatabase extends _$AppDatabase {
     // super.migration();
   }
 }
-
-
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {

@@ -1319,12 +1319,12 @@ class TranslatedWordsCompanion extends UpdateCompanion<translatedwords> {
   }
 }
 
-class $LeipzigDataTable extends LeipzigData
-    with TableInfo<$LeipzigDataTable, LeipzigDataData> {
+class $LeipzigDataFromIntranetTable extends LeipzigDataFromIntranet
+    with TableInfo<$LeipzigDataFromIntranetTable, LeipzigDataFromIntranetData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $LeipzigDataTable(this.attachedDatabase, [this._alias]);
+  $LeipzigDataFromIntranetTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -1385,9 +1385,10 @@ class $LeipzigDataTable extends LeipzigData
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'leipzig_data';
+  static const String $name = 'leipzig_data_from_intranet';
   @override
-  VerificationContext validateIntegrity(Insertable<LeipzigDataData> instance,
+  VerificationContext validateIntegrity(
+      Insertable<LeipzigDataFromIntranetData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1444,9 +1445,10 @@ class $LeipzigDataTable extends LeipzigData
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  LeipzigDataData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LeipzigDataFromIntranetData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LeipzigDataData(
+    return LeipzigDataFromIntranetData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       uuid: attachedDatabase.typeMapping
@@ -1467,12 +1469,13 @@ class $LeipzigDataTable extends LeipzigData
   }
 
   @override
-  $LeipzigDataTable createAlias(String alias) {
-    return $LeipzigDataTable(attachedDatabase, alias);
+  $LeipzigDataFromIntranetTable createAlias(String alias) {
+    return $LeipzigDataFromIntranetTable(attachedDatabase, alias);
   }
 }
 
-class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
+class LeipzigDataFromIntranetData extends DataClass
+    implements Insertable<LeipzigDataFromIntranetData> {
   final int id;
   final String uuid;
   final int baseWord;
@@ -1481,7 +1484,7 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
   final String article;
   final String KindOfWort;
   final String wordOfBase;
-  const LeipzigDataData(
+  const LeipzigDataFromIntranetData(
       {required this.id,
       required this.uuid,
       required this.baseWord,
@@ -1504,8 +1507,8 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
     return map;
   }
 
-  LeipzigDataCompanion toCompanion(bool nullToAbsent) {
-    return LeipzigDataCompanion(
+  LeipzigDataFromIntranetCompanion toCompanion(bool nullToAbsent) {
+    return LeipzigDataFromIntranetCompanion(
       id: Value(id),
       uuid: Value(uuid),
       baseWord: Value(baseWord),
@@ -1517,10 +1520,10 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
     );
   }
 
-  factory LeipzigDataData.fromJson(Map<String, dynamic> json,
+  factory LeipzigDataFromIntranetData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LeipzigDataData(
+    return LeipzigDataFromIntranetData(
       id: serializer.fromJson<int>(json['id']),
       uuid: serializer.fromJson<String>(json['uuid']),
       baseWord: serializer.fromJson<int>(json['baseWord']),
@@ -1546,7 +1549,7 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
     };
   }
 
-  LeipzigDataData copyWith(
+  LeipzigDataFromIntranetData copyWith(
           {int? id,
           String? uuid,
           int? baseWord,
@@ -1555,7 +1558,7 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
           String? article,
           String? KindOfWort,
           String? wordOfBase}) =>
-      LeipzigDataData(
+      LeipzigDataFromIntranetData(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
         baseWord: baseWord ?? this.baseWord,
@@ -1567,7 +1570,7 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
       );
   @override
   String toString() {
-    return (StringBuffer('LeipzigDataData(')
+    return (StringBuffer('LeipzigDataFromIntranetData(')
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
@@ -1586,7 +1589,7 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is LeipzigDataData &&
+      (other is LeipzigDataFromIntranetData &&
           other.id == this.id &&
           other.uuid == this.uuid &&
           other.baseWord == this.baseWord &&
@@ -1597,7 +1600,8 @@ class LeipzigDataData extends DataClass implements Insertable<LeipzigDataData> {
           other.wordOfBase == this.wordOfBase);
 }
 
-class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
+class LeipzigDataFromIntranetCompanion
+    extends UpdateCompanion<LeipzigDataFromIntranetData> {
   final Value<int> id;
   final Value<String> uuid;
   final Value<int> baseWord;
@@ -1606,7 +1610,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
   final Value<String> article;
   final Value<String> KindOfWort;
   final Value<String> wordOfBase;
-  const LeipzigDataCompanion({
+  const LeipzigDataFromIntranetCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     this.baseWord = const Value.absent(),
@@ -1616,7 +1620,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
     this.KindOfWort = const Value.absent(),
     this.wordOfBase = const Value.absent(),
   });
-  LeipzigDataCompanion.insert({
+  LeipzigDataFromIntranetCompanion.insert({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     required int baseWord,
@@ -1631,7 +1635,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
         article = Value(article),
         KindOfWort = Value(KindOfWort),
         wordOfBase = Value(wordOfBase);
-  static Insertable<LeipzigDataData> custom({
+  static Insertable<LeipzigDataFromIntranetData> custom({
     Expression<int>? id,
     Expression<String>? uuid,
     Expression<int>? baseWord,
@@ -1653,7 +1657,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
     });
   }
 
-  LeipzigDataCompanion copyWith(
+  LeipzigDataFromIntranetCompanion copyWith(
       {Value<int>? id,
       Value<String>? uuid,
       Value<int>? baseWord,
@@ -1662,7 +1666,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
       Value<String>? article,
       Value<String>? KindOfWort,
       Value<String>? wordOfBase}) {
-    return LeipzigDataCompanion(
+    return LeipzigDataFromIntranetCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       baseWord: baseWord ?? this.baseWord,
@@ -1706,7 +1710,7 @@ class LeipzigDataCompanion extends UpdateCompanion<LeipzigDataData> {
 
   @override
   String toString() {
-    return (StringBuffer('LeipzigDataCompanion(')
+    return (StringBuffer('LeipzigDataFromIntranetCompanion(')
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
@@ -1727,11 +1731,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SynonymsTable synonyms = $SynonymsTable(this);
   late final $TranslatedWordsTable translatedWords =
       $TranslatedWordsTable(this);
-  late final $LeipzigDataTable leipzigData = $LeipzigDataTable(this);
+  late final $LeipzigDataFromIntranetTable leipzigDataFromIntranet =
+      $LeipzigDataFromIntranetTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [languages, words, synonyms, translatedWords, leipzigData];
+      [languages, words, synonyms, translatedWords, leipzigDataFromIntranet];
 }

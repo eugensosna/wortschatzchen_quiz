@@ -38,6 +38,8 @@ class WordsDetailState extends State<WordsDetail> {
       baseLang: 0,
       rootWordID: 0);
   List<Synonym> listSynonyms = [];
+  String article = "der";
+  String baseWord = "";
 
   Future<String> translateText(String inputText) async {
     final translated = await translator.translate(inputText,
@@ -80,10 +82,19 @@ class WordsDetailState extends State<WordsDetail> {
           listSynonyms = value;
           setState(() {});
         });
+        db.getLeipzigDataByWord(editWord).then(
+          (value) {
+            if (value != null) {
+              setState(() {
+                article = value.article;
+                baseWord = value.wordOfBase;
+              });
+            }
+          },
+        );
       } else {}
     }
 
-    
     return "Ok";
   }
 
@@ -116,7 +127,7 @@ class WordsDetailState extends State<WordsDetail> {
                           borderRadius: BorderRadius.circular(5)))),
             ),
             // 3 element
-
+            article.isNotEmpty ? Text(article) : Text("uuuuu"),
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: TextField(
@@ -134,7 +145,7 @@ class WordsDetailState extends State<WordsDetail> {
               ),
             ),
             buildWidgetSynonymsView(listSynonyms),
-            
+
             if (isLoading)
               const LinearProgressIndicator()
             else
@@ -234,6 +245,15 @@ class WordsDetailState extends State<WordsDetail> {
       title: const Text("Synonyms: "),
       subtitle: Text(titleList),
       initiallyExpanded: false,
+      trailing: IconButton(
+        icon: const Icon(Icons.download),
+        onPressed: () {
+          for (var item in listSynonyms) {
+            //addWord()
+            debugPrint("On pressed");
+          }
+        },
+      ),
       children: listChildren,
     );
   }
@@ -289,21 +309,9 @@ class WordsDetailState extends State<WordsDetail> {
 
     var leipzigSynonyms = LeipzigWord(editWord.name);
     await leipzigSynonyms.getFromInternet();
-    if (leipzigSynonyms.Synonym.isNotEmpty) {
-      await db.deleteSynonymsByWord(editWord);
-    }
-    for (var item in leipzigSynonyms.Synonym) {
-      Word? elemWordSynonym = await db.getWordByName(item.name);
-
-      await db.into(db.synonyms).insert(SynonymsCompanion.insert(
-          name: item.name,
-          baseWord: editWord.id,
-          synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym.id,
-          baseLang: editWord.baseLang,
-          translatedName: elemWordSynonym == null
-              ? await translateText(item.name)
-              : elemWordSynonym.description));
-    }
+    await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
+    var leipzigdate = await db.getLeipzigDataByWord(editWord);
+    if (leipzigdate != null) {}
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
     return true;
