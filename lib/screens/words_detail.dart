@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -29,17 +31,22 @@ class WordsDetailState extends State<WordsDetail> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController meanController = TextEditingController();
   Word? wordEditing = const Word(
       id: 0,
       uuid: "",
       name: "",
       description: "",
       mean: "",
+      baseForm: "",
       baseLang: 0,
       rootWordID: 0);
   List<Synonym> listSynonyms = [];
-  String article = "der";
+  String article = "";
   String baseWord = "";
+  final db = DbHelper();
+  Language baseLang =
+      Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
   Future<String> translateText(String inputText) async {
     final translated = await translator.translate(inputText,
@@ -49,13 +56,11 @@ class WordsDetailState extends State<WordsDetail> {
     return translated.text;
   }
 
-  final db = DbHelper();
-  Language baseLang =
-      Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
   @override
   void initState() {
     titleController.text = editWord.name;
     descriptionController.text = editWord.description;
+    meanController.text = editWord.baseForm;
 
     super.initState();
     setBaseSettings().then((value) {
@@ -100,11 +105,15 @@ class WordsDetailState extends State<WordsDetail> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle? textStyle = Theme.of(context).textTheme.displayMedium;
+    TextStyle? textStyle = Theme.of(context).textTheme.displaySmall;
+    var textToAppBar = appBarText;
+    if (editWord.baseForm.isNotEmpty) {
+      textToAppBar = "$textToAppBar ${editWord.baseForm}";
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(appBarText),
+        title: Text(textToAppBar),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () async {
@@ -113,11 +122,11 @@ class WordsDetailState extends State<WordsDetail> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(8),
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: TextField(
                   controller: titleController,
                   style: textStyle,
@@ -127,7 +136,7 @@ class WordsDetailState extends State<WordsDetail> {
                           borderRadius: BorderRadius.circular(5)))),
             ),
             // 3 element
-            article.isNotEmpty ? Text(article) : Text("uuuuu"),
+            article.isNotEmpty ? Text(article) : Container(),
             Padding(
               padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: TextField(
@@ -143,6 +152,9 @@ class WordsDetailState extends State<WordsDetail> {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(5.0))),
               ),
+            ),
+            TextField(
+              controller: meanController,
             ),
             buildWidgetSynonymsView(listSynonyms),
 
@@ -179,6 +191,17 @@ class WordsDetailState extends State<WordsDetail> {
         //     : Container(),
         title: Text(title1),
         subtitle: Text(description),
+        trailing: item.synonymWord > 0
+            ? IconButton(
+                onPressed: () {
+                  viewWord(item);
+                },
+                icon: Icon(Icons.download_done))
+            : IconButton(
+                onPressed: () {
+                  addNewWordFromSynonym(item);
+                },
+                icon: Icon(Icons.do_disturb)),
         onLongPress: () {
           debugPrint(tempTitle);
         },
@@ -196,6 +219,7 @@ class WordsDetailState extends State<WordsDetail> {
                       name: onTapeString,
                       description: description,
                       mean: "",
+                      baseForm: "",
                       baseLang: baseLang.id,
                       rootWordID: editWord.id),
               wordToEdit != null
@@ -248,10 +272,20 @@ class WordsDetailState extends State<WordsDetail> {
       trailing: IconButton(
         icon: const Icon(Icons.download),
         onPressed: () {
-          for (var item in listSynonyms) {
-            //addWord()
-            debugPrint("On pressed");
+          setState(() {
+            isLoading = true;
+          });
+          for (var synItem in listSynonyms) {
+            if (synItem.synonymWord == 0) {
+              addNewWordWithAllData(synItem.name, editWord);
+            }
           }
+          db.getSynonymsByWord(editWord.id).then((value) {
+            listSynonyms = value;
+            setState(() {
+              isLoading = false;
+            });
+          });
         },
       ),
       children: listChildren,
@@ -274,21 +308,33 @@ class WordsDetailState extends State<WordsDetail> {
     return "ok";
   }
 
+  Future<Word?> addNewWord(String name, Word editWord) async {
+    var leipzigTranslator = LeipzigTranslator(db: db);
+    leipzigTranslator.baseLang = baseLang;
+
+    var word = await db.getWordByName(name);
+    if (word == null) {
+      var translatedName = await leipzigTranslator.translate(name);
+      int id = await db.into(db.words).insert(WordsCompanion.insert(
+            name: name,
+            description: translatedName,
+            mean: "",
+            baseForm: "",
+            rootWordID: editWord.id,
+            baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
+          ));
+      word = await db.getWordById(id);
+    }
+    return word;
+  }
+
   Future<Word> addWord() async {
     if (editWord.id <= 0) {
-      var word = await db.getWordByName(titleController.text);
-      if (word == null) {
-        int id = await db.into(db.words).insert(WordsCompanion.insert(
-              name: titleController.text,
-              description: descriptionController.text,
-              mean: "",
-              rootWordID: editWord.rootWordID,
-              baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
-            ));
-        word = await db.getWordById(id);
-        if (word != null) {
-          editWord = word.copyWith();
-        }
+      var word = await addNewWord(titleController.text, editWord);
+      if (word != null) {
+        editWord = word.copyWith();
+      } else {
+        Error();
       }
     } else {
       Word toUpdate = editWord.copyWith(
@@ -332,5 +378,58 @@ class WordsDetailState extends State<WordsDetail> {
       return WordsDetail(wordToEdit, title);
     }));
     if (result) {}
+  }
+
+  viewWord(Synonym item) async {
+    Word? synonymWord = await db.getWordByName(item.name);
+    if (synonymWord != null) {
+      navigateToDetail(synonymWord, "View synonym ");
+    } else {
+      Word? synonymWord = addNewWordFromSynonym(item);
+      if (synonymWord == null) {
+        var wordtoEdit = synonymWord ??
+            Word(
+                id: -99,
+                uuid: "",
+                name: item.name,
+                description: "",
+                mean: "",
+                baseForm: "",
+                baseLang: baseLang.id,
+                rootWordID: 0);
+        navigateToDetail(wordtoEdit, "View synonym ");
+      }
+    }
+  }
+
+  Future<Word?> addNewWordWithAllData(String name, Word basedWord) async {
+    var newWord = await addNewWord(name, basedWord);
+    if (newWord != null) {
+      var syn = await db.getSynonymEntry(name, basedWord);
+      if (syn != null) {
+        var synToUpdate = syn.copyWith(synonymWord: newWord.id);
+        await db.updateSynonym(synToUpdate);
+      }
+
+      var leipzigSynonyms = LeipzigWord(newWord.name);
+      await leipzigSynonyms.getFromInternet();
+      await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
+    }
+    return newWord;
+  }
+
+  addNewWordFromSynonym(Synonym item) {
+    addNewWordWithAllData(item.name, editWord).then((result) {
+      item = item.copyWith(baseWord: result!.id);
+
+      if (result != null) {
+        db.getSynonymsByWord(editWord.id).then((value) {
+          listSynonyms = value;
+          setState(() {});
+        });
+      }
+
+      setState(() {});
+    });
   }
 }

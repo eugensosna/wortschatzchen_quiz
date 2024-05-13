@@ -33,7 +33,7 @@ class DbHelper extends AppDatabase {
   }
 
   Future<Word?> getWordById(int id) async {
-    return (select(words)..where((tbl) => tbl.id.equals(id))).getSingle();
+    return (select(words)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
   }
 
   Future deleteWord(Word item) async {
@@ -73,8 +73,29 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
   
-  Future<TranslatedWords?> getTranslatedWords(String inputText, int ) async {
-    return (select(translatedWords)..where((tbl) => tbl.name.equals(inputText)).get
+  Future<translatedwords?> getTranslatedWord(
+      String inputText, int baseLangID, int targetLangID) async {
+    return (select(translatedWords)
+          ..where((tbl) => Expression.and([
+                tbl.name.equals(inputText),
+                tbl.baseLang.equals(baseLangID),
+                tbl.targetLang.equals(targetLangID)
+              ])))
+        .getSingle();
   }
+
+  Future<Synonym?> getSynonymEntry(String inputText, Word basedWord) async {
+    return (select(synonyms)
+          ..where((tbl) => Expression.and([
+                tbl.name.equals(inputText),
+                tbl.baseWord.equals(basedWord.id),
+              ])))
+        .getSingleOrNull();
+  }
+
+  Future<bool> updateSynonym(Synonym item) async {
+    return update(synonyms).replace(item);
+  }
+
       
 }

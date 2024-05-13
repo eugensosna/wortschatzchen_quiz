@@ -26,6 +26,7 @@ class Words extends Table {
   TextColumn get description => text()();
 
   TextColumn get mean => text()();
+  TextColumn get baseForm => text()();
   IntColumn get baseLang => integer().references(Languages, #id)();
   IntColumn get rootWordID => integer()();
 }
@@ -64,38 +65,40 @@ class LeipzigDataFromIntranet extends Table {
   TextColumn get wordOfBase => text()();
 }
 
+class Means extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baseWord => integer().references(Words, #id)();
+  TextColumn get name => text()();
+}
+
 @DriftDatabase(tables: [
   Languages,
   Words,
   Synonyms,
   TranslatedWords,
-  LeipzigDataFromIntranet
+  LeipzigDataFromIntranet,
+  Means
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        // m.database
-        //     .into(m.database.languages)
-        //     .insert(LanguagesCompanion.insert(name: "German", shortName: "de"));
-
-        // database
-        //     .into(database.languages)
-        //     .insert(LanguagesCompanion.insert(name: "Ukranian", shortName: "uk"));
       },
       onUpgrade: (m, from, to) async {
         if (from < 3 && to == 3) {
           // await m.create(leipzigData);
         }
-        if (from < 3 && to == 3) {
-          await m.createTable(leipzigDataFromIntranet);
+        if (from < 5) {
+          await m.createTable(means);
+          await m.addColumn(words, words.baseForm);
           // await m.create(leipzigData);
         }
       },

@@ -52,6 +52,7 @@ Map<String, dynamic> getBaseHeaders(
 
     basicKindOfWord = "";
     basicValue = [];
+    if (pValue.nodeType == 1) {
     for (var (index, value) in pValue.nodes.indexed) {
       if (value.nodeType == 1 &&
           ((value as dom.Element).localName == "b" ||
@@ -83,7 +84,8 @@ Map<String, dynamic> getBaseHeaders(
       }
     }
     // var k = value;
-    mapOfHead[basicKindOfWord] = basicValue;
+      mapOfHead[basicKindOfWord] = basicValue;
+    }
   }
   // print(mapOfHead);
   mapOfHead.forEach((key, value) {

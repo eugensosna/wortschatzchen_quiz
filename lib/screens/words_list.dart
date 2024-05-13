@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
+import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -35,7 +36,7 @@ class WordsListState extends State<WordsList> {
     const WordsList(),
     const WordsList(),
     const WordsList(),
-    const WordsList(),
+    const ImageToText(),
   ];
 
   void onItemTapped(int index) {
@@ -62,7 +63,7 @@ class WordsListState extends State<WordsList> {
         title: const Text('Words'),
       ),
       body: getWordsListView(),
-      bottomNavigationBar: bottomNavigationBar(context),
+      // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           navigateToDetail(
@@ -72,6 +73,7 @@ class WordsListState extends State<WordsList> {
                   name: "",
                   description: "",
                   mean: "",
+                  baseForm: "",
                   baseLang: 0,
                   rootWordID: 0),
               "Add new");
@@ -105,10 +107,12 @@ class WordsListState extends State<WordsList> {
         child: const Icon(Icons.keyboard_arrow_right),
       ),
       title: Text(
-        itemWord.name,
+        itemWord.baseForm.isNotEmpty
+            ? "${itemWord.baseForm}, ${itemWord.name}"
+            : "${itemWord.name}",
         //style: const TextStyle(fontSize: 6),
       ),
-      subtitle: Text(itemWord.description),
+      subtitle: Text("${itemWord.description} ${itemWord.mean}"),
       trailing: GestureDetector(
         child: const Icon(
           Icons.delete,
@@ -178,7 +182,7 @@ class WordsListState extends State<WordsList> {
       updateListWords();
     });
   }
-  
+
   bottomNavigationBar(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.shifting,
@@ -193,7 +197,7 @@ class WordsListState extends State<WordsList> {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes"),
         BottomNavigationBarItem(
-            icon: Icon(Icons.account_box), label: "Profile"),
+            icon: Icon(Icons.image_search), label: "Scan"),
       ],
     );
   }
