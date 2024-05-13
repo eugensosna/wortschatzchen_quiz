@@ -353,11 +353,16 @@ class WordsDetailState extends State<WordsDetail> {
   Future<bool> _addUpdateWord() async {
     editWord = await addWord();
 
-    var leipzigSynonyms = LeipzigWord(editWord.name);
-    await leipzigSynonyms.getFromInternet();
-    await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
-    var leipzigdate = await db.getLeipzigDataByWord(editWord);
-    if (leipzigdate != null) {}
+    try {
+      var leipzigSynonyms = LeipzigWord(editWord.name);
+      await leipzigSynonyms.getFromInternet();
+      await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
+      var leipzigdate = await db.getLeipzigDataByWord(editWord);
+      if (leipzigdate != null) {}
+
+} on Exception catch (e) {
+      // TODO
+    }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
     return true;
