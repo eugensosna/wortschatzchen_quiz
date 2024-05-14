@@ -17,20 +17,50 @@ class LeipzigWord {
   String rawHTML = "";
   String url = "";
   String Artikel = "";
+  DbHelper db;
+
   LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
 
-  LeipzigWord(this.name);
+  LeipzigWord(this.name, this.db);
 
   Future<bool> getFromInternet() async {
-    Response response = await getLeipzigHtml(this.name);
-    if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
-      parseHtml(response.data.toString(), this);
-      url = response.realUri.toString();
-    } else {
-      return false;
-    }
+    try {
+      Response response = await getLeipzigHtml(name);
+      if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
+        parseHtml(response.data.toString(), this);
+        url = response.realUri.toString();
+      } else {
+        return false;
+      }
 
-    return true;
+      return true;
+    } on Exception catch (e) {
+      return false;
+      // TODO
+    }
+  }
+
+  Future<Word?> addNewWord(
+      String name, Word editWord, Language? baseLang) async {
+    var leipzigTranslator = LeipzigTranslator(db: db);
+    leipzigTranslator.baseLang = baseLang ??
+        await db.getLangByShortName(leipzigTranslator.inputLanguage);
+
+    var word = await db.getWordByName(name);
+    if (word == null) {
+      var translatedName = await leipzigTranslator.translate(name);
+      int id = await db.into(db.words).insert(WordsCompanion.insert(
+            name: name,
+            description: translatedName,
+            mean: "",
+            baseForm: "",
+            rootWordID: editWord.id,
+            baseLang:
+                editWord.id <= 0 ? leipzigTranslator.baseLang!.id : editWord.id,
+          ));
+      word = await db.getWordById(id);
+    }
+    return word;
   }
 
   Future<bool> updateDataDB(
@@ -128,6 +158,7 @@ class LeipzigTranslator {
         return translatedBefor.translatedName;
       }
     }
+    await Future.delayed(const Duration(milliseconds: 270));
     String result = "";
     try {
       final translated = await translator.translate(inputText,

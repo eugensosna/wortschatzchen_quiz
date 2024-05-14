@@ -6,25 +6,34 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import 'package:image_picker/image_picker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
+import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 
 class ImageToText extends StatefulWidget {
-  const ImageToText({Key? key}) : super(key: key);
+  final DbHelper db;
+
+  const ImageToText({super.key, required this.db});
 
   @override
   _ImageToTextState createState() => _ImageToTextState();
 }
 
 class _ImageToTextState extends State<ImageToText> {
-  final ImagePicker _picker = ImagePicker();
-
   List<String> wordsInImage = [];
   List<String> lines = [];
+  List<String> transLines = [];
 
   XFile? _image;
   final picker = ImagePicker();
-
+  late DbHelper db;
   String s = "";
+  @override
+  void initState() {
+    db = widget.db;
+    super.initState();
+  }
+
   //Image Picker function to get image from gallery
   Future getImageFromGallery() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -49,7 +58,7 @@ class _ImageToTextState extends State<ImageToText> {
     if (pickedFile != null) {
       _image = XFile(pickedFile.path);
       String a = await getImageTotext(_image!.path);
-      lines = a.split("\n");
+      // lines = a.split("\n");
       await openAddWidgets(a);
 
       setState(() {
@@ -74,28 +83,24 @@ class _ImageToTextState extends State<ImageToText> {
             },
             icon: Icon(Icons.do_disturb)),
         onTap: () async {
-          String onTapeString = title;
-          Word? wordToEdit;
-
           navigateToDetail(
-              wordToEdit ??
-                  Word(
-                      id: -99,
-                      uuid: "",
-                      name: title,
-                      description: "",
-                      mean: "",
-                      baseForm: "",
-                      baseLang: 0,
-                      rootWordID: 0),
-              "Add synonyme ");
+              Word(
+                  id: -99,
+                  uuid: "",
+                  name: title,
+                  description: "",
+                  mean: "",
+                  baseForm: "",
+                  baseLang: 0,
+                  rootWordID: 0),
+              "Add word ");
         });
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WordsDetail(wordToEdit, title);
+      return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {}
   }
@@ -103,26 +108,39 @@ class _ImageToTextState extends State<ImageToText> {
   List<Widget> listLinesExpansionTile(List<String> lines) {
     RegExp exp = RegExp(r'([a-zA-ZÄÖÜäöüß]+)');
 
-    RegExp allWords = RegExp("\w");
     List<Widget> result = [];
-    for (var line in lines) {
+    for (var (index, line) in lines.indexed) {
       List<Widget> listChildren = [];
+      Map<String, dynamic> mapTree = {};
+
+      String transLine = "";
+
+      if (transLines.length >= index) {
+        transLine = transLines[index];
+      }
 
       Iterable<RegExpMatch> matches = exp.allMatches(line);
 
       for (var match in matches) {
-        listChildren.add(_addListTitle(match[1].toString()));
+        String word = match[1].toString();
+        if (word.length > 3) {
+          listChildren.add(_addListTitle(word));
+        }
       }
       var expansion = ExpansionTile(
         title: Text(line),
-        // subtitle: Text(titleList),
+        subtitle: Text(transLine),
         initiallyExpanded: false,
         trailing: IconButton(
             icon: const Icon(Icons.download),
             onPressed: () {
+              
+              
+              // addNewWords(listChildren).then((value) => null);
               setState(() {});
             }),
 
+        
         children: listChildren,
       );
       result.add(expansion);
@@ -131,24 +149,48 @@ class _ImageToTextState extends State<ImageToText> {
     return result;
   }
 
+  Future<bool> addNewWords(List<Widget> listWords) async {
+    // for (var item in listWords) {
+    //   var leipz = LeipzigWord(item.title as Text).toString(), db);
+    //   var newWord = await leipz.addNewWord(
+    //       leipz.name,
+    //       Word(
+    //           id: 0,
+    //           uuid: "",
+    //           name: leipz.name,
+    //           description: "",
+    //           mean: "",
+    //           baseForm: "",
+    //           baseLang: 0,
+    //           rootWordID: 0));
+    // }
+    return true;
+  }
+
   Future openAddWidgets(String data) async {
     lines = data.split("\n");
-    setState(() {});
-    RegExp exp = RegExp(r'([a-zA-ZÄÖÜäöüß]+)');
+    var translator = LeipzigTranslator(db: db);
     for (var line in lines) {
-      Iterable<RegExpMatch> matches = exp.allMatches(line);
+      transLines.add(await translator.translate(line));
+    }
 
-      for (var item in matches) {
-        print(item);
-        print(item[1]);
-      }
+    setState(() {});
+    // RegExp exp = RegExp(r'([a-zA-ZÄÖÜäöüß]+)');
+    // for (var line in lines) {
+    //   Iterable<RegExpMatch> matches = exp.allMatches(line);
+
+    //   for (var item in matches) {
+    //     // print(item);
+    //     // print(item[1]);
+    //   }
     }
   }
 
   Future showOptions() async {
-    openAddWidgets('''Herunterlagen 3 wort wörtchen
-    kklllkl''');
-    return;
+    // openAddWidgets('''Dezember 2021 zum neunten Bundeskanzler 
+    // der Bundesrepublik Deutschland gewählt und anschließend 
+    // vom Bundespräsidenten ernannt.''');
+    // return;
     showCupertinoModalPopup(
       context: context,
       builder: (context) => CupertinoActionSheet(
@@ -182,43 +224,49 @@ class _ImageToTextState extends State<ImageToText> {
       appBar: AppBar(
         title: const Text(''),
       ),
-      body: Column(children: [
-        Container(
-          height: 250,
-          width: 250,
-          child: Center(
-            child: GestureDetector(
-              onTap: showOptions,
-
-              // onTap: () async {
-              //   final XFile? image =
-              //       await _picker.pickImage(source: ImageSource.);
-              //   String a = await getImageTotext(image!.path);
-              //
-              //   setState(() {
-              //     s = a;
-              //   });
-              //),
+      body: ListView(
+        shrinkWrap: true,
+        padding: EdgeInsets.all(15.0),
+        children: [
+          Column(children: [
+            Container(
+              height: 250,
+              width: 250,
               child: Center(
-                child: _image == null
-                    ? const Icon(
-                        Icons.file_copy,
-                      )
-                    : Image.file(File(_image!.path)),
+                child: GestureDetector(
+                  onTap: showOptions,
+
+                  // onTap: () async {
+                  //   final XFile? image =
+                  //       await _picker.pickImage(source: ImageSource.);
+                  //   String a = await getImageTotext(image!.path);
+                  //
+                  //   setState(() {
+                  //     s = a;
+                  //   });
+                  //),
+                  child: Center(
+                    child: _image == null
+                        ? const Icon(
+                            Icons.file_copy,
+                          )
+                        : Image.file(File(_image!.path)),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        Text(
-          s,
-          style: TextStyle(color: Colors.black, fontSize: 20),
-        ),
-        Expanded(
-          child: Column(
-            children: listLinesExpansionTile(lines),
-          ),
-        ),
-      ]),
+            Text(
+              s,
+              style: TextStyle(color: Colors.black, fontSize: 20),
+            ),
+            SingleChildScrollView(
+              child: Column(
+                children: listLinesExpansionTile(lines),
+              ),
+            ),
+          ])
+        ],
+      ),
     );
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/dbHelper.dart';
+import 'package:wortschatzchen_quiz/main.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
@@ -15,19 +17,31 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   int count = 2;
   int selectedIndex = 2;
+  final DbHelper dbH = DbHelper();
+  List<Widget> tabBarPages = [];
 
   @override
   void initState() {
+    tabBarPages = [
+      WordsList(dbH),
+      WordsList(dbH),
+      WordsList(dbH),
+      WordsList(dbH),
+      ImageToText(db: dbH)
+    ];
+    // tabBarPages = [
+    //   const WordsList(),
+    //   const WordsList(),
+    //   const WordsList(
+    //     db: dbH,
+    //   ),
+    //   const WordsList(
+    //     db: dbH,
+    //   ),
+    //   const ImageToText(db: dbH),
+    // ];
     super.initState();
   }
-
-  static List<Widget> tabBarPages = [
-    const WordsList(),
-    const WordsList(),
-    const WordsList(),
-    const WordsList(),
-    const ImageToText(),
-  ];
 
   void onItemTapped(int index) {
     setState(() {

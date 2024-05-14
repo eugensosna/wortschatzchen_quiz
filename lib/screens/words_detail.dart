@@ -11,17 +11,19 @@ import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
 class WordsDetail extends StatefulWidget {
   final Word editWord;
   final String title;
+  final DbHelper db;
 
-  const WordsDetail(this.editWord, this.title, {super.key});
+  const WordsDetail(this.editWord, this.title, this.db, {super.key});
 
   @override
-  WordsDetailState createState() => WordsDetailState(editWord, title);
+  WordsDetailState createState() => WordsDetailState(editWord, title, db);
 }
 
 class WordsDetailState extends State<WordsDetail> {
   late Word editWord;
   final String appBarText;
-  WordsDetailState(this.editWord, this.appBarText);
+  DbHelper db;
+  WordsDetailState(this.editWord, this.appBarText, this.db);
 
   String inputLanguage = 'de';
   String outputLanguage = 'uk';
@@ -44,7 +46,6 @@ class WordsDetailState extends State<WordsDetail> {
   List<Synonym> listSynonyms = [];
   String article = "";
   String baseWord = "";
-  final db = DbHelper();
   Language baseLang =
       Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
@@ -309,23 +310,29 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<Word?> addNewWord(String name, Word editWord) async {
-    var leipzigTranslator = LeipzigTranslator(db: db);
-    leipzigTranslator.baseLang = baseLang;
-
-    var word = await db.getWordByName(name);
-    if (word == null) {
-      var translatedName = await leipzigTranslator.translate(name);
-      int id = await db.into(db.words).insert(WordsCompanion.insert(
-            name: name,
-            description: translatedName,
-            mean: "",
-            baseForm: "",
-            rootWordID: editWord.id,
-            baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
-          ));
-      word = await db.getWordById(id);
-    }
+    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    leipzigSynonyms.db = db;
+    var word =
+        (await leipzigSynonyms.addNewWord(editWord.name, editWord, baseLang))!;
     return word;
+
+    // var leipzigTranslator = LeipzigTranslator(db: db);
+    // leipzigTranslator.baseLang = baseLang;
+
+    // var word = await db.getWordByName(name);
+    // if (word == null) {
+    //   var translatedName = await leipzigTranslator.translate(name);
+    //   int id = await db.into(db.words).insert(WordsCompanion.insert(
+    //         name: name,
+    //         description: translatedName,
+    //         mean: "",
+    //         baseForm: "",
+    //         rootWordID: editWord.id,
+    //         baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
+    //       ));
+    //   word = await db.getWordById(id);
+    // }
+    // return word;
   }
 
   Future<Word> addWord() async {
@@ -352,15 +359,14 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<bool> _addUpdateWord() async {
     editWord = await addWord();
-
+    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    
     try {
-      var leipzigSynonyms = LeipzigWord(editWord.name);
       await leipzigSynonyms.getFromInternet();
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       var leipzigdate = await db.getLeipzigDataByWord(editWord);
       if (leipzigdate != null) {}
-
-} on Exception catch (e) {
+    } on Exception catch (e) {
       // TODO
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
@@ -380,7 +386,7 @@ class WordsDetailState extends State<WordsDetail> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WordsDetail(wordToEdit, title);
+      return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {}
   }
@@ -416,7 +422,7 @@ class WordsDetailState extends State<WordsDetail> {
         await db.updateSynonym(synToUpdate);
       }
 
-      var leipzigSynonyms = LeipzigWord(newWord.name);
+      var leipzigSynonyms = LeipzigWord(newWord.name, db);
       await leipzigSynonyms.getFromInternet();
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
     }

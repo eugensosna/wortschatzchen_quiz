@@ -6,38 +6,44 @@ import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
-  const WordsList({super.key});
+  final DbHelper db;
+
+  const WordsList(this.db, {super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return WordsListState();
+    return WordsListState(db);
   }
 }
 
 class WordsListState extends State<WordsList> {
   int count = 2;
+  final DbHelper db;
+
   int selectedIndex = 2;
-  final db = DbHelper();
+  
   List<Word> listWords = [];
 
+  WordsListState(this.db);
   List<Word> orderslistWords = [];
 
   @override
   void initState() {
     // TODO: implement initState
     updateListWords().then((value) {
-      return;
+      setState(() {});
+      ;
     });
     super.initState();
   }
 
-  static List<Widget> tabBarPages = [
-    const WordsList(),
-    const WordsList(),
-    const WordsList(),
-    const WordsList(),
-    const ImageToText(),
-  ];
+  // static List<Widget> tabBarPages = [
+  //   const WordsList(),
+  //   const WordsList(),
+  //   const WordsList(),
+  //   const WordsList(),
+  //   const ImageToText(),
+  // ];
 
   void onItemTapped(int index) {
     setState(() {
@@ -49,7 +55,7 @@ class WordsListState extends State<WordsList> {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       print(wordToEdit.id);
-      return WordsDetail(wordToEdit, title);
+      return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {
       updateListWords();
@@ -196,8 +202,7 @@ class WordsListState extends State<WordsList> {
             icon: Icon(Icons.circle_outlined), label: "Repeat"),
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes"),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.image_search), label: "Scan"),
+        BottomNavigationBarItem(icon: Icon(Icons.image_search), label: "Scan"),
       ],
     );
   }
