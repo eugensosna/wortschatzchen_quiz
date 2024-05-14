@@ -81,7 +81,7 @@ class _ImageToTextState extends State<ImageToText> {
             onPressed: () {
               // addNewWordFromSynonym(item);
             },
-            icon: Icon(Icons.do_disturb)),
+            icon: const Icon(Icons.do_disturb)),
         onTap: () async {
           navigateToDetail(
               Word(
@@ -98,8 +98,7 @@ class _ImageToTextState extends State<ImageToText> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {}
@@ -134,13 +133,9 @@ class _ImageToTextState extends State<ImageToText> {
         trailing: IconButton(
             icon: const Icon(Icons.download),
             onPressed: () {
-              
-              
               // addNewWords(listChildren).then((value) => null);
               setState(() {});
             }),
-
-        
         children: listChildren,
       );
       result.add(expansion);
@@ -175,20 +170,11 @@ class _ImageToTextState extends State<ImageToText> {
     }
 
     setState(() {});
-    // RegExp exp = RegExp(r'([a-zA-ZÄÖÜäöüß]+)');
-    // for (var line in lines) {
-    //   Iterable<RegExpMatch> matches = exp.allMatches(line);
-
-    //   for (var item in matches) {
-    //     // print(item);
-    //     // print(item[1]);
-    //   }
-    }
   }
 
-  Future showOptions() async {
-    // openAddWidgets('''Dezember 2021 zum neunten Bundeskanzler 
-    // der Bundesrepublik Deutschland gewählt und anschließend 
+  Future showOptions(BuildContext context) async {
+    // openAddWidgets('''Dezember 2021 zum neunten Bundeskanzler
+    // der Bundesrepublik Deutschland gewählt und anschließend
     // vom Bundespräsidenten ernannt.''');
     // return;
     showCupertinoModalPopup(
@@ -196,7 +182,7 @@ class _ImageToTextState extends State<ImageToText> {
       builder: (context) => CupertinoActionSheet(
         actions: [
           CupertinoActionSheetAction(
-            child: Text('Photo Gallery'),
+            child: const Text('Photo Gallery'),
             onPressed: () {
               // close the options modal
               Navigator.of(context).pop();
@@ -205,7 +191,7 @@ class _ImageToTextState extends State<ImageToText> {
             },
           ),
           CupertinoActionSheetAction(
-            child: Text('Camera'),
+            child: const Text('Camera'),
             onPressed: () {
               // close the options modal
               Navigator.of(context).pop();
@@ -226,15 +212,17 @@ class _ImageToTextState extends State<ImageToText> {
       ),
       body: ListView(
         shrinkWrap: true,
-        padding: EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(15.0),
         children: [
           Column(children: [
-            Container(
+            SizedBox(
               height: 250,
               width: 250,
               child: Center(
                 child: GestureDetector(
-                  onTap: showOptions,
+                  onTap: () {
+                    showOptions(context).then((value) => null);
+                  },
 
                   // onTap: () async {
                   //   final XFile? image =
@@ -257,7 +245,7 @@ class _ImageToTextState extends State<ImageToText> {
             ),
             Text(
               s,
-              style: TextStyle(color: Colors.black, fontSize: 20),
+              style: const TextStyle(color: Colors.black, fontSize: 20),
             ),
             SingleChildScrollView(
               child: Column(
@@ -273,8 +261,7 @@ class _ImageToTextState extends State<ImageToText> {
   Future getImageTotext(final imagePath) async {
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     var image = InputImage.fromFilePath(imagePath);
-    final RecognizedText recognizedText =
-        await textRecognizer.processImage(image);
+    final RecognizedText recognizedText = await textRecognizer.processImage(image);
     String text = recognizedText.text.toString();
     return text;
   }
