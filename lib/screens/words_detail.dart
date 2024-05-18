@@ -47,7 +47,7 @@ class WordsDetailState extends State<WordsDetail> {
   String article = "";
   String baseWord = "";
   Language baseLang =
-      Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+      const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
   Future<String> translateText(String inputText) async {
     final translated = await translator.translate(inputText,
@@ -172,7 +172,7 @@ class WordsDetailState extends State<WordsDetail> {
                       onPressed: () {
                         addWord();
                       },
-                      icon: Icon(Icons.save)),
+                      icon: const Icon(Icons.save)),
                 ],
               ),
           ],
@@ -197,12 +197,12 @@ class WordsDetailState extends State<WordsDetail> {
                 onPressed: () {
                   viewWord(item);
                 },
-                icon: Icon(Icons.download_done))
+                icon: const Icon(Icons.download_done))
             : IconButton(
                 onPressed: () {
                   addNewWordFromSynonym(item);
                 },
-                icon: Icon(Icons.do_disturb)),
+                icon: const Icon(Icons.do_disturb)),
         onLongPress: () {
           debugPrint(tempTitle);
         },
@@ -357,7 +357,7 @@ class WordsDetailState extends State<WordsDetail> {
     return editWord;
   }
 
-  Future<bool> _addUpdateWord() async {
+  Future<Word?> _addUpdateWord() async {
     editWord = await addWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
     
@@ -371,7 +371,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
-    return true;
+    return editWord;
   }
 
   void moveToLastScreen() async {
@@ -433,13 +433,11 @@ class WordsDetailState extends State<WordsDetail> {
     addNewWordWithAllData(item.name, editWord).then((result) {
       item = item.copyWith(baseWord: result!.id);
 
-      if (result != null) {
-        db.getSynonymsByWord(editWord.id).then((value) {
-          listSynonyms = value;
-          setState(() {});
-        });
-      }
-
+      db.getSynonymsByWord(editWord.id).then((value) {
+        listSynonyms = value;
+        setState(() {});
+      });
+    
       setState(() {});
     });
   }
