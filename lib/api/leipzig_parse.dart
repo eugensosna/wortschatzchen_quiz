@@ -53,37 +53,37 @@ Map<String, dynamic> getBaseHeaders(
     basicKindOfWord = "";
     basicValue = [];
     if (pValue.nodeType == 1) {
-    for (var (index, value) in pValue.nodes.indexed) {
-      if (value.nodeType == 1 &&
-          ((value as dom.Element).localName == "b" ||
-              (value as dom.Element).localName == "span")) {
-        basicKindOfWord.isNotEmpty
-            ? mapOfHead[basicKindOfWord] = basicValue
-            : basicKindOfWord = value.text.trim();
+      for (var (index, value) in pValue.nodes.indexed) {
+        if (value.nodeType == 1 &&
+            ((value as dom.Element).localName == "b" ||
+                (value as dom.Element).localName == "span")) {
+          basicKindOfWord.isNotEmpty
+              ? mapOfHead[basicKindOfWord] = basicValue
+              : basicKindOfWord = value.text.trim();
 
-        basicKindOfWord = value.text.trim();
-        basicValue = [];
-        if (basicKindOfWord == "Synonym:") {
-          List<MapTextUrls> synonyms = getTextFromListHrefs(value.parent!);
-          List<leipzSynonym> leipzigsynonyms = [];
-          for (var element in synonyms) {
-            leipzigsynonyms
-                .add(leipzSynonym(element.Value!, "", element.href!));
+          basicKindOfWord = value.text.trim();
+          basicValue = [];
+          if (basicKindOfWord == "Synonym:") {
+            List<MapTextUrls> synonyms = getTextFromListHrefs(value.parent!);
+            List<leipzSynonym> leipzigsynonyms = [];
+            for (var element in synonyms) {
+              leipzigsynonyms
+                  .add(leipzSynonym(element.Value!, "", element.href!));
+            }
+
+            mapOfHead[basicKindOfWord] = leipzigsynonyms;
+            basicKindOfWord = "";
           }
-
-          mapOfHead[basicKindOfWord] = leipzigsynonyms;
-          basicKindOfWord = "";
+          continue;
         }
-        continue;
+        var reg = RegExp(r'\s\s');
+        if (basicKindOfWord.isNotEmpty &&
+            value.text!.trim().isNotEmpty &&
+            !(value.text!.trim() == "," || value.text!.trim() == ":")) {
+          basicValue.add(value.text!.trim().replaceAll(reg, ""));
+        }
       }
-      var reg = RegExp(r'\s\s');
-      if (basicKindOfWord.isNotEmpty &&
-          value.text!.trim().isNotEmpty &&
-          !(value.text!.trim() == "," || value.text!.trim() == ":")) {
-        basicValue.add(value.text!.trim().replaceAll(reg, ""));
-      }
-    }
-    // var k = value;
+      // var k = value;
       mapOfHead[basicKindOfWord] = basicValue;
     }
   }
@@ -146,5 +146,86 @@ List<MapTextUrls> getTextFromListHrefs(dom.Element root) {
     // print(element.text);
   }
   // List<String> wortObj;
+  return result;
+}
+
+Future<String> getLeipzigExamples(String word) async {
+  String result = "";
+  final dio = Dio();
+  // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
+  // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
+  String url =
+      "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
+  final response = await dio.get(Uri.parse(url).toString());
+
+  print('Response status: ${response.statusCode}');
+  // print('Response body: ${response.body}');
+  result = response.data;
+
+  return result;
+}
+
+Future<String> getLeipzigDornseiff(String word) async {
+  String result = "";
+  // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
+  // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
+  String url =
+      "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadWordSetBox&word=${Uri.encodeFull(word)}";
+  final response = await http.get(Uri.parse(url));
+
+  print('Response status: ${response.statusCode}');
+  // print('Response body: ${response.body}');
+  result = response.body;
+
+  return result;
+}
+
+Map<int, List<String>> parseHtmlDornseif(String text) {
+  Map<int, List<String>> result = {};
+  List<String> line = [];
+  final document = html_parser.parse(text);
+  var wordset = document.getElementById('wordset');
+  var li = wordset!.getElementsByTagName("li");
+  for (var (index, item) in li.indexed) {
+    line = [];
+    if (item.nodes.length > 0) {
+      for (var listItem in item.nodes) {
+        if (listItem.text != null &&
+            listItem.text!.trim().isNotEmpty &&
+            listItem.text!.trim().length > 1) {
+          line.add(listItem.text!.trim());
+        }
+        // print(listItem.text);
+      }
+    }
+    result[index] = line;
+    print(item.text);
+  }
+  return result;
+}
+
+Map<int, List<String>> parseHtmlExamples(String text) {
+  Map<int, List<String>> result = {};
+  List<String> line = [];
+  final document = html_parser.parse(text);
+  var tes = document.getElementsByClassName("exampleSencentes");
+  for (var classElem in tes) {
+    var li = classElem.getElementsByTagName("li");
+    for (var (index, item) in li.indexed) {
+      line = [];
+      if (item.nodes.length > 0) {
+        for (var listItem in item.nodes) {
+          if (listItem.text != null &&
+              listItem.text!.trim().isNotEmpty &&
+              listItem.text!.trim().length > 1) {
+            line.add(listItem.text!.trim());
+            break;
+          }
+          // print(listItem.text);
+        }
+      }
+      result[index] = line;
+    }
+  }
   return result;
 }

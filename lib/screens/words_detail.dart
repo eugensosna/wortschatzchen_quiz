@@ -301,9 +301,18 @@ class WordsDetailState extends State<WordsDetail> {
       descriptionController.text = await translateText(titleController.text);
     }
     _addUpdateWord().then((value) {
+      
       setState(() {
         isLoading = false;
       });
+    });
+    db.getLeipzigDataByWord(editWord).then((value) {
+      if (value != null) {
+        setState(() {
+          article = value.article;
+          baseWord = value.wordOfBase;
+        });
+      }
     });
 
     return "ok";
@@ -360,7 +369,7 @@ class WordsDetailState extends State<WordsDetail> {
   Future<Word?> _addUpdateWord() async {
     editWord = await addWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
-    
+
     try {
       await leipzigSynonyms.getFromInternet();
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
