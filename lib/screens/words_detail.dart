@@ -239,10 +239,12 @@ class WordsDetailState extends State<WordsDetail> {
                   viewWord(item);
                 },
                 icon: const Icon(Icons.download_done))
+                icon: const Icon(Icons.download_done))
             : IconButton(
                 onPressed: () {
                   addNewWordFromSynonym(item);
                 },
+                icon: const Icon(Icons.do_disturb)),
                 icon: const Icon(Icons.do_disturb)),
         onLongPress: () {
           debugPrint(tempTitle);
@@ -440,7 +442,7 @@ class WordsDetailState extends State<WordsDetail> {
     return editWord;
   }
 
-  Future<bool> _addUpdateWord() async {
+  Future<Word?> _addUpdateWord() async {
     editWord = await addWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
 
@@ -454,7 +456,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
 
-    return true;
+    return editWord;
   }
 
   void moveToLastScreen() async {
