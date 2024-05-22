@@ -89,6 +89,7 @@ class _ImageToTextState extends State<ImageToText> {
                   uuid: "",
                   name: title,
                   description: "",
+                  immportant: "",
                   mean: "",
                   baseForm: "",
                   baseLang: 0,

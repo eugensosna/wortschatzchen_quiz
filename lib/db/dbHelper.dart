@@ -96,6 +96,18 @@ class DbHelper extends AppDatabase {
   Future<bool> updateSynonym(Synonym item) async {
     return update(synonyms).replace(item);
   }
+  Future<bool> getGroupedSessionsByName() async {
+    var query = select(sessions);
+    query
+        .join([innerJoin(sessions, sessions.id.equalsExp(sessions.id), useColumns: false)]).groupBy(
+            [sessions.typesession]);
+    final result = query.get();
+    final forresult = await query.get();
+    for (var item in forresult) {
+      print(item);
+    }
+    return true;
+  }
 
       
 }

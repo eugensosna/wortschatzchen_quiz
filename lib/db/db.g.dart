@@ -277,6 +277,12 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _immportantMeta =
+      const VerificationMeta('immportant');
+  @override
+  late final GeneratedColumn<String> immportant = GeneratedColumn<String>(
+      'immportant', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -310,8 +316,17 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
       'root_word_i_d', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, uuid, name, description, mean, baseForm, baseLang, rootWordID];
+  List<GeneratedColumn> get $columns => [
+        id,
+        uuid,
+        name,
+        immportant,
+        description,
+        mean,
+        baseForm,
+        baseLang,
+        rootWordID
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -334,6 +349,14 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('immportant')) {
+      context.handle(
+          _immportantMeta,
+          immportant.isAcceptableOrUnknown(
+              data['immportant']!, _immportantMeta));
+    } else if (isInserting) {
+      context.missing(_immportantMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -384,6 +407,8 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      immportant: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}immportant'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
       mean: attachedDatabase.typeMapping
@@ -407,6 +432,7 @@ class Word extends DataClass implements Insertable<Word> {
   final int id;
   final String uuid;
   final String name;
+  final String immportant;
   final String description;
   final String mean;
   final String baseForm;
@@ -416,6 +442,7 @@ class Word extends DataClass implements Insertable<Word> {
       {required this.id,
       required this.uuid,
       required this.name,
+      required this.immportant,
       required this.description,
       required this.mean,
       required this.baseForm,
@@ -427,6 +454,7 @@ class Word extends DataClass implements Insertable<Word> {
     map['id'] = Variable<int>(id);
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
+    map['immportant'] = Variable<String>(immportant);
     map['description'] = Variable<String>(description);
     map['mean'] = Variable<String>(mean);
     map['base_form'] = Variable<String>(baseForm);
@@ -440,6 +468,7 @@ class Word extends DataClass implements Insertable<Word> {
       id: Value(id),
       uuid: Value(uuid),
       name: Value(name),
+      immportant: Value(immportant),
       description: Value(description),
       mean: Value(mean),
       baseForm: Value(baseForm),
@@ -455,6 +484,7 @@ class Word extends DataClass implements Insertable<Word> {
       id: serializer.fromJson<int>(json['id']),
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
+      immportant: serializer.fromJson<String>(json['immportant']),
       description: serializer.fromJson<String>(json['description']),
       mean: serializer.fromJson<String>(json['mean']),
       baseForm: serializer.fromJson<String>(json['baseForm']),
@@ -469,6 +499,7 @@ class Word extends DataClass implements Insertable<Word> {
       'id': serializer.toJson<int>(id),
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
+      'immportant': serializer.toJson<String>(immportant),
       'description': serializer.toJson<String>(description),
       'mean': serializer.toJson<String>(mean),
       'baseForm': serializer.toJson<String>(baseForm),
@@ -481,6 +512,7 @@ class Word extends DataClass implements Insertable<Word> {
           {int? id,
           String? uuid,
           String? name,
+          String? immportant,
           String? description,
           String? mean,
           String? baseForm,
@@ -490,6 +522,7 @@ class Word extends DataClass implements Insertable<Word> {
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
+        immportant: immportant ?? this.immportant,
         description: description ?? this.description,
         mean: mean ?? this.mean,
         baseForm: baseForm ?? this.baseForm,
@@ -502,6 +535,7 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
+          ..write('immportant: $immportant, ')
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baseForm: $baseForm, ')
@@ -512,8 +546,8 @@ class Word extends DataClass implements Insertable<Word> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, uuid, name, description, mean, baseForm, baseLang, rootWordID);
+  int get hashCode => Object.hash(id, uuid, name, immportant, description, mean,
+      baseForm, baseLang, rootWordID);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -521,6 +555,7 @@ class Word extends DataClass implements Insertable<Word> {
           other.id == this.id &&
           other.uuid == this.uuid &&
           other.name == this.name &&
+          other.immportant == this.immportant &&
           other.description == this.description &&
           other.mean == this.mean &&
           other.baseForm == this.baseForm &&
@@ -532,6 +567,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<int> id;
   final Value<String> uuid;
   final Value<String> name;
+  final Value<String> immportant;
   final Value<String> description;
   final Value<String> mean;
   final Value<String> baseForm;
@@ -541,6 +577,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
+    this.immportant = const Value.absent(),
     this.description = const Value.absent(),
     this.mean = const Value.absent(),
     this.baseForm = const Value.absent(),
@@ -551,12 +588,14 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     required String name,
+    required String immportant,
     required String description,
     required String mean,
     required String baseForm,
     required int baseLang,
     required int rootWordID,
   })  : name = Value(name),
+        immportant = Value(immportant),
         description = Value(description),
         mean = Value(mean),
         baseForm = Value(baseForm),
@@ -566,6 +605,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<int>? id,
     Expression<String>? uuid,
     Expression<String>? name,
+    Expression<String>? immportant,
     Expression<String>? description,
     Expression<String>? mean,
     Expression<String>? baseForm,
@@ -576,6 +616,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (id != null) 'id': id,
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
+      if (immportant != null) 'immportant': immportant,
       if (description != null) 'description': description,
       if (mean != null) 'mean': mean,
       if (baseForm != null) 'base_form': baseForm,
@@ -588,6 +629,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       {Value<int>? id,
       Value<String>? uuid,
       Value<String>? name,
+      Value<String>? immportant,
       Value<String>? description,
       Value<String>? mean,
       Value<String>? baseForm,
@@ -597,6 +639,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
+      immportant: immportant ?? this.immportant,
       description: description ?? this.description,
       mean: mean ?? this.mean,
       baseForm: baseForm ?? this.baseForm,
@@ -616,6 +659,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
+    }
+    if (immportant.present) {
+      map['immportant'] = Variable<String>(immportant.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -641,6 +687,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
+          ..write('immportant: $immportant, ')
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baseForm: $baseForm, ')
@@ -1795,8 +1842,16 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _meansorderMeta =
+      const VerificationMeta('meansorder');
   @override
-  List<GeneratedColumn> get $columns => [id, uuid, baseWord, name];
+  late final GeneratedColumn<int> meansorder = GeneratedColumn<int>(
+      'meansorder', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      clientDefault: () => 0);
+  @override
+  List<GeneratedColumn> get $columns => [id, uuid, baseWord, name, meansorder];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1826,6 +1881,12 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('meansorder')) {
+      context.handle(
+          _meansorderMeta,
+          meansorder.isAcceptableOrUnknown(
+              data['meansorder']!, _meansorderMeta));
+    }
     return context;
   }
 
@@ -1843,6 +1904,8 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
           .read(DriftSqlType.int, data['${effectivePrefix}base_word'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      meansorder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}meansorder'])!,
     );
   }
 
@@ -1857,11 +1920,13 @@ class Mean extends DataClass implements Insertable<Mean> {
   final String uuid;
   final int baseWord;
   final String name;
+  final int meansorder;
   const Mean(
       {required this.id,
       required this.uuid,
       required this.baseWord,
-      required this.name});
+      required this.name,
+      required this.meansorder});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1869,6 +1934,7 @@ class Mean extends DataClass implements Insertable<Mean> {
     map['uuid'] = Variable<String>(uuid);
     map['base_word'] = Variable<int>(baseWord);
     map['name'] = Variable<String>(name);
+    map['meansorder'] = Variable<int>(meansorder);
     return map;
   }
 
@@ -1878,6 +1944,7 @@ class Mean extends DataClass implements Insertable<Mean> {
       uuid: Value(uuid),
       baseWord: Value(baseWord),
       name: Value(name),
+      meansorder: Value(meansorder),
     );
   }
 
@@ -1889,6 +1956,7 @@ class Mean extends DataClass implements Insertable<Mean> {
       uuid: serializer.fromJson<String>(json['uuid']),
       baseWord: serializer.fromJson<int>(json['baseWord']),
       name: serializer.fromJson<String>(json['name']),
+      meansorder: serializer.fromJson<int>(json['meansorder']),
     );
   }
   @override
@@ -1899,14 +1967,22 @@ class Mean extends DataClass implements Insertable<Mean> {
       'uuid': serializer.toJson<String>(uuid),
       'baseWord': serializer.toJson<int>(baseWord),
       'name': serializer.toJson<String>(name),
+      'meansorder': serializer.toJson<int>(meansorder),
     };
   }
 
-  Mean copyWith({int? id, String? uuid, int? baseWord, String? name}) => Mean(
+  Mean copyWith(
+          {int? id,
+          String? uuid,
+          int? baseWord,
+          String? name,
+          int? meansorder}) =>
+      Mean(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
         baseWord: baseWord ?? this.baseWord,
         name: name ?? this.name,
+        meansorder: meansorder ?? this.meansorder,
       );
   @override
   String toString() {
@@ -1914,13 +1990,14 @@ class Mean extends DataClass implements Insertable<Mean> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('meansorder: $meansorder')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, uuid, baseWord, name);
+  int get hashCode => Object.hash(id, uuid, baseWord, name, meansorder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1928,7 +2005,8 @@ class Mean extends DataClass implements Insertable<Mean> {
           other.id == this.id &&
           other.uuid == this.uuid &&
           other.baseWord == this.baseWord &&
-          other.name == this.name);
+          other.name == this.name &&
+          other.meansorder == this.meansorder);
 }
 
 class MeansCompanion extends UpdateCompanion<Mean> {
@@ -1936,17 +2014,20 @@ class MeansCompanion extends UpdateCompanion<Mean> {
   final Value<String> uuid;
   final Value<int> baseWord;
   final Value<String> name;
+  final Value<int> meansorder;
   const MeansCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     this.baseWord = const Value.absent(),
     this.name = const Value.absent(),
+    this.meansorder = const Value.absent(),
   });
   MeansCompanion.insert({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     required int baseWord,
     required String name,
+    this.meansorder = const Value.absent(),
   })  : baseWord = Value(baseWord),
         name = Value(name);
   static Insertable<Mean> custom({
@@ -1954,12 +2035,14 @@ class MeansCompanion extends UpdateCompanion<Mean> {
     Expression<String>? uuid,
     Expression<int>? baseWord,
     Expression<String>? name,
+    Expression<int>? meansorder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (uuid != null) 'uuid': uuid,
       if (baseWord != null) 'base_word': baseWord,
       if (name != null) 'name': name,
+      if (meansorder != null) 'meansorder': meansorder,
     });
   }
 
@@ -1967,12 +2050,14 @@ class MeansCompanion extends UpdateCompanion<Mean> {
       {Value<int>? id,
       Value<String>? uuid,
       Value<int>? baseWord,
-      Value<String>? name}) {
+      Value<String>? name,
+      Value<int>? meansorder}) {
     return MeansCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       baseWord: baseWord ?? this.baseWord,
       name: name ?? this.name,
+      meansorder: meansorder ?? this.meansorder,
     );
   }
 
@@ -1991,6 +2076,9 @@ class MeansCompanion extends UpdateCompanion<Mean> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (meansorder.present) {
+      map['meansorder'] = Variable<int>(meansorder.value);
+    }
     return map;
   }
 
@@ -2000,7 +2088,259 @@ class MeansCompanion extends UpdateCompanion<Mean> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('meansorder: $meansorder')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  static const VerificationMeta _baseWordMeta =
+      const VerificationMeta('baseWord');
+  @override
+  late final GeneratedColumn<int> baseWord = GeneratedColumn<int>(
+      'base_word', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES words (id)'));
+  static const VerificationMeta _typesessionMeta =
+      const VerificationMeta('typesession');
+  @override
+  late final GeneratedColumn<String> typesession = GeneratedColumn<String>(
+      'typesession', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, uuid, baseWord, typesession];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sessions';
+  @override
+  VerificationContext validateIntegrity(Insertable<Session> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('base_word')) {
+      context.handle(_baseWordMeta,
+          baseWord.isAcceptableOrUnknown(data['base_word']!, _baseWordMeta));
+    } else if (isInserting) {
+      context.missing(_baseWordMeta);
+    }
+    if (data.containsKey('typesession')) {
+      context.handle(
+          _typesessionMeta,
+          typesession.isAcceptableOrUnknown(
+              data['typesession']!, _typesessionMeta));
+    } else if (isInserting) {
+      context.missing(_typesessionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Session map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Session(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      baseWord: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}base_word'])!,
+      typesession: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}typesession'])!,
+    );
+  }
+
+  @override
+  $SessionsTable createAlias(String alias) {
+    return $SessionsTable(attachedDatabase, alias);
+  }
+}
+
+class Session extends DataClass implements Insertable<Session> {
+  final int id;
+  final String uuid;
+  final int baseWord;
+  final String typesession;
+  const Session(
+      {required this.id,
+      required this.uuid,
+      required this.baseWord,
+      required this.typesession});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['base_word'] = Variable<int>(baseWord);
+    map['typesession'] = Variable<String>(typesession);
+    return map;
+  }
+
+  SessionsCompanion toCompanion(bool nullToAbsent) {
+    return SessionsCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      baseWord: Value(baseWord),
+      typesession: Value(typesession),
+    );
+  }
+
+  factory Session.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Session(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      baseWord: serializer.fromJson<int>(json['baseWord']),
+      typesession: serializer.fromJson<String>(json['typesession']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'baseWord': serializer.toJson<int>(baseWord),
+      'typesession': serializer.toJson<String>(typesession),
+    };
+  }
+
+  Session copyWith(
+          {int? id, String? uuid, int? baseWord, String? typesession}) =>
+      Session(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        baseWord: baseWord ?? this.baseWord,
+        typesession: typesession ?? this.typesession,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Session(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('typesession: $typesession')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, uuid, baseWord, typesession);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Session &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.baseWord == this.baseWord &&
+          other.typesession == this.typesession);
+}
+
+class SessionsCompanion extends UpdateCompanion<Session> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<int> baseWord;
+  final Value<String> typesession;
+  const SessionsCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.baseWord = const Value.absent(),
+    this.typesession = const Value.absent(),
+  });
+  SessionsCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required int baseWord,
+    required String typesession,
+  })  : baseWord = Value(baseWord),
+        typesession = Value(typesession);
+  static Insertable<Session> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<int>? baseWord,
+    Expression<String>? typesession,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (baseWord != null) 'base_word': baseWord,
+      if (typesession != null) 'typesession': typesession,
+    });
+  }
+
+  SessionsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? uuid,
+      Value<int>? baseWord,
+      Value<String>? typesession}) {
+    return SessionsCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      baseWord: baseWord ?? this.baseWord,
+      typesession: typesession ?? this.typesession,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (baseWord.present) {
+      map['base_word'] = Variable<int>(baseWord.value);
+    }
+    if (typesession.present) {
+      map['typesession'] = Variable<String>(typesession.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('typesession: $typesession')
           ..write(')'))
         .toString();
   }
@@ -2016,6 +2356,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LeipzigDataFromIntranetTable leipzigDataFromIntranet =
       $LeipzigDataFromIntranetTable(this);
   late final $MeansTable means = $MeansTable(this);
+  late final $SessionsTable sessions = $SessionsTable(this);
+  late final Index typeSession = Index(
+      'type_session', 'CREATE INDEX type_session ON sessions (typesession)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2026,6 +2369,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         synonyms,
         translatedWords,
         leipzigDataFromIntranet,
-        means
+        means,
+        sessions,
+        typeSession
       ];
 }
