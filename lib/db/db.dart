@@ -23,6 +23,8 @@ class Words extends Table {
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
 
   TextColumn get name => text()();
+  TextColumn get immportant => text()();
+
   TextColumn get description => text()();
 
   TextColumn get mean => text()();
@@ -70,6 +72,15 @@ class Means extends Table {
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   IntColumn get baseWord => integer().references(Words, #id)();
   TextColumn get name => text()();
+  IntColumn get meansorder => integer().clientDefault(() => 0)();
+}
+
+@TableIndex(name: "type_session", columns: {#typesession})
+class Sessions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baseWord => integer().references(Words, #id)();
+  TextColumn get typesession => text()();
 }
 
 @DriftDatabase(tables: [
@@ -78,13 +89,13 @@ class Means extends Table {
   Synonyms,
   TranslatedWords,
   LeipzigDataFromIntranet,
-  Means
+  Means, Sessions
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 12;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
@@ -93,6 +104,27 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
+        await transaction(() async {
+          await customStatement('PRAGMA foreign_keys = OFF');
+          if (from < 9) {
+            //m.addColumn(words, words.immportant);
+            await customStatement('ALTER TABLE words  ADD immportant TEXT;');
+            await customStatement("""update words set immportant=' ';""");
+
+            //await customStatement('update words set immportant="";');
+          } else {
+            if (from < 11) {
+              //m.addColumn(words, words.immportant);
+              await customStatement('ALTER TABLE means   ADD COLUMN meansorder INTEGER;');
+              await customStatement("""update means set meansorder=0;""");
+
+              //await customStatement('update words set immportant="";');
+            }
+          }
+
+          // put your migration logic here
+          //await customStatement('PRAGMA foreign_keys = ON');
+        });
         if (from < 3 && to == 3) {
           // await m.create(leipzigData);
         }
@@ -101,6 +133,12 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(words, words.baseForm);
           // await m.create(leipzigData);
         }
+        if (from < 6) {
+          m.createTable(sessions);
+          m.createIndex(typeSession);
+        }
+        
+
       },
       beforeOpen: (details) async {
         if (details.wasCreated) {
@@ -109,6 +147,11 @@ class AppDatabase extends _$AppDatabase {
           (await into(languages).insert(
               LanguagesCompanion.insert(name: "Ukrainian", shortName: "uk")));
         }
+
+        if (details.hadUpgrade && details.versionBefore! < 10) {}
+
+
+
       },
     );
 

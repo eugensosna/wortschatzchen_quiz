@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
-import 'package:wortschatzchen_quiz/main.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 

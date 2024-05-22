@@ -32,7 +32,6 @@ class WordsListState extends State<WordsList> {
     // TODO: implement initState
     updateListWords().then((value) {
       setState(() {});
-      ;
     });
     super.initState();
   }
@@ -71,20 +70,8 @@ class WordsListState extends State<WordsList> {
       body: getWordsListView(),
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          navigateToDetail(
-              const Word(
-                  id: -99,
-                  uuid: "",
-                  name: "",
-                  description: "",
-                  mean: "",
-                  baseForm: "",
-                  baseLang: 0,
-                  rootWordID: 0),
-              "Add new");
-        },
-        tooltip: "Add note",
+        onPressed: getWordsListViewOnPressed,
+        tooltip: "Add new",
         child: const Icon(Icons.add),
       ),
     );
@@ -115,7 +102,7 @@ class WordsListState extends State<WordsList> {
       title: Text(
         itemWord.baseForm.isNotEmpty
             ? "${itemWord.baseForm}, ${itemWord.name}"
-            : "${itemWord.name}",
+            : itemWord.name,
         //style: const TextStyle(fontSize: 6),
       ),
       subtitle: Text("${itemWord.description} ${itemWord.mean}"),
@@ -161,11 +148,7 @@ class WordsListState extends State<WordsList> {
     Future<List<Word>> fListWords =
         db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
-      // List<int> idsin = [];
-      // for (var item in value) {
-      //   orderslistWords =
-      //       await getRecursiveWordTree(orderslistWords, idsin, item);
-      // }
+      
       listWords = value;
       setState(() {
         listWords = value;
@@ -205,5 +188,20 @@ class WordsListState extends State<WordsList> {
         BottomNavigationBarItem(icon: Icon(Icons.image_search), label: "Scan"),
       ],
     );
+  }
+
+  void getWordsListViewOnPressed() {
+    navigateToDetail(
+        const Word(
+            id: -99,
+            uuid: "",
+            name: "",
+            description: "",
+            immportant: "",
+            mean: "",
+            baseForm: "",
+            baseLang: 0,
+            rootWordID: 0),
+        "Add new");
   }
 }

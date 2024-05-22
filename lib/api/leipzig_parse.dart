@@ -56,7 +56,7 @@ Map<String, dynamic> getBaseHeaders(
       for (var (index, value) in pValue.nodes.indexed) {
         if (value.nodeType == 1 &&
             ((value as dom.Element).localName == "b" ||
-                (value as dom.Element).localName == "span")) {
+                (value).localName == "span")) {
           basicKindOfWord.isNotEmpty
               ? mapOfHead[basicKindOfWord] = basicValue
               : basicKindOfWord = value.text.trim();
@@ -95,7 +95,7 @@ Map<String, dynamic> getBaseHeaders(
       case "Grundform:":
         {
           wortObj.BaseWord = (value as List<String>).isNotEmpty
-              ? (value as List<String>)[0]
+              ? (value)[0]
               : wortObj.name;
         }
       case "Wortart:":
@@ -188,7 +188,7 @@ Map<int, List<String>> parseHtmlDornseif(String text) {
   var li = wordset!.getElementsByTagName("li");
   for (var (index, item) in li.indexed) {
     line = [];
-    if (item.nodes.length > 0) {
+    if (item.nodes.isNotEmpty) {
       for (var listItem in item.nodes) {
         if (listItem.text != null &&
             listItem.text!.trim().isNotEmpty &&
@@ -213,7 +213,7 @@ Map<int, List<String>> parseHtmlExamples(String text) {
     var li = classElem.getElementsByTagName("li");
     for (var (index, item) in li.indexed) {
       line = [];
-      if (item.nodes.length > 0) {
+      if (item.nodes.isNotEmpty) {
         for (var listItem in item.nodes) {
           if (listItem.text != null &&
               listItem.text!.trim().isNotEmpty &&

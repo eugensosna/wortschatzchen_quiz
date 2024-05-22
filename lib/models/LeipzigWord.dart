@@ -3,6 +3,8 @@ import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
+
 
 import '../api/leipzig_parse.dart';
 
@@ -39,6 +41,43 @@ class LeipzigWord {
       // TODO
     }
   }
+  Future<Word?> addWodrUpdateshort(
+      String name, String description, Word editWord, Language? baseLang) async {
+    var word = await db.getWordByName(name);
+    if (word == null) {
+      int id = await db.into(db.words).insert(WordsCompanion.insert(
+            name: name,
+            description: description,
+            mean: "",
+            baseForm: "",
+            immportant: "",
+            rootWordID: editWord.id,
+            baseLang: editWord.id <= 0 ? (baseLang != null ? baseLang.id : 0) : editWord.id,
+          ));
+      await addToSession(id);
+
+      word = await db.getWordById(id);
+    } else {
+      if (description.isEmpty) {
+        if (word.description != description) {
+          var wordToWrite = word.copyWith(description: description);
+          await db.updateWord(wordToWrite);
+          return wordToWrite;
+        }
+      }
+    }
+    return word;
+  }
+
+  addToSession(int id) async {
+    final DateTime now = DateTime.now();
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted = formatter.format(now);
+
+    await db
+        .into(db.sessions)
+        .insert(SessionsCompanion.insert(baseWord: id, typesession: formatted));
+  }
 
   Future<Word?> addNewWord(
       String name, Word editWord, Language? baseLang) async {
@@ -54,10 +93,13 @@ class LeipzigWord {
             description: translatedName,
             mean: "",
             baseForm: "",
+            immportant: "",
             rootWordID: editWord.id,
             baseLang:
                 editWord.id <= 0 ? leipzigTranslator.baseLang!.id : editWord.id,
           ));
+      await addToSession(id);
+
       word = await db.getWordById(id);
     }
     return word;
@@ -75,13 +117,15 @@ class LeipzigWord {
           wordToUpdate.copyWith(baseForm: "${word.Artikel}  ${word.BaseWord}");
       await db.updateWord(wordToUpdate);
     }
+    if (word.Artikel.trim().isNotEmpty) {
+      wordToUpdate = wordToUpdate.copyWith(immportant: word.Artikel.trim());
+    }
     if (word.Definitions.isNotEmpty && editWord.mean.isEmpty) {
-      var mean = word.Definitions[0];
-      var meanTranslated = await translator.translate(mean);
-      wordToUpdate = wordToUpdate.copyWith(mean: "$mean\n$meanTranslated");
+      var mean = word.Definitions.toString();
+      wordToUpdate = wordToUpdate.copyWith(mean: mean);
       await db.updateWord(wordToUpdate);
       for (var item in word.Definitions) {
-        var translatedMean = await translator.translate(item);
+        await translator.translate(item);
         await db
             .into(db.means)
             .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
@@ -96,7 +140,7 @@ class LeipzigWord {
       await db.into(db.synonyms).insert(SynonymsCompanion.insert(
           name: item.name,
           baseWord: editWord.id,
-          synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym!.id,
+          synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym.id,
           baseLang: editWord.baseLang,
           translatedName: translatedName));
     }
@@ -152,11 +196,7 @@ class LeipzigTranslator {
     Language? baseLang = await db.getLangByShortName(inputLanguage);
     Language? outputLang = await db.getLangByShortName(outputLanguage);
     if (baseLang != null && outputLang != null) {
-      var translatedBefor = null;
-      // await db.getTranslatedWord(inputText, baseLang.id, outputLang.id);
-      if (translatedBefor != null) {
-        return translatedBefor.translatedName;
-      }
+      var translatedBefor;
     }
     await Future.delayed(const Duration(milliseconds: 270));
     String result = "";

@@ -20,6 +20,7 @@ class WordsDetail extends StatefulWidget {
 }
 
 class WordsDetailState extends State<WordsDetail> {
+  bool changed = false;
   late Word editWord;
   final String appBarText;
   DbHelper db;
@@ -33,12 +34,16 @@ class WordsDetailState extends State<WordsDetail> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController immportantController = TextEditingController();
+
   TextEditingController meanController = TextEditingController();
   Word? wordEditing = const Word(
       id: 0,
       uuid: "",
       name: "",
       description: "",
+      immportant: "",
+
       mean: "",
       baseForm: "",
       baseLang: 0,
@@ -46,12 +51,11 @@ class WordsDetailState extends State<WordsDetail> {
   List<Synonym> listSynonyms = [];
   String article = "";
   String baseWord = "";
-  Language baseLang =
-      const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+  Language baseLang = const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
   Future<String> translateText(String inputText) async {
-    final translated = await translator.translate(inputText,
-        from: inputLanguage, to: outputLanguage);
+    final translated =
+        await translator.translate(inputText, from: inputLanguage, to: outputLanguage);
 
     //setState(() {    });
     return translated.text;
@@ -59,30 +63,51 @@ class WordsDetailState extends State<WordsDetail> {
 
   @override
   void initState() {
-    titleController.text = editWord.name;
-    descriptionController.text = editWord.description;
-    meanController.text = editWord.baseForm;
+
+    fillControllers(editWord);
+    
 
     super.initState();
+    try {
+      setBaseSettings().then((value) {
+        setState(() {});
+      });
+    } catch (e) {}
     setBaseSettings().then((value) {
       setState(() {});
     });
   }
 
+  fillControllers(Word editWord) {
+    titleController.text = editWord.name;
+    descriptionController.text = editWord.description;
+    meanController.text = editWord.mean;
+    immportantController.text = editWord.immportant;
+  }
+
   Future<String> setBaseSettings() async {
+    if (editWord.id > 0) {
+      var editWordupdated = await db.getWordById(editWord.id);
+      if (editWordupdated != null) {
+        editWord = editWordupdated;
+      }
+    }
     if (editWord.baseLang > 0) {
+     
+
       baseLang = (await db.getLangById(editWord.baseLang))!;
     } else {
       var baseLang1 = await DbHelper().getLangByShortName("de");
       if (baseLang1 == null) {
-        int id = (await db.into(db.languages).insert(
-            LanguagesCompanion.insert(name: "German", shortName: "de")));
+        int id = (await db
+            .into(db.languages)
+            .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
         baseLang = (await db.getLangById(id))!;
       }
       if (editWord.name.isNotEmpty && editWord.id > 0) {
-        titleController.text = editWord.name;
-        descriptionController.text = editWord.description;
-        await addWord();
+        fillControllers(editWord);
+        UpdateWordIfNeed(editWord);
+        //await addWord();
 
         db.getSynonymsByWord(editWord.id).then((value) {
           listSynonyms = value;
@@ -133,8 +158,7 @@ class WordsDetailState extends State<WordsDetail> {
                   style: textStyle,
                   decoration: InputDecoration(
                       label: const Text('Title'),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5)))),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))),
             ),
             // 3 element
             article.isNotEmpty ? Text(article) : Container(),
@@ -150,13 +174,21 @@ class WordsDetailState extends State<WordsDetail> {
                 decoration: InputDecoration(
                     labelText: 'Description',
                     labelStyle: textStyle,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5.0))),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
               ),
             ),
             TextField(
               controller: meanController,
+              decoration: const InputDecoration(label: Text("Mean")),
             ),
+            TextField(
+              controller: immportantController,
+              decoration: const InputDecoration(label: Text("Immportant")),
+              onChanged: (value) {
+                editWord = editWord.copyWith(immportant: value);
+              },
+            ),
+
             buildWidgetSynonymsView(listSynonyms),
 
             if (isLoading)
@@ -165,20 +197,29 @@ class WordsDetailState extends State<WordsDetail> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  IconButton(
-                      onPressed: _fillData,
-                      icon: const Icon(Icons.downloading)),
-                  IconButton(
-                      onPressed: () {
-                        addWord();
-                      },
-                      icon: const Icon(Icons.save)),
+                  IconButton(onPressed: _fillData, icon: const Icon(Icons.downloading)),
+                  IconButton(onPressed: SaveWord, icon: const Icon(Icons.save)),
                 ],
               ),
           ],
         ),
       ),
     );
+  }
+
+  Future<String> SaveWord() async {
+    editWord = editWord.copyWith(
+        name: titleController.text,
+        description: descriptionController.text,
+        mean: meanController.text,
+        immportant: immportantController.text);
+    if (editWord.id > 0) {
+      await UpdateWordIfNeed(editWord);
+    } else {
+      await addWord();
+    }
+    setState(() {});
+    return "";
   }
 
   Widget _addListTitleSynonym(String title1, String description, Synonym item) {
@@ -198,10 +239,12 @@ class WordsDetailState extends State<WordsDetail> {
                   viewWord(item);
                 },
                 icon: const Icon(Icons.download_done))
+                icon: const Icon(Icons.download_done))
             : IconButton(
                 onPressed: () {
                   addNewWordFromSynonym(item);
                 },
+                icon: const Icon(Icons.do_disturb)),
                 icon: const Icon(Icons.do_disturb)),
         onLongPress: () {
           debugPrint(tempTitle);
@@ -220,6 +263,7 @@ class WordsDetailState extends State<WordsDetail> {
                       name: onTapeString,
                       description: description,
                       mean: "",
+                      immportant: "",
                       baseForm: "",
                       baseLang: baseLang.id,
                       rootWordID: editWord.id),
@@ -247,9 +291,8 @@ class WordsDetailState extends State<WordsDetail> {
     int maxLengthSynonymsList = 100;
     String titleList = "";
     if (listSynonyms.isNotEmpty) {
-      int maxCount = listSynonyms.length > maxLengthSynonymsList
-          ? maxLengthSynonymsList
-          : listSynonyms.length;
+      int maxCount =
+          listSynonyms.length > maxLengthSynonymsList ? maxLengthSynonymsList : listSynonyms.length;
       titleList = listSynonyms
           .map((e) {
             return " ${e.name}";
@@ -259,8 +302,7 @@ class WordsDetailState extends State<WordsDetail> {
           .join(", ");
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
       for (var _item in listSynonymsSliced) {
-        listChildren
-            .add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
+        listChildren.add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
 
         // ))
       }
@@ -301,7 +343,6 @@ class WordsDetailState extends State<WordsDetail> {
       descriptionController.text = await translateText(titleController.text);
     }
     _addUpdateWord().then((value) {
-      
       setState(() {
         isLoading = false;
       });
@@ -318,11 +359,17 @@ class WordsDetailState extends State<WordsDetail> {
     return "ok";
   }
 
+  Future<Word?> addWordShort(String name, String translated, Word editWord) async {
+    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    leipzigSynonyms.db = db;
+    var word = await leipzigSynonyms.addWodrUpdateshort(name, translated, editWord, baseLang);
+    return word;
+  }
+
   Future<Word?> addNewWord(String name, Word editWord) async {
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
     leipzigSynonyms.db = db;
-    var word =
-        (await leipzigSynonyms.addNewWord(editWord.name, editWord, baseLang))!;
+    var word = (await leipzigSynonyms.addNewWord(name, editWord, baseLang))!;
     return word;
 
     // var leipzigTranslator = LeipzigTranslator(db: db);
@@ -342,6 +389,35 @@ class WordsDetailState extends State<WordsDetail> {
     //   word = await db.getWordById(id);
     // }
     // return word;
+  }
+
+  Future<Word> UpdateWordIfNeed(Word wordToUpdate) async {
+    if (wordToUpdate.id <= 0) {
+      /*var word = await addNewWord(titleController.text, editWord);
+      if (word != null) {
+        editWord = word.copyWith();
+      } else {*/
+      Error();
+    } else {
+      var isChanched = true;
+
+      Word toUpdate = wordToUpdate.copyWith();
+
+      if (wordToUpdate.name != titleController.text && titleController.text.isNotEmpty) {
+        toUpdate = toUpdate.copyWith(name: titleController.text);
+        isChanched = true;
+      }
+      if (wordToUpdate.description != descriptionController.text &&
+          descriptionController.text.isNotEmpty) {
+        toUpdate = toUpdate.copyWith(description: descriptionController.text);
+        isChanched = true;
+      }
+      if (isChanched) {
+        var result = await db.updateWord(toUpdate);
+        wordToUpdate = toUpdate.copyWith();
+      }
+    }
+    return wordToUpdate;
   }
 
   Future<Word> addWord() async {
@@ -384,8 +460,11 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   void moveToLastScreen() async {
-    if (titleController.text.isEmpty && descriptionController.text.isEmpty) {
-      Navigator.pop(context, false);
+    if (titleController.text.isEmpty) {
+      addWord().then((value) {
+        Navigator.pop(context, false);
+      });
+
       return;
     } else {
       Navigator.pop(context, true);
@@ -393,8 +472,7 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {}
@@ -402,24 +480,18 @@ class WordsDetailState extends State<WordsDetail> {
 
   viewWord(Synonym item) async {
     Word? synonymWord = await db.getWordByName(item.name);
-    if (synonymWord != null) {
-      navigateToDetail(synonymWord, "View synonym ");
-    } else {
-      Word? synonymWord = addNewWordFromSynonym(item);
-      if (synonymWord == null) {
-        var wordtoEdit = synonymWord ??
-            Word(
-                id: -99,
-                uuid: "",
-                name: item.name,
-                description: "",
-                mean: "",
-                baseForm: "",
-                baseLang: baseLang.id,
-                rootWordID: 0);
-        navigateToDetail(wordtoEdit, "View synonym ");
-      }
-    }
+    synonymWord ??= Word(
+        id: -99,
+        uuid: "",
+        name: item.name,
+        description: "",
+        mean: "",
+        immportant: "",
+
+        baseForm: "",
+        baseLang: 0,
+        rootWordID: editWord.id);
+    navigateToDetail(synonymWord, "View synonym ");
   }
 
   Future<Word?> addNewWordWithAllData(String name, Word basedWord) async {
@@ -446,8 +518,10 @@ class WordsDetailState extends State<WordsDetail> {
         listSynonyms = value;
         setState(() {});
       });
-    
+
       setState(() {});
     });
   }
+
+
 }
