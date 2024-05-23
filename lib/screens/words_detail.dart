@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
@@ -225,64 +223,14 @@ class WordsDetailState extends State<WordsDetail> {
   Widget _addListTitleSynonym(String title1, String description, Synonym item) {
     String tempTitle = title1;
     return ListTile(
-        // leading: item.synonymWord > 0
-        //     ? const CircleAvatar(
-        //         backgroundColor: Colors.red,
-        //         child: Icon(Icons.keyboard_arrow_right),
-        //       )
-        //     : Container(),
         title: Text(title1),
         subtitle: Text(description),
-        trailing: item.synonymWord > 0
-            ? IconButton(
+        trailing: IconButton(
                 onPressed: () {
                   viewWord(item);
                 },
-                icon: const Icon(Icons.download_done))
-                icon: const Icon(Icons.download_done))
-            : IconButton(
-                onPressed: () {
-                  addNewWordFromSynonym(item);
-                },
-                icon: const Icon(Icons.do_disturb)),
-                icon: const Icon(Icons.do_disturb)),
-        onLongPress: () {
-          debugPrint(tempTitle);
-        },
-        onTap: () async {
-          String onTapeString = tempTitle;
-          Word? wordToEdit;
-          if (item.synonymWord > 0) {
-            wordToEdit = await db.getWordById(item.synonymWord);
-          }
-          navigateToDetail(
-              wordToEdit ??
-                  Word(
-                      id: -99,
-                      uuid: "",
-                      name: onTapeString,
-                      description: description,
-                      mean: "",
-                      immportant: "",
-                      baseForm: "",
-                      baseLang: baseLang.id,
-                      rootWordID: editWord.id),
-              wordToEdit != null
-                  ? "View synonyme for '${editWord.name}'"
-                  : "Add synonyme for ${editWord.name}");
-        }
-
-        //   navigateToDetail(
-        //       const Word(
-        //           id: -99,
-        //           uuid: "",
-        //           name: title1,
-        //           description: description,
-        //           mean: "",
-        //           baseLang: 0,
-        //           rootWordID: 0),
-        //       "Add synonym");
-        // },
+            icon: const Icon(Icons.download_done))
+                
         );
   }
 
