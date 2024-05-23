@@ -1,8 +1,4 @@
-import 'package:drift/src/dsl/dsl.dart';
-import 'package:drift/src/runtime/data_class.dart';
-
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
-import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
 
 import 'db.dart';
 
@@ -13,6 +9,7 @@ class SynonymsEntry {
 }
 
 class DbHelper extends AppDatabase {
+
   Future<Language?> getLangByShortName(String name) async {
     return (select(languages)..where((tbl) => tbl.shortName.equals(name)))
         .getSingleOrNull();
@@ -22,6 +19,17 @@ class DbHelper extends AppDatabase {
     return (select(synonyms)..where((tbl) => tbl.baseWord.equals(wordId)))
         .get();
   }
+
+  Future<List<Example>> getExamplesByWord(int wordId) {
+    return (select(examples)..where((tbl) => tbl.baseWord.equals(wordId))).get();
+  }
+
+  Future<Example?> getExampleByNameAndWord(String name, int wordId) async {
+    return (select(examples)
+          ..where((tbl) => Expression.and([tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
+        .getSingleOrNull();
+  }
+
 
   Future<Language?> getLangById(int id) {
     return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingle();
@@ -97,16 +105,15 @@ class DbHelper extends AppDatabase {
     return update(synonyms).replace(item);
   }
   Future<List<String>> getGroupedSessionsByName() async {
-    List<String>> result = [];
-    Map>
+    List<String> result = [];
     var query = select(sessions);
     query
         .join([innerJoin(sessions, sessions.id.equalsExp(sessions.id), useColumns: false)]).groupBy(
             [sessions.typesession]);
-    final resultQuery = query.get();
     final forresult = await query.get();
     for (var item in forresult) {
-      print(item);
+      result.add(item.typesession);
+      //print(item);
     }
     return result;
   }

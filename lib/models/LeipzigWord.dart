@@ -12,7 +12,7 @@ class LeipzigWord {
   String name;
   List<leipzSynonym> Synonym = [];
   List<MapTextUrls> Examples = [];
-  List<String> Definitions = [];
+  List<String> Definitions = []; // means
   String KindOfWort = "";
   String BaseWord = "";
   List<String> baseForWords = [];
@@ -126,10 +126,27 @@ class LeipzigWord {
       await db.updateWord(wordToUpdate);
       for (var item in word.Definitions) {
         await translator.translate(item);
-        await db
-            .into(db.means)
-            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+        await db.into(db.means).insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
       }
+    }
+    if (word.Examples.isNotEmpty) {
+      var listExamples = await db.getExamplesByWord(editWord.id);
+      for (var item in word.Examples) {
+        String translated = await translator.translate(item.Value!);
+        if (listExamples.isNotEmpty) {
+          var example = await db.getExampleByNameAndWord(item.Value!, editWord.id);
+          if (example != null) {
+            continue;
+          }
+
+          await db
+              .into(db.examples)
+              .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: item.Value!));
+        } else {
+          continue;
+        }
+      }
+          
     }
     for (var item in word.Synonym) {
       Word? elemWordSynonym = await db.getWordByName(item.name);
@@ -225,6 +242,7 @@ class leipzSynonym {
   Map<String, dynamic> toMap() =>
       {"name": name, "translate": translate, "href": leipzigHref};
 }
+
 
 class MapTextUrls {
   String? Value;

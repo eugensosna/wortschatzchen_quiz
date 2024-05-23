@@ -5,6 +5,7 @@ import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
+import 'package:wortschatzchen_quiz/screens/web_view_controller_word.dart';
 
 class WordsDetail extends StatefulWidget {
   final Word editWord;
@@ -47,6 +48,7 @@ class WordsDetailState extends State<WordsDetail> {
       baseLang: 0,
       rootWordID: 0);
   List<Synonym> listSynonyms = [];
+  List<Example> listExamples = [];
   String article = "";
   String baseWord = "";
   Language baseLang = const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
@@ -110,6 +112,11 @@ class WordsDetailState extends State<WordsDetail> {
         db.getSynonymsByWord(editWord.id).then((value) {
           listSynonyms = value;
           setState(() {});
+        });
+        db.getExamplesByWord(editWord.id).then((onValue) {
+          setState(() {
+            listExamples = onValue;
+          });
         });
         db.getLeipzigDataByWord(editWord).then(
           (value) {
@@ -197,6 +204,7 @@ class WordsDetailState extends State<WordsDetail> {
                 children: [
                   IconButton(onPressed: _fillData, icon: const Icon(Icons.downloading)),
                   IconButton(onPressed: SaveWord, icon: const Icon(Icons.save)),
+                  IconButton(onPressed: Goverbformen, icon: const Icon(Icons.add_task)),
                 ],
               ),
           ],
@@ -275,6 +283,12 @@ class WordsDetailState extends State<WordsDetail> {
             listSynonyms = value;
             setState(() {
               isLoading = false;
+            });
+            db.getExamplesByWord(editWord.id).then((onValue) {
+              listExamples = onValue;
+              setState(() {
+                isLoading = false;
+              });
             });
           });
         },
@@ -403,6 +417,7 @@ class WordsDetailState extends State<WordsDetail> {
       // TODO
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
+    listExamples = await db.getExamplesByWord(editWord.id);
 
     return editWord;
   }
@@ -466,10 +481,24 @@ class WordsDetailState extends State<WordsDetail> {
         listSynonyms = value;
         setState(() {});
       });
+      db.getExamplesByWord(editWord.id).then((value) {
+        listExamples = value;
+        setState(() {});
+      });
 
       setState(() {});
     });
   }
 
 
+
+  void Goverbformen() async {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      print(editWord.id);
+      return WebViewControllerWord(editWord: editWord, title: editWord.name);
+    }));
+    if (result) {
+      setState(() {});
+    }
+  }
 }

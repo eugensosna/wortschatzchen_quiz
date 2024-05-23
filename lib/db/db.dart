@@ -63,6 +63,7 @@ class LeipzigDataFromIntranet extends Table {
   TextColumn get url => text()();
   TextColumn get html => text()();
   TextColumn get article => text()();
+  // ignore: non_constant_identifier_names
   TextColumn get KindOfWort => text()();
   TextColumn get wordOfBase => text()();
 }
@@ -72,9 +73,17 @@ class Means extends Table {
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   IntColumn get baseWord => integer().references(Words, #id)();
   TextColumn get name => text()();
-  IntColumn get meansorder => integer().clientDefault(() => 0)();
+  IntColumn get meansOrder => integer().clientDefault(() => 0)();
 }
 
+class Examples extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get baseWord => integer().references(Words, #id)();
+  TextColumn get name => text()();
+  TextColumn get goaltext => text().clientDefault(() => " ")();
+  IntColumn get exampleOrder => integer().clientDefault(() => 100)();
+}
 @TableIndex(name: "type_session", columns: {#typesession})
 class Sessions extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -89,13 +98,16 @@ class Sessions extends Table {
   Synonyms,
   TranslatedWords,
   LeipzigDataFromIntranet,
-  Means, Sessions
+  Means,
+  Sessions,
+  Examples,
+
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
@@ -119,7 +131,24 @@ class AppDatabase extends _$AppDatabase {
               await customStatement("""update means set meansorder=0;""");
 
               //await customStatement('update words set immportant="";');
+            } else {
+              if (from < 12) {
+                await customStatement('''
+                  CREATE TABLE "examples" (
+                    "id"	INTEGER NOT NULL,
+                    "uuid"	TEXT NOT NULL,
+                    "base_word"	INTEGER NOT NULL,
+                    "name"	TEXT NOT NULL,
+                    "exampleOrder"	INTEGER,
+                    "goaltext" TEXT ,
+                    PRIMARY KEY("id" AUTOINCREMENT),
+                    FOREIGN KEY("base_word") REFERENCES "words"("id")
+                  ); ''');
+              }
             }
+
+
+
           }
 
           // put your migration logic here

@@ -1842,16 +1842,16 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _meansorderMeta =
-      const VerificationMeta('meansorder');
+  static const VerificationMeta _meansOrderMeta =
+      const VerificationMeta('meansOrder');
   @override
-  late final GeneratedColumn<int> meansorder = GeneratedColumn<int>(
-      'meansorder', aliasedName, false,
+  late final GeneratedColumn<int> meansOrder = GeneratedColumn<int>(
+      'means_order', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       clientDefault: () => 0);
   @override
-  List<GeneratedColumn> get $columns => [id, uuid, baseWord, name, meansorder];
+  List<GeneratedColumn> get $columns => [id, uuid, baseWord, name, meansOrder];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1881,11 +1881,11 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('meansorder')) {
+    if (data.containsKey('means_order')) {
       context.handle(
-          _meansorderMeta,
-          meansorder.isAcceptableOrUnknown(
-              data['meansorder']!, _meansorderMeta));
+          _meansOrderMeta,
+          meansOrder.isAcceptableOrUnknown(
+              data['means_order']!, _meansOrderMeta));
     }
     return context;
   }
@@ -1904,8 +1904,8 @@ class $MeansTable extends Means with TableInfo<$MeansTable, Mean> {
           .read(DriftSqlType.int, data['${effectivePrefix}base_word'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      meansorder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}meansorder'])!,
+      meansOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}means_order'])!,
     );
   }
 
@@ -1920,13 +1920,13 @@ class Mean extends DataClass implements Insertable<Mean> {
   final String uuid;
   final int baseWord;
   final String name;
-  final int meansorder;
+  final int meansOrder;
   const Mean(
       {required this.id,
       required this.uuid,
       required this.baseWord,
       required this.name,
-      required this.meansorder});
+      required this.meansOrder});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1934,7 +1934,7 @@ class Mean extends DataClass implements Insertable<Mean> {
     map['uuid'] = Variable<String>(uuid);
     map['base_word'] = Variable<int>(baseWord);
     map['name'] = Variable<String>(name);
-    map['meansorder'] = Variable<int>(meansorder);
+    map['means_order'] = Variable<int>(meansOrder);
     return map;
   }
 
@@ -1944,7 +1944,7 @@ class Mean extends DataClass implements Insertable<Mean> {
       uuid: Value(uuid),
       baseWord: Value(baseWord),
       name: Value(name),
-      meansorder: Value(meansorder),
+      meansOrder: Value(meansOrder),
     );
   }
 
@@ -1956,7 +1956,7 @@ class Mean extends DataClass implements Insertable<Mean> {
       uuid: serializer.fromJson<String>(json['uuid']),
       baseWord: serializer.fromJson<int>(json['baseWord']),
       name: serializer.fromJson<String>(json['name']),
-      meansorder: serializer.fromJson<int>(json['meansorder']),
+      meansOrder: serializer.fromJson<int>(json['meansOrder']),
     );
   }
   @override
@@ -1967,7 +1967,7 @@ class Mean extends DataClass implements Insertable<Mean> {
       'uuid': serializer.toJson<String>(uuid),
       'baseWord': serializer.toJson<int>(baseWord),
       'name': serializer.toJson<String>(name),
-      'meansorder': serializer.toJson<int>(meansorder),
+      'meansOrder': serializer.toJson<int>(meansOrder),
     };
   }
 
@@ -1976,13 +1976,13 @@ class Mean extends DataClass implements Insertable<Mean> {
           String? uuid,
           int? baseWord,
           String? name,
-          int? meansorder}) =>
+          int? meansOrder}) =>
       Mean(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
         baseWord: baseWord ?? this.baseWord,
         name: name ?? this.name,
-        meansorder: meansorder ?? this.meansorder,
+        meansOrder: meansOrder ?? this.meansOrder,
       );
   @override
   String toString() {
@@ -1991,13 +1991,13 @@ class Mean extends DataClass implements Insertable<Mean> {
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
           ..write('name: $name, ')
-          ..write('meansorder: $meansorder')
+          ..write('meansOrder: $meansOrder')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, uuid, baseWord, name, meansorder);
+  int get hashCode => Object.hash(id, uuid, baseWord, name, meansOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2006,7 +2006,7 @@ class Mean extends DataClass implements Insertable<Mean> {
           other.uuid == this.uuid &&
           other.baseWord == this.baseWord &&
           other.name == this.name &&
-          other.meansorder == this.meansorder);
+          other.meansOrder == this.meansOrder);
 }
 
 class MeansCompanion extends UpdateCompanion<Mean> {
@@ -2014,20 +2014,20 @@ class MeansCompanion extends UpdateCompanion<Mean> {
   final Value<String> uuid;
   final Value<int> baseWord;
   final Value<String> name;
-  final Value<int> meansorder;
+  final Value<int> meansOrder;
   const MeansCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     this.baseWord = const Value.absent(),
     this.name = const Value.absent(),
-    this.meansorder = const Value.absent(),
+    this.meansOrder = const Value.absent(),
   });
   MeansCompanion.insert({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     required int baseWord,
     required String name,
-    this.meansorder = const Value.absent(),
+    this.meansOrder = const Value.absent(),
   })  : baseWord = Value(baseWord),
         name = Value(name);
   static Insertable<Mean> custom({
@@ -2035,14 +2035,14 @@ class MeansCompanion extends UpdateCompanion<Mean> {
     Expression<String>? uuid,
     Expression<int>? baseWord,
     Expression<String>? name,
-    Expression<int>? meansorder,
+    Expression<int>? meansOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (uuid != null) 'uuid': uuid,
       if (baseWord != null) 'base_word': baseWord,
       if (name != null) 'name': name,
-      if (meansorder != null) 'meansorder': meansorder,
+      if (meansOrder != null) 'means_order': meansOrder,
     });
   }
 
@@ -2051,13 +2051,13 @@ class MeansCompanion extends UpdateCompanion<Mean> {
       Value<String>? uuid,
       Value<int>? baseWord,
       Value<String>? name,
-      Value<int>? meansorder}) {
+      Value<int>? meansOrder}) {
     return MeansCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       baseWord: baseWord ?? this.baseWord,
       name: name ?? this.name,
-      meansorder: meansorder ?? this.meansorder,
+      meansOrder: meansOrder ?? this.meansOrder,
     );
   }
 
@@ -2076,8 +2076,8 @@ class MeansCompanion extends UpdateCompanion<Mean> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (meansorder.present) {
-      map['meansorder'] = Variable<int>(meansorder.value);
+    if (meansOrder.present) {
+      map['means_order'] = Variable<int>(meansOrder.value);
     }
     return map;
   }
@@ -2089,7 +2089,7 @@ class MeansCompanion extends UpdateCompanion<Mean> {
           ..write('uuid: $uuid, ')
           ..write('baseWord: $baseWord, ')
           ..write('name: $name, ')
-          ..write('meansorder: $meansorder')
+          ..write('meansOrder: $meansOrder')
           ..write(')'))
         .toString();
   }
@@ -2346,6 +2346,331 @@ class SessionsCompanion extends UpdateCompanion<Session> {
   }
 }
 
+class $ExamplesTable extends Examples with TableInfo<$ExamplesTable, Example> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExamplesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  static const VerificationMeta _baseWordMeta =
+      const VerificationMeta('baseWord');
+  @override
+  late final GeneratedColumn<int> baseWord = GeneratedColumn<int>(
+      'base_word', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES words (id)'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _goaltextMeta =
+      const VerificationMeta('goaltext');
+  @override
+  late final GeneratedColumn<String> goaltext = GeneratedColumn<String>(
+      'goaltext', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => " ");
+  static const VerificationMeta _exampleOrderMeta =
+      const VerificationMeta('exampleOrder');
+  @override
+  late final GeneratedColumn<int> exampleOrder = GeneratedColumn<int>(
+      'example_order', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      clientDefault: () => 100);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, uuid, baseWord, name, goaltext, exampleOrder];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'examples';
+  @override
+  VerificationContext validateIntegrity(Insertable<Example> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('base_word')) {
+      context.handle(_baseWordMeta,
+          baseWord.isAcceptableOrUnknown(data['base_word']!, _baseWordMeta));
+    } else if (isInserting) {
+      context.missing(_baseWordMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('goaltext')) {
+      context.handle(_goaltextMeta,
+          goaltext.isAcceptableOrUnknown(data['goaltext']!, _goaltextMeta));
+    }
+    if (data.containsKey('example_order')) {
+      context.handle(
+          _exampleOrderMeta,
+          exampleOrder.isAcceptableOrUnknown(
+              data['example_order']!, _exampleOrderMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Example map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Example(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      baseWord: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}base_word'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      goaltext: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}goaltext'])!,
+      exampleOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}example_order'])!,
+    );
+  }
+
+  @override
+  $ExamplesTable createAlias(String alias) {
+    return $ExamplesTable(attachedDatabase, alias);
+  }
+}
+
+class Example extends DataClass implements Insertable<Example> {
+  final int id;
+  final String uuid;
+  final int baseWord;
+  final String name;
+  final String goaltext;
+  final int exampleOrder;
+  const Example(
+      {required this.id,
+      required this.uuid,
+      required this.baseWord,
+      required this.name,
+      required this.goaltext,
+      required this.exampleOrder});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['base_word'] = Variable<int>(baseWord);
+    map['name'] = Variable<String>(name);
+    map['goaltext'] = Variable<String>(goaltext);
+    map['example_order'] = Variable<int>(exampleOrder);
+    return map;
+  }
+
+  ExamplesCompanion toCompanion(bool nullToAbsent) {
+    return ExamplesCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      baseWord: Value(baseWord),
+      name: Value(name),
+      goaltext: Value(goaltext),
+      exampleOrder: Value(exampleOrder),
+    );
+  }
+
+  factory Example.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Example(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      baseWord: serializer.fromJson<int>(json['baseWord']),
+      name: serializer.fromJson<String>(json['name']),
+      goaltext: serializer.fromJson<String>(json['goaltext']),
+      exampleOrder: serializer.fromJson<int>(json['exampleOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'baseWord': serializer.toJson<int>(baseWord),
+      'name': serializer.toJson<String>(name),
+      'goaltext': serializer.toJson<String>(goaltext),
+      'exampleOrder': serializer.toJson<int>(exampleOrder),
+    };
+  }
+
+  Example copyWith(
+          {int? id,
+          String? uuid,
+          int? baseWord,
+          String? name,
+          String? goaltext,
+          int? exampleOrder}) =>
+      Example(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        baseWord: baseWord ?? this.baseWord,
+        name: name ?? this.name,
+        goaltext: goaltext ?? this.goaltext,
+        exampleOrder: exampleOrder ?? this.exampleOrder,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Example(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('name: $name, ')
+          ..write('goaltext: $goaltext, ')
+          ..write('exampleOrder: $exampleOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, uuid, baseWord, name, goaltext, exampleOrder);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Example &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.baseWord == this.baseWord &&
+          other.name == this.name &&
+          other.goaltext == this.goaltext &&
+          other.exampleOrder == this.exampleOrder);
+}
+
+class ExamplesCompanion extends UpdateCompanion<Example> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<int> baseWord;
+  final Value<String> name;
+  final Value<String> goaltext;
+  final Value<int> exampleOrder;
+  const ExamplesCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.baseWord = const Value.absent(),
+    this.name = const Value.absent(),
+    this.goaltext = const Value.absent(),
+    this.exampleOrder = const Value.absent(),
+  });
+  ExamplesCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required int baseWord,
+    required String name,
+    this.goaltext = const Value.absent(),
+    this.exampleOrder = const Value.absent(),
+  })  : baseWord = Value(baseWord),
+        name = Value(name);
+  static Insertable<Example> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<int>? baseWord,
+    Expression<String>? name,
+    Expression<String>? goaltext,
+    Expression<int>? exampleOrder,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (baseWord != null) 'base_word': baseWord,
+      if (name != null) 'name': name,
+      if (goaltext != null) 'goaltext': goaltext,
+      if (exampleOrder != null) 'example_order': exampleOrder,
+    });
+  }
+
+  ExamplesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? uuid,
+      Value<int>? baseWord,
+      Value<String>? name,
+      Value<String>? goaltext,
+      Value<int>? exampleOrder}) {
+    return ExamplesCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      baseWord: baseWord ?? this.baseWord,
+      name: name ?? this.name,
+      goaltext: goaltext ?? this.goaltext,
+      exampleOrder: exampleOrder ?? this.exampleOrder,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (baseWord.present) {
+      map['base_word'] = Variable<int>(baseWord.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (goaltext.present) {
+      map['goaltext'] = Variable<String>(goaltext.value);
+    }
+    if (exampleOrder.present) {
+      map['example_order'] = Variable<int>(exampleOrder.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExamplesCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('baseWord: $baseWord, ')
+          ..write('name: $name, ')
+          ..write('goaltext: $goaltext, ')
+          ..write('exampleOrder: $exampleOrder')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $LanguagesTable languages = $LanguagesTable(this);
@@ -2357,6 +2682,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LeipzigDataFromIntranetTable(this);
   late final $MeansTable means = $MeansTable(this);
   late final $SessionsTable sessions = $SessionsTable(this);
+  late final $ExamplesTable examples = $ExamplesTable(this);
   late final Index typeSession = Index(
       'type_session', 'CREATE INDEX type_session ON sessions (typesession)');
   @override
@@ -2371,6 +2697,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         leipzigDataFromIntranet,
         means,
         sessions,
+        examples,
         typeSession
       ];
 }
