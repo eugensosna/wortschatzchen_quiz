@@ -1,4 +1,5 @@
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
+import 'package:talker/talker.dart';
 
 import 'db.dart';
 
@@ -9,6 +10,7 @@ class SynonymsEntry {
 }
 
 class DbHelper extends AppDatabase {
+
 
   Future<Language?> getLangByShortName(String name) async {
     return (select(languages)..where((tbl) => tbl.shortName.equals(name)))

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:webview_universal/webview_universal.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 
 class WebViewControllerWord extends StatefulWidget {
   final Word editWord;
   final String title;
-  const WebViewControllerWord(
-      {super.key, required this.editWord, required this.title});
+  const WebViewControllerWord({super.key, required this.editWord, required this.title});
 
   @override
   _WebViewControllerWordState createState() =>
@@ -16,13 +15,12 @@ class WebViewControllerWord extends StatefulWidget {
 class _WebViewControllerWordState extends State<WebViewControllerWord> {
   final Word editWord;
   final String appBarText;
-  final controller = WebViewController();
+  final contoler = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
 
   _WebViewControllerWordState(this.editWord, {required this.appBarText});
   @override
   Widget build(BuildContext context) {
     Uri uri = Uri.parse("https://www.verbformen.de/?w=$appBarText");
-    controller.init(context: context, setState: setState, uri: uri);
     return Scaffold(
       appBar: AppBar(
           title: Text(appBarText),
@@ -32,8 +30,8 @@ class _WebViewControllerWordState extends State<WebViewControllerWord> {
               moveToLastScreen();
             },
           )),
-      body: WebView(
-        controller: controller,
+      body: WebViewWidget(
+        controller: contoler..loadRequest(uri),
       ),
     );
   }

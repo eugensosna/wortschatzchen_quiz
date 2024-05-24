@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'package:talker/talker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -105,7 +106,12 @@ class Sessions extends Table {
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  Talker talker = Talker();
 
+
+  void setTalker(Talker talker) {
+    talker = talker;
+  }
   @override
   int get schemaVersion => 13;
   @override
@@ -116,6 +122,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
+        talker.info("start migrate");
         await transaction(() async {
           await customStatement('PRAGMA foreign_keys = OFF');
           if (from < 9) {
@@ -170,6 +177,7 @@ class AppDatabase extends _$AppDatabase {
 
       },
       beforeOpen: (details) async {
+        talker.info("start before open");
         if (details.wasCreated) {
           (await into(languages).insert(
               LanguagesCompanion.insert(name: "German", shortName: "de")));

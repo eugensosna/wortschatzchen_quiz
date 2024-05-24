@@ -47,7 +47,8 @@ dependencies:
   image_picker: ^1.0.1
   google_mlkit_text_recognition: ^0.10.0
   webview_flutter: ^4.7.0
-  webview_universal: ^0.0.5
+  talker: ^4.2.2
+  talker_flutter: ^4.2.2
 
 
 

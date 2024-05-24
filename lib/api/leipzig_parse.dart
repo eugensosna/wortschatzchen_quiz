@@ -94,10 +94,15 @@ Map<String, dynamic> getBaseHeaders(
         {}
       case "Grundform:":
         {
+          wortObj.BaseWord = (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
+        }
+      case "Grundform von:":
+        {
+        
           wortObj.BaseWord = (value as List<String>).isNotEmpty
               ? (value)[0]
               : wortObj.name;
-        }
+        } 
       case "Wortart:":
         {
           wortObj.KindOfWort =

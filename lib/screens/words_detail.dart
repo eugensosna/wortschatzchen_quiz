@@ -458,6 +458,11 @@ class WordsDetailState extends State<WordsDetail> {
 
     try {
       await leipzigSynonyms.getFromInternet();
+      var baseForm = leipzigSynonyms.BaseWord;
+      if (leipzigSynonyms.BaseWord.isNotEmpty) {
+        var leipzigSynonyms = LeipzigWord(baseForm, db);
+        await leipzigSynonyms.getFromInternet();
+      }
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       var leipzigdate = await db.getLeipzigDataByWord(editWord);
       if (leipzigdate != null) {}
@@ -466,7 +471,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
     listExamples = await db.getExamplesByWord(editWord.id);
-
+    editWord = (await db.getWordById(editWord.id))!;
     return editWord;
   }
 

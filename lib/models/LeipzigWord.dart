@@ -112,7 +112,11 @@ class LeipzigWord {
     if (word.Synonym.isNotEmpty) {
       await db.deleteSynonymsByWord(editWord);
     }
-    if (word.Artikel.isNotEmpty && editWord.baseForm.isEmpty) {
+    if (editWord.baseForm.isEmpty) {
+      wordToUpdate = wordToUpdate.copyWith(baseForm: word.BaseWord);
+    }
+
+    if (word.Artikel.isNotEmpty && wordToUpdate.baseForm.isEmpty) {
       wordToUpdate =
           wordToUpdate.copyWith(baseForm: "${word.Artikel}  ${word.BaseWord}");
       await db.updateWord(wordToUpdate);
@@ -120,10 +124,9 @@ class LeipzigWord {
     if (word.Artikel.trim().isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(immportant: word.Artikel.trim());
     }
-    if (word.Definitions.isNotEmpty && editWord.mean.isEmpty) {
+    if (word.Definitions.isNotEmpty && wordToUpdate.mean.isEmpty) {
       var mean = word.Definitions.toString();
       wordToUpdate = wordToUpdate.copyWith(mean: mean);
-      await db.updateWord(wordToUpdate);
       for (var item in word.Definitions) {
         await translator.translate(item);
         await db.into(db.means).insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
@@ -161,6 +164,7 @@ class LeipzigWord {
           baseLang: editWord.baseLang,
           translatedName: translatedName));
     }
+    await db.updateWord(wordToUpdate);
 
     var leipzigEntry = await db.getLeipzigDataByWord(editWord);
     if (leipzigEntry != null) {

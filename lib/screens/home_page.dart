@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:talker/talker.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, required this.talker});
+  final Talker talker;
+
+
 
   @override
   State<StatefulWidget> createState() {
@@ -21,11 +26,25 @@ class HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    dbH.setTalker(widget.talker);
+
+    final talker = TalkerFlutter.init();
+
     tabBarPages = [
       WordsList(dbH),
       WordsList(dbH),
       WordsList(dbH),
-      WordsList(dbH),
+      TalkerScreen(
+          talker: widget.talker,
+          theme: const TalkerScreenTheme(
+            /// Your custom log colors
+            logColors: {
+              TalkerLogType.httpResponse: Color(0xFF26FF3C),
+              TalkerLogType.error: Colors.redAccent,
+              TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
+            },
+          )),
+
       ImageToText(db: dbH)
     ];
     // tabBarPages = [
@@ -50,6 +69,17 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var talkerScreenn = TalkerScreen(
+        talker: widget.talker,
+        theme: const TalkerScreenTheme(
+          /// Your custom log colors
+          logColors: {
+            TalkerLogType.httpResponse: Color(0xFF26FF3C),
+            TalkerLogType.error: Colors.redAccent,
+            TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
+          },
+        ));
+      
     return Scaffold(
       bottomNavigationBar: bottomNavigationBar(context),
       body: Center(
