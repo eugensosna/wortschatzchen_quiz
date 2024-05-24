@@ -1,8 +1,6 @@
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
-import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -205,3 +203,5 @@ class WordsListState extends State<WordsList> {
         "Add new");
   }
 }
+
+

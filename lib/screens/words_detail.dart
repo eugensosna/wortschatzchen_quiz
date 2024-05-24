@@ -42,7 +42,6 @@ class WordsDetailState extends State<WordsDetail> {
       name: "",
       description: "",
       immportant: "",
-
       mean: "",
       baseForm: "",
       baseLang: 0,
@@ -51,11 +50,12 @@ class WordsDetailState extends State<WordsDetail> {
   List<Example> listExamples = [];
   String article = "";
   String baseWord = "";
-  Language baseLang = const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+  Language baseLang =
+      const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
   Future<String> translateText(String inputText) async {
-    final translated =
-        await translator.translate(inputText, from: inputLanguage, to: outputLanguage);
+    final translated = await translator.translate(inputText,
+        from: inputLanguage, to: outputLanguage);
 
     //setState(() {    });
     return translated.text;
@@ -63,9 +63,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   @override
   void initState() {
-
     fillControllers(editWord);
-    
 
     super.initState();
     try {
@@ -93,15 +91,12 @@ class WordsDetailState extends State<WordsDetail> {
       }
     }
     if (editWord.baseLang > 0) {
-     
-
       baseLang = (await db.getLangById(editWord.baseLang))!;
     } else {
       var baseLang1 = await DbHelper().getLangByShortName("de");
       if (baseLang1 == null) {
-        int id = (await db
-            .into(db.languages)
-            .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
+        int id = (await db.into(db.languages).insert(
+            LanguagesCompanion.insert(name: "German", shortName: "de")));
         baseLang = (await db.getLangById(id))!;
       }
       if (editWord.name.isNotEmpty && editWord.id > 0) {
@@ -163,7 +158,8 @@ class WordsDetailState extends State<WordsDetail> {
                   style: textStyle,
                   decoration: InputDecoration(
                       label: const Text('Title'),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5)))),
             ),
             // 3 element
             article.isNotEmpty ? Text(article) : Container(),
@@ -179,7 +175,8 @@ class WordsDetailState extends State<WordsDetail> {
                 decoration: InputDecoration(
                     labelText: 'Description',
                     labelStyle: textStyle,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0))),
               ),
             ),
             TextField(
@@ -202,9 +199,13 @@ class WordsDetailState extends State<WordsDetail> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  IconButton(onPressed: _fillData, icon: const Icon(Icons.downloading)),
+                  IconButton(
+                      onPressed: _fillData,
+                      icon: const Icon(Icons.downloading)),
                   IconButton(onPressed: SaveWord, icon: const Icon(Icons.save)),
-                  IconButton(onPressed: Goverbformen, icon: const Icon(Icons.add_task)),
+                  IconButton(
+                      onPressed: Goverbformen,
+                      icon: const Icon(Icons.add_task)),
                 ],
               ),
           ],
@@ -233,12 +234,54 @@ class WordsDetailState extends State<WordsDetail> {
     return ListTile(
         title: Text(title1),
         subtitle: Text(description),
-        trailing: IconButton(
+        trailing: item.synonymWord > 0
+            ? IconButton(
                 onPressed: () {
                   viewWord(item);
                 },
-            icon: const Icon(Icons.download_done))
-                
+                icon: const Icon(Icons.download_done))
+            : IconButton(
+                onPressed: () {
+                  addNewWordFromSynonym(item);
+                },
+                icon: const Icon(Icons.do_disturb)),
+        onLongPress: () {
+          debugPrint(tempTitle);
+        },
+        onTap: () async {
+          String onTapeString = tempTitle;
+          Word? wordToEdit;
+          if (item.synonymWord > 0) {
+            wordToEdit = await db.getWordById(item.synonymWord);
+          }
+          navigateToDetail(
+              wordToEdit ??
+                  Word(
+                      id: -99,
+                      uuid: "",
+                      name: onTapeString,
+                      description: description,
+                      mean: "",
+                      immportant: "",
+                      baseForm: "",
+                      baseLang: baseLang.id,
+                      rootWordID: editWord.id),
+              wordToEdit != null
+                  ? "View synonyme for '${editWord.name}'"
+                  : "Add synonyme for ${editWord.name}");
+        }
+
+        //   navigateToDetail(
+        //       const Word(
+        //           id: -99,
+        //           uuid: "",
+        //           name: title1,
+        //           description: description,
+        //           mean: "",
+        //           baseLang: 0,
+        //           rootWordID: 0),
+        //       "Add synonym");
+        // },
         );
   }
 
@@ -247,8 +290,9 @@ class WordsDetailState extends State<WordsDetail> {
     int maxLengthSynonymsList = 100;
     String titleList = "";
     if (listSynonyms.isNotEmpty) {
-      int maxCount =
-          listSynonyms.length > maxLengthSynonymsList ? maxLengthSynonymsList : listSynonyms.length;
+      int maxCount = listSynonyms.length > maxLengthSynonymsList
+          ? maxLengthSynonymsList
+          : listSynonyms.length;
       titleList = listSynonyms
           .map((e) {
             return " ${e.name}";
@@ -258,7 +302,8 @@ class WordsDetailState extends State<WordsDetail> {
           .join(", ");
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
       for (var _item in listSynonymsSliced) {
-        listChildren.add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
+        listChildren
+            .add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
 
         // ))
       }
@@ -321,10 +366,12 @@ class WordsDetailState extends State<WordsDetail> {
     return "ok";
   }
 
-  Future<Word?> addWordShort(String name, String translated, Word editWord) async {
+  Future<Word?> addWordShort(
+      String name, String translated, Word editWord) async {
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
     leipzigSynonyms.db = db;
-    var word = await leipzigSynonyms.addWodrUpdateshort(name, translated, editWord, baseLang);
+    var word = await leipzigSynonyms.addWodrUpdateshort(
+        name, translated, editWord, baseLang);
     return word;
   }
 
@@ -365,7 +412,8 @@ class WordsDetailState extends State<WordsDetail> {
 
       Word toUpdate = wordToUpdate.copyWith();
 
-      if (wordToUpdate.name != titleController.text && titleController.text.isNotEmpty) {
+      if (wordToUpdate.name != titleController.text &&
+          titleController.text.isNotEmpty) {
         toUpdate = toUpdate.copyWith(name: titleController.text);
         isChanched = true;
       }
@@ -435,7 +483,8 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {}
@@ -450,7 +499,6 @@ class WordsDetailState extends State<WordsDetail> {
         description: "",
         mean: "",
         immportant: "",
-
         baseForm: "",
         baseLang: 0,
         rootWordID: editWord.id);
@@ -490,10 +538,9 @@ class WordsDetailState extends State<WordsDetail> {
     });
   }
 
-
-
   void Goverbformen() async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
       print(editWord.id);
       return WebViewControllerWord(editWord: editWord, title: editWord.name);
     }));
