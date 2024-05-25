@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/dbHelper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
   final DbHelper db;
+  final Talker talker;
 
-  const WordsList(this.db, {super.key});
+  const WordsList(this.db, {super.key, required this.talker});
 
   @override
   State<StatefulWidget> createState() {
@@ -17,9 +19,10 @@ class WordsList extends StatefulWidget {
 class WordsListState extends State<WordsList> {
   int count = 2;
   final DbHelper db;
+  bool isLoad = false;
 
   int selectedIndex = 2;
-  
+
   List<Word> listWords = [];
 
   WordsListState(this.db);
@@ -29,18 +32,12 @@ class WordsListState extends State<WordsList> {
   void initState() {
     // TODO: implement initState
     updateListWords().then((value) {
-      setState(() {});
+      setState(() {
+        isLoad = false;
+      });
     });
     super.initState();
   }
-
-  // static List<Widget> tabBarPages = [
-  //   const WordsList(),
-  //   const WordsList(),
-  //   const WordsList(),
-  //   const WordsList(),
-  //   const ImageToText(),
-  // ];
 
   void onItemTapped(int index) {
     setState(() {
@@ -55,7 +52,12 @@ class WordsListState extends State<WordsList> {
       return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {
-      updateListWords();
+      updateListWords().then((onValue) {
+        listWords = onValue;
+        setState(() {
+          isLoad = false;
+        });
+      });
     }
   }
 
@@ -65,10 +67,12 @@ class WordsListState extends State<WordsList> {
       appBar: AppBar(
         title: const Text('Words'),
       ),
-      body: getWordsListView(),
+      body: isLoad
+          ? Center(child: CircularProgressIndicator())
+          : getWordsListView(),
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
-        onPressed: getWordsListViewOnPressed,
+        onPressed: addNewWord,
         tooltip: "Add new",
         child: const Icon(Icons.add),
       ),
@@ -120,6 +124,7 @@ class WordsListState extends State<WordsList> {
     );
   }
 
+
   @override
   void didChangeDependencies() {
     updateListWords();
@@ -143,16 +148,22 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<List<Word>> updateListWords() async {
+    setState(() {
+      isLoad = true;
+    });
+    widget.talker.info("start get wordList");
     Future<List<Word>> fListWords =
         db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
-      
       listWords = value;
       setState(() {
         listWords = value;
+        isLoad = false;
       });
+      widget.talker.info("end get wordList");
       return orderslistWords;
     });
+
     return listWords;
   }
 
@@ -188,7 +199,8 @@ class WordsListState extends State<WordsList> {
     );
   }
 
-  void getWordsListViewOnPressed() {
+  void addNewWord() {
+    db.getGroupedSessionsByName().then((onValue) {});
     navigateToDetail(
         const Word(
             id: -99,
@@ -203,5 +215,3 @@ class WordsListState extends State<WordsList> {
         "Add new");
   }
 }
-
-

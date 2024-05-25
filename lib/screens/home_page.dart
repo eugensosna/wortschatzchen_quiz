@@ -31,9 +31,18 @@ class HomePageState extends State<HomePage> {
     final talker = TalkerFlutter.init();
 
     tabBarPages = [
-      WordsList(dbH),
-      WordsList(dbH),
-      WordsList(dbH),
+      WordsList(
+        dbH,
+        talker: widget.talker,
+      ),
+      WordsList(
+        dbH,
+        talker: widget.talker,
+      ),
+      WordsList(
+        dbH,
+        talker: widget.talker,
+      ),
       TalkerScreen(
           talker: widget.talker,
           theme: const TalkerScreenTheme(

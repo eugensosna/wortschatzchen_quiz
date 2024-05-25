@@ -35,7 +35,7 @@ LeipzigWord parseHtml(String text, LeipzigWord wortObj) {
   var def = wordbox!.getElementsByClassName("panel-body").singleOrNull;
   var pElements = def!.getElementsByTagName("p");
 
-  var result = getBaseHeaders(wortObj, pElements);
+  getBaseHeaders(wortObj, pElements);
 
   return wortObj;
 }

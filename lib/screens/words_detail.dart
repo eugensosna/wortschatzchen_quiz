@@ -67,13 +67,9 @@ class WordsDetailState extends State<WordsDetail> {
 
     super.initState();
     try {
-      setBaseSettings().then((value) {
-        setState(() {});
-      });
+      setBaseSettings().then((value) {});
     } catch (e) {}
-    setBaseSettings().then((value) {
-      setState(() {});
-    });
+    
   }
 
   fillControllers(Word editWord) {
@@ -477,9 +473,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   void moveToLastScreen() async {
     if (titleController.text.isEmpty) {
-      addWord().then((value) {
-        Navigator.pop(context, false);
-      });
+      Navigator.pop(context, false);
 
       return;
     } else {
