@@ -4,6 +4,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
+import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
 class HomePage extends StatefulWidget {
@@ -31,9 +32,9 @@ class HomePageState extends State<HomePage> {
     final talker = TalkerFlutter.init();
 
     tabBarPages = [
-      WordsList(
-        dbH,
+      SessionWordList(
         talker: widget.talker,
+        db: dbH,
       ),
       WordsList(
         dbH,
