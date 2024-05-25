@@ -6,9 +6,9 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import 'package:image_picker/image_picker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
-import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
+import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
-import 'package:wortschatzchen_quiz/db/dbHelper.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
 
 class ImageToText extends StatefulWidget {
   final DbHelper db;

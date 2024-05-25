@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
-import 'package:wortschatzchen_quiz/db/dbHelper.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -81,17 +81,45 @@ class WordsListState extends State<WordsList> {
 
   ListView getWordsListView() {
     return ListView.builder(
-      itemCount: listWords.length,
-      itemBuilder: (context, index) {
-        Word wordItem = listWords[index];
-        if (wordItem.rootWordID > 0) {}
-        return Card(
-          color: Colors.white,
-          elevation: 2.0,
-          child: listWordView(wordItem),
+        itemCount: listWords.length,
+        itemBuilder: (context, index) {
+          Word wordItem = listWords[index];
+          if (wordItem.rootWordID > 0) {}
+          return GestureDetector(
+            onDoubleTap: () {
+              print(wordItem.name);
+              widget.talker.debug("doubletape edit ${wordItem.name}");
+              navigateToDetail(wordItem, "View ${wordItem.name}");
+            },
+            child: Container(
+                margin: const EdgeInsets.all(8.0),
+                child: Dismissible(
+                  key: Key(wordItem.uuid),
+                  direction: DismissDirection.startToEnd,
+                  background: Container(
+                    color: Colors.blueAccent,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                  onDismissed: (direction) {
+                    widget.talker.debug("Dismissible delete ${wordItem.name} ");
+                  },
+                  child: listWordView(wordItem),
+                  
+                )),
+          );
+        }
+
+        //   Card(
+        //     color: Colors.white,
+        //     elevation: 2.0,
+        //     child: listWordView(wordItem),
+        //   );
+        // },
         );
-      },
-    );
   }
 
   ListTile listWordView(Word itemWord) {
@@ -119,11 +147,10 @@ class WordsListState extends State<WordsList> {
       ),
       onTap: () {
         debugPrint("lit Tap");
-        navigateToDetail(itemWord, "View ${itemWord.name}");
+      
       },
     );
   }
-
 
   @override
   void didChangeDependencies() {

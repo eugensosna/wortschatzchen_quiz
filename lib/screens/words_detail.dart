@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
-import 'package:wortschatzchen_quiz/db/dbHelper.dart';
-import 'package:wortschatzchen_quiz/models/LeipzigWord.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/web_view_controller_word.dart';
 
 class WordsDetail extends StatefulWidget {
@@ -54,11 +54,15 @@ class WordsDetailState extends State<WordsDetail> {
       const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
   Future<String> translateText(String inputText) async {
+    try {
+      
     final translated = await translator.translate(inputText,
         from: inputLanguage, to: outputLanguage);
 
-    //setState(() {    });
     return translated.text;
+    } finally {
+      return "";
+    }
   }
 
   @override
@@ -69,7 +73,6 @@ class WordsDetailState extends State<WordsDetail> {
     try {
       setBaseSettings().then((value) {});
     } catch (e) {}
-    
   }
 
   fillControllers(Word editWord) {
@@ -102,6 +105,7 @@ class WordsDetailState extends State<WordsDetail> {
 
         db.getSynonymsByWord(editWord.id).then((value) {
           listSynonyms = value;
+
           setState(() {});
         });
         db.getExamplesByWord(editWord.id).then((onValue) {

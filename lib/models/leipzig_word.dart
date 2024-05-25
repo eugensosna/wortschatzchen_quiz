@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
-import 'package:wortschatzchen_quiz/db/dbHelper.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
-
 
 import '../api/leipzig_parse.dart';
 
@@ -37,12 +36,14 @@ class LeipzigWord {
 
       return true;
     } on Exception catch (e) {
+      print(e);
       return false;
       // TODO
     }
   }
-  Future<Word?> addWodrUpdateshort(
-      String name, String description, Word editWord, Language? baseLang) async {
+
+  Future<Word?> addWodrUpdateshort(String name, String description,
+      Word editWord, Language? baseLang) async {
     var word = await db.getWordByName(name);
     if (word == null) {
       int id = await db.into(db.words).insert(WordsCompanion.insert(
@@ -52,7 +53,9 @@ class LeipzigWord {
             baseForm: "",
             immportant: "",
             rootWordID: editWord.id,
-            baseLang: editWord.id <= 0 ? (baseLang != null ? baseLang.id : 0) : editWord.id,
+            baseLang: editWord.id <= 0
+                ? (baseLang != null ? baseLang.id : 0)
+                : editWord.id,
           ));
       await addToSession(id);
 
@@ -129,27 +132,28 @@ class LeipzigWord {
       wordToUpdate = wordToUpdate.copyWith(mean: mean);
       for (var item in word.Definitions) {
         await translator.translate(item);
-        await db.into(db.means).insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+        await db
+            .into(db.means)
+            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
       }
     }
     if (word.Examples.isNotEmpty) {
       var listExamples = await db.getExamplesByWord(editWord.id);
       for (var item in word.Examples) {
-        String translated = await translator.translate(item.Value!);
+        await translator.translate(item.Value!);
         if (listExamples.isNotEmpty) {
-          var example = await db.getExampleByNameAndWord(item.Value!, editWord.id);
+          var example =
+              await db.getExampleByNameAndWord(item.Value!, editWord.id);
           if (example != null) {
             continue;
           }
 
-          await db
-              .into(db.examples)
-              .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: item.Value!));
+          await db.into(db.examples).insert(ExamplesCompanion.insert(
+              baseWord: editWord.id, name: item.Value!));
         } else {
           continue;
         }
       }
-          
     }
     for (var item in word.Synonym) {
       Word? elemWordSynonym = await db.getWordByName(item.name);
@@ -217,7 +221,6 @@ class LeipzigTranslator {
     Language? baseLang = await db.getLangByShortName(inputLanguage);
     Language? outputLang = await db.getLangByShortName(outputLanguage);
     if (baseLang != null && outputLang != null) {
-      var translatedBefor;
     }
     await Future.delayed(const Duration(milliseconds: 270));
     String result = "";
@@ -246,7 +249,6 @@ class leipzSynonym {
   Map<String, dynamic> toMap() =>
       {"name": name, "translate": translate, "href": leipzigHref};
 }
-
 
 class MapTextUrls {
   String? Value;

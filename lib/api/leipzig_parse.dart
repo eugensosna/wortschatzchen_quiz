@@ -5,7 +5,7 @@ import 'package:html/dom.dart' as dom;
 
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
-import '../models/LeipzigWord.dart';
+import '../models/leipzig_word.dart';
 
 Future<Response> getLeipzigHtml(String word) async {
   String result = "";

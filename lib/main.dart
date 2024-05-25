@@ -13,18 +13,21 @@ void main() async {
   db = AppDatabase();
   final talker = Talker();
   talker.info("init Talker ");
+  runApp(MyApp(
+    talker: talker,
+  ));
 
-  runZonedGuarded(
-    () => runApp(MyApp(
-      talker: talker,
-    )),
-    (Object error, StackTrace stack) {
-      talker.handle(error, stack, 'Uncaught app exception');
-    },
-  );
+  // runZonedGuarded(
+  //   () => runApp(MyApp(
+  //     talker: talker,
+  //   )),
+  //   (Object error, StackTrace stack) {
+  //     talker.handle(error, stack, 'Uncaught app exception');
+  //   },
+  // );
 
   //  List<Language> allLang = await database.select(database.languages).get();
-  //runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
