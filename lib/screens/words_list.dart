@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -20,6 +21,7 @@ class WordsListState extends State<WordsList> {
   int count = 2;
   final DbHelper db;
   bool isLoad = false;
+  List<AutocomplitDataHelper> autoComplitData = [];
 
   int selectedIndex = 2;
 
@@ -39,43 +41,52 @@ class WordsListState extends State<WordsList> {
     super.initState();
   }
 
-  void onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-  }
-
-  Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      print(wordToEdit.id);
-      return WordsDetail(wordToEdit, title, db);
-    }));
-    if (result) {
-      updateListWords().then((onValue) {
-        listWords = onValue;
-        setState(() {
-          isLoad = false;
-        });
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Words'),
-      ),
+      appBar: AppBar(title: const Text('Words')),
       body: isLoad
           ? Center(child: CircularProgressIndicator())
-          : getWordsListView(),
+          : Padding(padding: EdgeInsets.all(8), child: getWordsListView()),
+
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
         onPressed: addNewWord,
         tooltip: "Add new",
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget autoComplite() {
+    return Autocomplete(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return Iterable<AutocomplitDataHelper>.empty();
+        } else {
+          if (autoComplitData.isNotEmpty) {
+            return autoComplitData;
+          }
+          return autoComplitData;
+        }
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Material(
+          elevation: 2,
+          child: ListView.separated(
+              itemBuilder: (context, index) {
+                var autoItem = options.elementAt(index);
+                return ListTile(
+                  title: Text(autoItem.name),
+                  onTap: () {
+                    widget.talker.debug("on tap ${autoItem.name}");
+                  },
+                );
+              },
+              separatorBuilder: (context, index) => Divider(),
+              itemCount: options.length),
+        );
+      },
     );
   }
 
@@ -108,7 +119,6 @@ class WordsListState extends State<WordsList> {
                     widget.talker.debug("Dismissible delete ${wordItem.name} ");
                   },
                   child: listWordView(wordItem),
-                  
                 )),
           );
         }
@@ -147,7 +157,6 @@ class WordsListState extends State<WordsList> {
       ),
       onTap: () {
         debugPrint("lit Tap");
-      
       },
     );
   }
@@ -156,6 +165,28 @@ class WordsListState extends State<WordsList> {
   void didChangeDependencies() {
     updateListWords();
     super.didChangeDependencies();
+  }
+
+  void onItemTapped(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
+  Future<void> navigateToDetail(Word wordToEdit, String title) async {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      print(wordToEdit.id);
+      return WordsDetail(wordToEdit, title, db);
+    }));
+    if (result) {
+      updateListWords().then((onValue) {
+        listWords = onValue;
+        setState(() {
+          isLoad = false;
+        });
+      });
+    }
   }
 
   Future<List<Word>> getRecursiveWordTree(
@@ -241,4 +272,13 @@ class WordsListState extends State<WordsList> {
             rootWordID: 0),
         "Add new");
   }
+}
+
+class AutocomplitDataHelper {
+  final String name;
+  final bool isIntern;
+  final String uuid;
+
+  AutocomplitDataHelper(
+      {required this.name, required this.isIntern, required this.uuid});
 }

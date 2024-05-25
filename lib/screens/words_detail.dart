@@ -18,6 +18,7 @@ class WordsDetail extends StatefulWidget {
   WordsDetailState createState() => WordsDetailState(editWord, title, db);
 }
 
+
 class WordsDetailState extends State<WordsDetail> {
   bool changed = false;
   late Word editWord;
@@ -55,11 +56,10 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<String> translateText(String inputText) async {
     try {
-      
-    final translated = await translator.translate(inputText,
-        from: inputLanguage, to: outputLanguage);
+      final translated = await translator.translate(inputText,
+          from: inputLanguage, to: outputLanguage);
 
-    return translated.text;
+      return translated.text;
     } finally {
       return "";
     }

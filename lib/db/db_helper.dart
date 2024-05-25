@@ -114,7 +114,7 @@ class DbHelper extends AppDatabase {
     for (var item in cResult) {
       print(item.data.toString());
       result.add(SessionsGroupedByName(
-        typesession: item.data["typeSession"],
+        typesession: item.data["typesession"],
       ));
     }
     ;
