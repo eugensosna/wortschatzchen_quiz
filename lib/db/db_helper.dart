@@ -108,16 +108,17 @@ class DbHelper extends AppDatabase {
   Future<List<SessionsGroupedByName>> getGroupedSessionsByName() async {
     List<SessionsGroupedByName> result = [];
     var customQuery = customSelect(
-        ' SELECT max(s.id), s.typesession FROM sessions as s group by s.typesession',
+        ' SELECT max(s.id), Count(*) as count, s.typesession FROM sessions as s group by s.typesession ',
         readsFrom: {sessions});
     var cResult = await customQuery.get();
     for (var item in cResult) {
       print(item.data.toString());
       result.add(SessionsGroupedByName(
         typesession: item.data["typesession"],
+        count: item.data["count"]
       ));
     }
-    ;
+    
     return result;
 
   }
@@ -125,6 +126,9 @@ class DbHelper extends AppDatabase {
 
 class SessionsGroupedByName {
   final String typesession;
+  final int count;
 
-  SessionsGroupedByName({required this.typesession});
+  SessionsGroupedByName({required this.typesession, required this.count});
+
+  //SessionsGroupedBysName({required this.typesession});
 }

@@ -4,6 +4,7 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
+import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 class SessionWordList extends StatefulWidget {
   final DbHelper db;
@@ -18,34 +19,61 @@ class _SessionWordListState extends State<SessionWordList> {
   bool isLoad = false;
   List<AutoComplitHelper> autoComplitData = [];
   List<String> llistSessions = [];
+  String defaultSession = "";
   final TextEditingController sessionsController = TextEditingController();
   final autoComplitController = TextEditingController();
 
   @override
   void initState() {
     // TODO: implement initState
+    _getListSessions().then(
+      (value) {
+        setState(() {
+          llistSessions = value;
+        });
+      },
+    );
     super.initState();
-    llistSessions.add("todayjkljljkjkjkjlj");
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    _getListSessions();
+  }
+
+  Future<List<String>> _getListSessions() async {
+    final String todaySession = getDefaultSessionName();
+    defaultSession = "";
+
+    List<String> result = [];
+    //def =  getFormattedDate(DateTime.now());
+    final sessions = await widget.db.getGroupedSessionsByName();
+    for (var item in sessions) {
+      if (item.typesession.contains(todaySession)) {
+        defaultSession = "${item.typesession} (${item.count})";
+      }
+      result.add("${item.typesession} (${item.count})");
+    }
+
+    if (defaultSession.isEmpty) {
+      defaultSession = todaySession;
+      result.insert(0, todaySession);
+    }
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
+    final String empty = getDefaultSessionName();
     return Scaffold(
+      backgroundColor: Colors.grey,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            title: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-              child: DropdownMenu<String>(
-                  enableFilter: true,
-                  controller: sessionsController,
-                  dropdownMenuEntries: llistSessions.map((toElement) {
-                    return DropdownMenuEntry<String>(
-                      value: toElement,
-                      label: toElement,
-                    );
-                  }).toList()),
-            ),
+            centerTitle: true,
+            title: SessionListtChoiceView(empty),
             pinned: true,
             floating: true,
             snap: true,
@@ -53,12 +81,17 @@ class _SessionWordListState extends State<SessionWordList> {
             surfaceTintColor: Colors.transparent,
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(70),
-                child: Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                    child: TextField(
-                      controller: autoComplitController,
-                    ))),
+                child: SearchWordsButton()),
+          ),
+          SliverList.builder(
+            itemBuilder: (context, index) => Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 10),
+              height: 40,
+              decoration: const BoxDecoration(color: Colors.lightGreen),
+              child: const Text("word"),
+            ),
+            itemCount: 40,
           )
         ],
       ),
@@ -66,6 +99,41 @@ class _SessionWordListState extends State<SessionWordList> {
         onPressed: () => addWord(""),
         tooltip: "Add new",
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Container SearchWordsButton() {
+    return Container(
+        width: double.maxFinite,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TextField(
+          controller: autoComplitController,
+          decoration: const InputDecoration(label: Text("Suchen")),
+          onChanged: (value) {},
+        ));
+  }
+
+  PreferredSize SessionListtChoiceView(String empty) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(70),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        child: DropdownMenu<String>(
+            initialSelection: llistSessions.isNotEmpty ? llistSessions[0] : empty,
+            enableFilter: true,
+            enableSearch: true,
+            controller: sessionsController,
+            dropdownMenuEntries: llistSessions.map((toElement) {
+              return DropdownMenuEntry<String>(
+                value: toElement,
+                label: toElement,
+              );
+            }).toList()),
       ),
     );
   }
