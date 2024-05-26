@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
@@ -16,9 +18,11 @@ class SessionWordList extends StatefulWidget {
 }
 
 class _SessionWordListState extends State<SessionWordList> {
+  String currentTypeSession = "";
   bool isLoad = false;
+  List<Word> listWords = [];
   List<AutoComplitHelper> autoComplitData = [];
-  List<String> llistSessions = [];
+  List<SessionHeader> llistSessions = [];
   String defaultSession = "";
   final TextEditingController sessionsController = TextEditingController();
   final autoComplitController = TextEditingController();
@@ -43,26 +47,6 @@ class _SessionWordListState extends State<SessionWordList> {
     _getListSessions();
   }
 
-  Future<List<String>> _getListSessions() async {
-    final String todaySession = getDefaultSessionName();
-    defaultSession = "";
-
-    List<String> result = [];
-    //def =  getFormattedDate(DateTime.now());
-    final sessions = await widget.db.getGroupedSessionsByName();
-    for (var item in sessions) {
-      if (item.typesession.contains(todaySession)) {
-        defaultSession = "${item.typesession} (${item.count})";
-      }
-      result.add("${item.typesession} (${item.count})");
-    }
-
-    if (defaultSession.isEmpty) {
-      defaultSession = todaySession;
-      result.insert(0, todaySession);
-    }
-    return result;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,14 +68,14 @@ class _SessionWordListState extends State<SessionWordList> {
                 child: SearchWordsButton()),
           ),
           SliverList.builder(
-            itemBuilder: (context, index) => Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 10),
-              height: 40,
-              decoration: const BoxDecoration(color: Colors.lightGreen),
-              child: const Text("word"),
-            ),
-            itemCount: 40,
+            itemBuilder: (context, index) {
+              var itemWord = listWords.elementAt(index);
+              return ListTile(
+                title: Text("${itemWord.name},${itemWord.baseForm} "),
+                leading: Text(itemWord.mean),
+              );
+            },
+            itemCount: listWords.length,
           )
         ],
       ),
@@ -124,16 +108,22 @@ class _SessionWordListState extends State<SessionWordList> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: DropdownMenu<String>(
-            initialSelection: llistSessions.isNotEmpty ? llistSessions[0] : empty,
+          initialSelection: llistSessions.isNotEmpty ? llistSessions[0].description : empty,
             enableFilter: true,
             enableSearch: true,
             controller: sessionsController,
             dropdownMenuEntries: llistSessions.map((toElement) {
               return DropdownMenuEntry<String>(
-                value: toElement,
-                label: toElement,
+              value: toElement.typesession,
+              label: toElement.description,
               );
-            }).toList()),
+          }).toList(),
+          onSelected: (value) {
+            widget.talker.info("selected session item $value");
+            currentTypeSession = value!;
+            _updateWordsList();
+          },
+        ),
       ),
     );
   }
@@ -170,6 +160,38 @@ class _SessionWordListState extends State<SessionWordList> {
     );
   }
 
+  Future<List<SessionHeader>> _getListSessions() async {
+    final String todaySession = getDefaultSessionName();
+    defaultSession = "";
+
+    List<SessionHeader> result = [];
+    //def =  getFormattedDate(DateTime.now());
+    final sessions = await widget.db.getGroupedSessionsByName();
+    for (var item in sessions) {
+      if (item.typesession.contains(todaySession)) {
+        defaultSession = "${item.typesession} (${item.count})";
+      }
+      result.add(SessionHeader(
+          typesession: item.typesession, description: "${item.typesession} (${item.count})"));
+    }
+
+    if (defaultSession.isEmpty) {
+      defaultSession = todaySession;
+      result.insert(
+          0, SessionHeader(typesession: defaultSession, description: "$defaultSession (0)"));
+    }
+    return result;
+  }
+
+  _updateWordsList() async {
+    List<Word> result = await widget.db.getWordsBySession(currentTypeSession);
+
+    setState(() {
+      listWords = result;
+    });
+  }
+
+
   Future<void> addWord(String name) async {
     navigateToDetail(
         Word(
@@ -191,9 +213,17 @@ class _SessionWordListState extends State<SessionWordList> {
       return WordsDetail(wordToEdit, title, widget.db);
     }));
     if (result) {
+      await _upda
       setState(() {
         isLoad = false;
       });
     }
   }
+}
+
+class SessionHeader {
+  final String typesession;
+  final String description;
+
+  SessionHeader({required this.typesession, required this.description});
 }

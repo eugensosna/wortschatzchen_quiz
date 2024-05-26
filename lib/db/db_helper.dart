@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 
 import 'db.dart';
 
@@ -121,6 +122,24 @@ class DbHelper extends AppDatabase {
     
     return result;
 
+  }
+
+  Future<List<Word>> getWordsBySession(String typesession) async {
+    List<Word> result = [];
+    var customQuery = customSelect(
+        '''SELECT sessions.id as sessionsid, sessions.typesession, words.*   from sessions 
+LEFT join  words
+on sessions.base_word=words.id
+WHERE sessions.typesession=?
+ORDER by typesession DESC; ''',
+        readsFrom: {words}, variables: [Variable.withString(typesession)]);
+    var cResult = await customQuery.get();
+    for (var item in cResult) {
+      print(item.data.toString());
+      result.add(words.map(item.data));
+    }
+
+    return result;
   }
 }
 
