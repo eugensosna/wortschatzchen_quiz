@@ -113,7 +113,7 @@ class DbHelper extends AppDatabase {
         readsFrom: {sessions});
     var cResult = await customQuery.get();
     for (var item in cResult) {
-      print(item.data.toString());
+      //print(item.data.toString());
       result.add(SessionsGroupedByName(
         typesession: item.data["typesession"],
         count: item.data["count"]
@@ -135,7 +135,7 @@ ORDER by typesession DESC; ''',
         readsFrom: {words}, variables: [Variable.withString(typesession)]);
     var cResult = await customQuery.get();
     for (var item in cResult) {
-      print(item.data.toString());
+      //print(item.data.toString());
       result.add(words.map(item.data));
     }
 
