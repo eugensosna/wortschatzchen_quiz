@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -12,9 +11,7 @@ class WordsList extends StatefulWidget {
   const WordsList(this.db, {super.key, required this.talker});
 
   @override
-  State<StatefulWidget> createState() {
-    return WordsListState(db);
-  }
+  State<StatefulWidget> createState() => WordsListState(db);
 }
 
 class WordsListState extends State<WordsList> {
@@ -28,7 +25,7 @@ class WordsListState extends State<WordsList> {
   List<Word> listWords = [];
 
   WordsListState(this.db);
-  List<Word> orderslistWords = [];
+  List<Word> ordersListWords = [];
 
   @override
   void initState() {
@@ -46,8 +43,9 @@ class WordsListState extends State<WordsList> {
     return Scaffold(
       appBar: AppBar(title: const Text('Words')),
       body: isLoad
-          ? Center(child: CircularProgressIndicator())
-          : Padding(padding: EdgeInsets.all(8), child: getWordsListView()),
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(8), child: getWordsListView()),
 
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
@@ -62,7 +60,7 @@ class WordsListState extends State<WordsList> {
     return Autocomplete(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
-          return Iterable<AutocomplitDataHelper>.empty();
+          return const Iterable<AutocomplitDataHelper>.empty();
         } else {
           if (autoComplitData.isNotEmpty) {
             return autoComplitData;
@@ -83,7 +81,7 @@ class WordsListState extends State<WordsList> {
                   },
                 );
               },
-              separatorBuilder: (context, index) => Divider(),
+              separatorBuilder: (context, index) => const Divider(),
               itemCount: options.length),
         );
       },
@@ -110,7 +108,7 @@ class WordsListState extends State<WordsList> {
                   background: Container(
                     color: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Icon(
+                    child: const Icon(
                       Icons.delete,
                       color: Colors.redAccent,
                     ),
@@ -219,7 +217,7 @@ class WordsListState extends State<WordsList> {
         isLoad = false;
       });
       widget.talker.info("end get wordList");
-      return orderslistWords;
+      return ordersListWords;
     });
 
     return listWords;
@@ -265,7 +263,7 @@ class WordsListState extends State<WordsList> {
             uuid: "",
             name: "",
             description: "",
-            immportant: "",
+            important: "",
             mean: "",
             baseForm: "",
             baseLang: 0,

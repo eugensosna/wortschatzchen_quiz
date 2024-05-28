@@ -1,6 +1,4 @@
-import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/screens/home_page.dart';

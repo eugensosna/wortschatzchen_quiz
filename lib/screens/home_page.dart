@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:talker/talker.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -28,8 +27,6 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     dbH.setTalker(widget.talker);
-
-    final talker = TalkerFlutter.init();
 
     tabBarPages = [
       SessionWordList(
@@ -79,17 +76,6 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var talkerScreenn = TalkerScreen(
-        talker: widget.talker,
-        theme: const TalkerScreenTheme(
-          /// Your custom log colors
-          logColors: {
-            TalkerLogType.httpResponse: Color(0xFF26FF3C),
-            TalkerLogType.error: Colors.redAccent,
-            TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
-          },
-        ));
-      
     return Scaffold(
       bottomNavigationBar: bottomNavigationBar(context),
       body: Center(

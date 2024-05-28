@@ -5,10 +5,19 @@ import 'package:html/dom.dart' as dom;
 
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
+import 'package:talker/talker.dart';
 import '../models/leipzig_word.dart';
 
+// class leipzigApiParser {
+//   final Talker talker;
+//   <Dio> getHttpLib(){
+//     var dio = Dio();
+//     dio
+//   }
+
+// }
+
 Future<Response> getLeipzigHtml(String word) async {
-  String result = "";
   final dio = Dio();
 
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
@@ -19,15 +28,12 @@ Future<Response> getLeipzigHtml(String word) async {
 
   //print('Response status: ${response.statusCode}');
   // print('Response body: ${response.body}');
-  result = "";
-  if (response.statusCode == 200) {
-    result = response.data;
-  }
+  if (response.statusCode == 200) {}
 
   return response;
 }
 
-LeipzigWord parseHtml(String text, LeipzigWord wortObj) {
+Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
   final document = html_parser.parse(text);
   wortObj.rawHTML = text;
 
@@ -36,6 +42,15 @@ LeipzigWord parseHtml(String text, LeipzigWord wortObj) {
   var pElements = def!.getElementsByTagName("p");
 
   getBaseHeaders(wortObj, pElements);
+  var respond = await getLeipzigExamples(wortObj.name);
+  var examples = parseHtmlExamples(respond);
+  wortObj.Examples.clear();
+  for (var value in examples.values) {
+    print(value.toString());
+    for (var item in value) {
+      wortObj.Examples.add(MapTextUrls(Value: item));
+    }
+  }
 
   return wortObj;
 }
@@ -44,7 +59,6 @@ Map<String, dynamic> getBaseHeaders(
     LeipzigWord wortObj, List<dom.Element> headElements) {
   String basicKindOfWord = "";
 
-  String? basicPreviosKindOfWord;
   Map<String, dynamic> mapOfHead = {};
   List<String> basicValue = [];
   for (var pValue in headElements) {
@@ -53,7 +67,7 @@ Map<String, dynamic> getBaseHeaders(
     basicKindOfWord = "";
     basicValue = [];
     if (pValue.nodeType == 1) {
-      for (var (index, value) in pValue.nodes.indexed) {
+      for (var (_, value) in pValue.nodes.indexed) {
         if (value.nodeType == 1 &&
             ((value as dom.Element).localName == "b" ||
                 (value).localName == "span")) {
@@ -94,15 +108,14 @@ Map<String, dynamic> getBaseHeaders(
         {}
       case "Grundform:":
         {
-          wortObj.BaseWord = (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
+          wortObj.BaseWord =
+              (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
         }
       case "Grundform von:":
         {
-        
-          wortObj.BaseWord = (value as List<String>).isNotEmpty
-              ? (value)[0]
-              : wortObj.name;
-        } 
+          wortObj.BaseWordFor =
+              (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
+        }
       case "Wortart:":
         {
           wortObj.KindOfWort =
@@ -130,15 +143,13 @@ Map<String, dynamic> getBaseHeaders(
         }
       case "Sachgebiet:":
         {}
-      case "Grundform von:":
-        {}
       default:
         {
           debugPrint("found $key: $value");
         }
     }
   });
-  wortObj.BaseWord = wortObj.BaseWord.isEmpty ? wortObj.name : wortObj.BaseWord;
+  // wortObj.BaseWord = wortObj.BaseWord.isEmpty ? wortObj.name : wortObj.BaseWord;
   return mapOfHead;
 }
 
@@ -163,7 +174,6 @@ Future<String> getLeipzigExamples(String word) async {
       "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
   final response = await dio.get(Uri.parse(url).toString());
 
-  print('Response status: ${response.statusCode}');
   // print('Response body: ${response.body}');
   result = response.data;
 
@@ -178,7 +188,6 @@ Future<String> getLeipzigDornseiff(String word) async {
       "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadWordSetBox&word=${Uri.encodeFull(word)}";
   final response = await http.get(Uri.parse(url));
 
-  print('Response status: ${response.statusCode}');
   // print('Response body: ${response.body}');
   result = response.body;
 
@@ -204,7 +213,6 @@ Map<int, List<String>> parseHtmlDornseif(String text) {
       }
     }
     result[index] = line;
-    print(item.text);
   }
   return result;
 }

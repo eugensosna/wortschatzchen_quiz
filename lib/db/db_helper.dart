@@ -15,14 +15,60 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<List<Synonym>> getSynonymsByWord(int wordId) {
-    return (select(synonyms)..where((tbl) => tbl.baseWord.equals(wordId)))
-        .get();
+  Future<List<ReordableElement>> getSynonymsByWord(int wordId) async {
+    List<ReordableElement> result = [];
+    // final list = await (select(synonyms)
+    //       ..where((tbl) => tbl.baseWord.equals(wordId))
+    //       ..orderBy([(u) => OrderingTerm(expression: u.id)]))
+    //     .get();
+    // list.map(
+    //   (e) => result.add(ReordableElement.map(e.toColumns(false))),
+    // );
+    // return result;
+
+    var customQuery = customSelect('''
+        select synonyms.id,synonyms.uuid, translated_words.translated_name as translate, synonyms.name, synonyms.id as orderid from synonyms
+
+        left JOIN translated_words
+        on  translated_words.name = synonyms.name
+        WHERE synonyms.base_word = ?
+        order by orderid''',
+        readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
+    var listExamples = await customQuery.get();
+    for (var item in listExamples) {
+      var element = ReordableElement.map(item.data);
+      result.add(element);
+    }
+    //print(item.data.toString());
+
+    return result;
   }
 
-  Future<List<Example>> getExamplesByWord(int wordId) {
-    return (select(examples)..where((tbl) => tbl.baseWord.equals(wordId)))
-        .get();
+  Future<List<ReordableElement>> getExamplesByWord(int wordId) async {
+    List<ReordableElement> result = [];
+
+    // final listExamples = await (select(examples)
+    //       ..where((tbl) => tbl.baseWord.equals(wordId))
+    //       ..orderBy([(u) => OrderingTerm(expression: u.exampleOrder)]))
+    //     .get();
+
+    // List<SessionsGroupedByName> result = [];
+    var customQuery = customSelect('''
+        select examples.id,examples.uuid, translated_words.translated_name as translate, examples.name, examples.example_order as orderid from examples
+
+        left JOIN translated_words
+        on  translated_words.name = examples.name
+        WHERE examples.base_word = ?
+        order by orderid''',
+        readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
+    var listExamples = await customQuery.get();
+    for (var item in listExamples) {
+      var element = ReordableElement.map(item.data);
+      result.add(element);
+    }
+    //print(item.data.toString());
+
+    return result;
   }
 
   Future<Example?> getExampleByNameAndWord(String name, int wordId) async {
@@ -115,13 +161,10 @@ class DbHelper extends AppDatabase {
     for (var item in cResult) {
       //print(item.data.toString());
       result.add(SessionsGroupedByName(
-        typesession: item.data["typesession"],
-        count: item.data["count"]
-      ));
+          typesession: item.data["typesession"], count: item.data["count"]));
     }
-    
-    return result;
 
+    return result;
   }
 
   Future<List<Word>> getWordsBySession(String typesession) async {

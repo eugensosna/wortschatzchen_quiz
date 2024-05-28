@@ -24,7 +24,7 @@ class Words extends Table {
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
 
   TextColumn get name => text()();
-  TextColumn get immportant => text()();
+  TextColumn get important => text()();
 
   TextColumn get description => text()();
 
@@ -113,7 +113,7 @@ class AppDatabase extends _$AppDatabase {
     talker = talker;
   }
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 16;
   @override
   // TODO: implement migration
   MigrationStrategy get migration {
@@ -126,18 +126,14 @@ class AppDatabase extends _$AppDatabase {
         await transaction(() async {
           await customStatement('PRAGMA foreign_keys = OFF');
           if (from < 9) {
-            //m.addColumn(words, words.immportant);
             await customStatement('ALTER TABLE words  ADD immportant TEXT;');
             await customStatement("""update words set immportant=' ';""");
 
-            //await customStatement('update words set immportant="";');
           } else {
             if (from < 11) {
-              //m.addColumn(words, words.immportant);
               await customStatement('ALTER TABLE means   ADD COLUMN meansorder INTEGER;');
               await customStatement("""update means set meansorder=0;""");
 
-              //await customStatement('update words set immportant="";');
             } else {
               if (from < 12) {
                 await customStatement('''
@@ -156,7 +152,17 @@ class AppDatabase extends _$AppDatabase {
 
 
 
+          
           }
+          if (from <= 14 && to == 15) {
+            await customStatement(
+                'ALTER TABLE words RENAME COLUMN immportant TO important;');
+          }
+          if (from <= 15 && to == 16) {
+            await customStatement(
+                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
+          }
+
 
           // put your migration logic here
           //await customStatement('PRAGMA foreign_keys = ON');

@@ -4,6 +4,7 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 import '../api/leipzig_parse.dart';
 
@@ -14,6 +15,7 @@ class LeipzigWord {
   List<String> Definitions = []; // means
   String KindOfWort = "";
   String BaseWord = "";
+  String BaseWordFor = "";
   List<String> baseForWords = [];
   String rawHTML = "";
   String url = "";
@@ -29,6 +31,10 @@ class LeipzigWord {
       Response response = await getLeipzigHtml(name);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
         parseHtml(response.data.toString(), this);
+        if (BaseWord.isNotEmpty && BaseWord != name) {
+          var wordFromBaseWord = await getLeipzigHtml(BaseWord);
+          parseHtml(wordFromBaseWord.data.toString(), this);
+        }
         url = response.realUri.toString();
       } else {
         return false;
@@ -51,7 +57,7 @@ class LeipzigWord {
             description: description,
             mean: "",
             baseForm: "",
-            immportant: "",
+            important: "",
             rootWordID: editWord.id,
             baseLang: editWord.id <= 0
                 ? (baseLang != null ? baseLang.id : 0)
@@ -73,9 +79,9 @@ class LeipzigWord {
   }
 
   addToSession(int id) async {
-    final DateTime now = DateTime.now();
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    final String formatted = formatter.format(now);
+    // final DateTime now = DateTime.now();
+    // final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    String formatted = getDefaultSessionName();
 
     await db
         .into(db.sessions)
@@ -96,7 +102,7 @@ class LeipzigWord {
             description: translatedName,
             mean: "",
             baseForm: "",
-            immportant: "",
+            important: "",
             rootWordID: editWord.id,
             baseLang:
                 editWord.id <= 0 ? leipzigTranslator.baseLang!.id : editWord.id,
@@ -125,7 +131,7 @@ class LeipzigWord {
       await db.updateWord(wordToUpdate);
     }
     if (word.Artikel.trim().isNotEmpty) {
-      wordToUpdate = wordToUpdate.copyWith(immportant: word.Artikel.trim());
+      wordToUpdate = wordToUpdate.copyWith(important: word.Artikel.trim());
     }
     if (word.Definitions.isNotEmpty && wordToUpdate.mean.isEmpty) {
       var mean = word.Definitions.toString();
@@ -137,22 +143,18 @@ class LeipzigWord {
             .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
       }
     }
-    if (word.Examples.isNotEmpty) {
+    if (Examples.isNotEmpty) {
       var listExamples = await db.getExamplesByWord(editWord.id);
       for (var item in word.Examples) {
         await translator.translate(item.Value!);
-        if (listExamples.isNotEmpty) {
-          var example =
-              await db.getExampleByNameAndWord(item.Value!, editWord.id);
-          if (example != null) {
-            continue;
-          }
-
-          await db.into(db.examples).insert(ExamplesCompanion.insert(
-              baseWord: editWord.id, name: item.Value!));
-        } else {
+        var example =
+            await db.getExampleByNameAndWord(item.Value!, editWord.id);
+        if (example != null) {
           continue;
         }
+
+        await db.into(db.examples).insert(
+            ExamplesCompanion.insert(baseWord: editWord.id, name: item.Value!));
       }
     }
     for (var item in word.Synonym) {
@@ -205,32 +207,47 @@ class LeipzigTranslator {
   Future<int> addToBase(String input, String outputText) async {
     Language? baseLangLocal =
         (baseLang ?? await db.getLangByShortName(inputLanguage));
-    var targetLanguage =
+    var targetLanguageLocal =
         this.targetLanguage ?? await db.getLangByShortName(outputLanguage);
 
     int id = await db.into(db.translatedWords).insert(
         TranslatedWordsCompanion.insert(
-            baseLang: baseLang != null ? baseLangLocal!.id : 0,
-            targetLang: targetLanguage != null ? targetLanguage.id : 0,
+            baseLang: baseLang == null ? baseLangLocal!.id : 0,
+            targetLang: targetLanguage == null ? targetLanguageLocal!.id : 0,
             name: input,
             translatedName: outputText));
     return id;
   }
 
   Future<String> translate(String inputText) async {
-    Language? baseLang = await db.getLangByShortName(inputLanguage);
-    Language? outputLang = await db.getLangByShortName(outputLanguage);
-    if (baseLang != null && outputLang != null) {
-    }
-    await Future.delayed(const Duration(milliseconds: 270));
     String result = "";
-    try {
-      final translated = await translator.translate(inputText,
-          from: inputLanguage, to: outputLanguage);
-      result = translated.text;
-      addToBase(inputText, result).then((value) => null);
-    } catch (e) {
-      debugPrint("$e");
+
+    var timeStart = DateTime.now().millisecond;
+    Language? baseLangLocal = await db.getLangByShortName(inputLanguage);
+    Language? targetLanguageLocal = await db.getLangByShortName(outputLanguage);
+    if (baseLangLocal != null &&
+        targetLanguage != null &&
+        (baseLang == null || targetLanguage == null)) {
+      baseLang = baseLangLocal!;
+      targetLanguage = targetLanguageLocal!;
+    }
+    final shonTranslated =
+        await db.getTranslatedWord(inputText, baseLang!.id, targetLanguage!.id);
+    if (shonTranslated != null) {
+      result = shonTranslated.translatedName;
+    } else {
+      await Future.delayed(const Duration(milliseconds: 270));
+
+      print((DateTime.now().millisecond - timeStart) / 1000);
+      try {
+        final translated = await translator.translate(inputText,
+            from: inputLanguage, to: outputLanguage);
+        result = translated.text;
+
+        addToBase(inputText, result).then((value) => null);
+      } catch (e) {
+        debugPrint("$e");
+      }
     }
     return result;
   }

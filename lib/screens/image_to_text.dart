@@ -89,7 +89,7 @@ class _ImageToTextState extends State<ImageToText> {
                   uuid: "",
                   name: title,
                   description: "",
-                  immportant: "",
+                  important: "",
                   mean: "",
                   baseForm: "",
                   baseLang: 0,
@@ -111,8 +111,6 @@ class _ImageToTextState extends State<ImageToText> {
     List<Widget> result = [];
     for (var (index, line) in lines.indexed) {
       List<Widget> listChildren = [];
-      Map<String, dynamic> mapTree = {};
-
       String transLine = "";
 
       if (transLines.length >= index) {

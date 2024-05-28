@@ -277,11 +277,11 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _immportantMeta =
-      const VerificationMeta('immportant');
+  static const VerificationMeta _importantMeta =
+      const VerificationMeta('important');
   @override
-  late final GeneratedColumn<String> immportant = GeneratedColumn<String>(
-      'immportant', aliasedName, false,
+  late final GeneratedColumn<String> important = GeneratedColumn<String>(
+      'important', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
@@ -320,7 +320,7 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         id,
         uuid,
         name,
-        immportant,
+        important,
         description,
         mean,
         baseForm,
@@ -350,13 +350,11 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('immportant')) {
-      context.handle(
-          _immportantMeta,
-          immportant.isAcceptableOrUnknown(
-              data['immportant']!, _immportantMeta));
+    if (data.containsKey('important')) {
+      context.handle(_importantMeta,
+          important.isAcceptableOrUnknown(data['important']!, _importantMeta));
     } else if (isInserting) {
-      context.missing(_immportantMeta);
+      context.missing(_importantMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -407,8 +405,8 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      immportant: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}immportant'])!,
+      important: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}important'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
       mean: attachedDatabase.typeMapping
@@ -432,7 +430,7 @@ class Word extends DataClass implements Insertable<Word> {
   final int id;
   final String uuid;
   final String name;
-  final String immportant;
+  final String important;
   final String description;
   final String mean;
   final String baseForm;
@@ -442,7 +440,7 @@ class Word extends DataClass implements Insertable<Word> {
       {required this.id,
       required this.uuid,
       required this.name,
-      required this.immportant,
+      required this.important,
       required this.description,
       required this.mean,
       required this.baseForm,
@@ -454,7 +452,7 @@ class Word extends DataClass implements Insertable<Word> {
     map['id'] = Variable<int>(id);
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
-    map['immportant'] = Variable<String>(immportant);
+    map['important'] = Variable<String>(important);
     map['description'] = Variable<String>(description);
     map['mean'] = Variable<String>(mean);
     map['base_form'] = Variable<String>(baseForm);
@@ -468,7 +466,7 @@ class Word extends DataClass implements Insertable<Word> {
       id: Value(id),
       uuid: Value(uuid),
       name: Value(name),
-      immportant: Value(immportant),
+      important: Value(important),
       description: Value(description),
       mean: Value(mean),
       baseForm: Value(baseForm),
@@ -484,7 +482,7 @@ class Word extends DataClass implements Insertable<Word> {
       id: serializer.fromJson<int>(json['id']),
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
-      immportant: serializer.fromJson<String>(json['immportant']),
+      important: serializer.fromJson<String>(json['important']),
       description: serializer.fromJson<String>(json['description']),
       mean: serializer.fromJson<String>(json['mean']),
       baseForm: serializer.fromJson<String>(json['baseForm']),
@@ -499,7 +497,7 @@ class Word extends DataClass implements Insertable<Word> {
       'id': serializer.toJson<int>(id),
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
-      'immportant': serializer.toJson<String>(immportant),
+      'important': serializer.toJson<String>(important),
       'description': serializer.toJson<String>(description),
       'mean': serializer.toJson<String>(mean),
       'baseForm': serializer.toJson<String>(baseForm),
@@ -512,7 +510,7 @@ class Word extends DataClass implements Insertable<Word> {
           {int? id,
           String? uuid,
           String? name,
-          String? immportant,
+          String? important,
           String? description,
           String? mean,
           String? baseForm,
@@ -522,7 +520,7 @@ class Word extends DataClass implements Insertable<Word> {
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
-        immportant: immportant ?? this.immportant,
+        important: important ?? this.important,
         description: description ?? this.description,
         mean: mean ?? this.mean,
         baseForm: baseForm ?? this.baseForm,
@@ -535,7 +533,7 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
-          ..write('immportant: $immportant, ')
+          ..write('important: $important, ')
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baseForm: $baseForm, ')
@@ -546,7 +544,7 @@ class Word extends DataClass implements Insertable<Word> {
   }
 
   @override
-  int get hashCode => Object.hash(id, uuid, name, immportant, description, mean,
+  int get hashCode => Object.hash(id, uuid, name, important, description, mean,
       baseForm, baseLang, rootWordID);
   @override
   bool operator ==(Object other) =>
@@ -555,7 +553,7 @@ class Word extends DataClass implements Insertable<Word> {
           other.id == this.id &&
           other.uuid == this.uuid &&
           other.name == this.name &&
-          other.immportant == this.immportant &&
+          other.important == this.important &&
           other.description == this.description &&
           other.mean == this.mean &&
           other.baseForm == this.baseForm &&
@@ -567,7 +565,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<int> id;
   final Value<String> uuid;
   final Value<String> name;
-  final Value<String> immportant;
+  final Value<String> important;
   final Value<String> description;
   final Value<String> mean;
   final Value<String> baseForm;
@@ -577,7 +575,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
-    this.immportant = const Value.absent(),
+    this.important = const Value.absent(),
     this.description = const Value.absent(),
     this.mean = const Value.absent(),
     this.baseForm = const Value.absent(),
@@ -588,14 +586,14 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
     required String name,
-    required String immportant,
+    required String important,
     required String description,
     required String mean,
     required String baseForm,
     required int baseLang,
     required int rootWordID,
   })  : name = Value(name),
-        immportant = Value(immportant),
+        important = Value(important),
         description = Value(description),
         mean = Value(mean),
         baseForm = Value(baseForm),
@@ -605,7 +603,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<int>? id,
     Expression<String>? uuid,
     Expression<String>? name,
-    Expression<String>? immportant,
+    Expression<String>? important,
     Expression<String>? description,
     Expression<String>? mean,
     Expression<String>? baseForm,
@@ -616,7 +614,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (id != null) 'id': id,
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
-      if (immportant != null) 'immportant': immportant,
+      if (important != null) 'important': important,
       if (description != null) 'description': description,
       if (mean != null) 'mean': mean,
       if (baseForm != null) 'base_form': baseForm,
@@ -629,7 +627,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       {Value<int>? id,
       Value<String>? uuid,
       Value<String>? name,
-      Value<String>? immportant,
+      Value<String>? important,
       Value<String>? description,
       Value<String>? mean,
       Value<String>? baseForm,
@@ -639,7 +637,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
-      immportant: immportant ?? this.immportant,
+      important: important ?? this.important,
       description: description ?? this.description,
       mean: mean ?? this.mean,
       baseForm: baseForm ?? this.baseForm,
@@ -660,8 +658,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (immportant.present) {
-      map['immportant'] = Variable<String>(immportant.value);
+    if (important.present) {
+      map['important'] = Variable<String>(important.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -687,7 +685,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
-          ..write('immportant: $immportant, ')
+          ..write('important: $important, ')
           ..write('description: $description, ')
           ..write('mean: $mean, ')
           ..write('baseForm: $baseForm, ')

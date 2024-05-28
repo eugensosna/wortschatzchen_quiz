@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/web_view_controller_word.dart';
+import 'package:wortschatzchen_quiz/widgets/modal_show_reordable_view.dart';
 
 class WordsDetail extends StatefulWidget {
   final Word editWord;
@@ -17,7 +19,6 @@ class WordsDetail extends StatefulWidget {
   @override
   WordsDetailState createState() => WordsDetailState(editWord, title, db);
 }
-
 
 class WordsDetailState extends State<WordsDetail> {
   bool changed = false;
@@ -34,7 +35,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  TextEditingController immportantController = TextEditingController();
+  TextEditingController importantController = TextEditingController();
 
   TextEditingController meanController = TextEditingController();
   Word? wordEditing = const Word(
@@ -42,13 +43,13 @@ class WordsDetailState extends State<WordsDetail> {
       uuid: "",
       name: "",
       description: "",
-      immportant: "",
+      important: "",
       mean: "",
       baseForm: "",
       baseLang: 0,
       rootWordID: 0);
-  List<Synonym> listSynonyms = [];
-  List<Example> listExamples = [];
+  List<ReordableElement> listSynonyms = [];
+  List<ReordableElement> listExamples = [];
   String article = "";
   String baseWord = "";
   Language baseLang =
@@ -61,6 +62,7 @@ class WordsDetailState extends State<WordsDetail> {
 
       return translated.text;
     } finally {
+      // ignore: control_flow_in_finally
       return "";
     }
   }
@@ -79,7 +81,7 @@ class WordsDetailState extends State<WordsDetail> {
     titleController.text = editWord.name;
     descriptionController.text = editWord.description;
     meanController.text = editWord.mean;
-    immportantController.text = editWord.immportant;
+    importantController.text = editWord.important;
   }
 
   Future<String> setBaseSettings() async {
@@ -183,21 +185,25 @@ class WordsDetailState extends State<WordsDetail> {
               controller: meanController,
               decoration: const InputDecoration(label: Text("Mean")),
             ),
+            // IconButton.filled(
+            //     onPressed: _showEditMeans(context), icon: Icon(Icons.edit))
+
             TextField(
-              controller: immportantController,
-              decoration: const InputDecoration(label: Text("Immportant")),
+              controller: importantController,
+              decoration: const InputDecoration(label: Text("Important")),
               onChanged: (value) {
-                editWord = editWord.copyWith(immportant: value);
+                editWord = editWord.copyWith(important: value);
               },
             ),
 
             buildWidgetSynonymsView(listSynonyms),
 
+            buildWidgetExamplesView(listExamples, maxDesc: 1),
+
             if (isLoading)
               const LinearProgressIndicator()
             else
               Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   IconButton(
                       onPressed: _fillData,
@@ -206,6 +212,10 @@ class WordsDetailState extends State<WordsDetail> {
                   IconButton(
                       onPressed: Goverbformen,
                       icon: const Icon(Icons.add_task)),
+                  IconButton(
+                      onPressed: () =>
+                          _showOrEditReordable(context, listSynonyms),
+                      icon: const Icon(Icons.edit)),
                 ],
               ),
           ],
@@ -219,7 +229,7 @@ class WordsDetailState extends State<WordsDetail> {
         name: titleController.text,
         description: descriptionController.text,
         mean: meanController.text,
-        immportant: immportantController.text);
+        important: importantController.text);
     if (editWord.id > 0) {
       await UpdateWordIfNeed(editWord);
     } else {
@@ -229,31 +239,30 @@ class WordsDetailState extends State<WordsDetail> {
     return "";
   }
 
-  Widget _addListTitleSynonym(String title1, String description, Synonym item) {
+  Widget _addListTitleSynonym(
+      String title1, String description, ReordableElement item) {
     String tempTitle = title1;
     return ListTile(
         title: Text(title1),
         subtitle: Text(description),
-        trailing: item.synonymWord > 0
-            ? IconButton(
-                onPressed: () {
-                  viewWord(item);
-                },
-                icon: const Icon(Icons.download_done))
-            : IconButton(
-                onPressed: () {
-                  addNewWordFromSynonym(item);
-                },
-                icon: const Icon(Icons.do_disturb)),
+        trailing: IconButton(
+            onPressed: () {
+              viewWord(item.name);
+            },
+            icon: const Icon(Icons.download_done)),
+        // : IconButton(
+        //     onPressed: () {
+        //       addNewWordFromSynonym(item);
+        //     },
+        //     icon: const Icon(Icons.do_disturb)),
         onLongPress: () {
           debugPrint(tempTitle);
         },
         onTap: () async {
           String onTapeString = tempTitle;
           Word? wordToEdit;
-          if (item.synonymWord > 0) {
-            wordToEdit = await db.getWordById(item.synonymWord);
-          }
+          // wordToEdit = await db.getWordById(item.name);
+
           navigateToDetail(
               wordToEdit ??
                   Word(
@@ -262,7 +271,7 @@ class WordsDetailState extends State<WordsDetail> {
                       name: onTapeString,
                       description: description,
                       mean: "",
-                      immportant: "",
+                      important: "",
                       baseForm: "",
                       baseLang: baseLang.id,
                       rootWordID: editWord.id),
@@ -285,7 +294,114 @@ class WordsDetailState extends State<WordsDetail> {
         );
   }
 
-  Widget buildWidgetSynonymsView(List<Synonym> listSynonyms) {
+  Widget _addListTitleExample(
+      String title1, String description, ReordableElement item) {
+    String tempTitle = title1;
+    return ListTile(
+        title: Text(title1),
+        subtitle: Text(description),
+        trailing: IconButton(
+            onPressed: () {
+              viewWord(item.name);
+            },
+            icon: const Icon(Icons.download_done)),
+        onLongPress: () {
+          debugPrint(tempTitle);
+        },
+        onTap: () async {
+          String onTapeString = tempTitle;
+          Word? wordToEdit;
+          // wordToEdit = await db.getWordById(item.name);
+
+          navigateToDetail(
+              wordToEdit ??
+                  Word(
+                      id: -99,
+                      uuid: "",
+                      name: onTapeString,
+                      description: description,
+                      mean: "",
+                      important: "",
+                      baseForm: "",
+                      baseLang: baseLang.id,
+                      rootWordID: editWord.id),
+              wordToEdit != null
+                  ? "View synonyme for '${editWord.name}'"
+                  : "Add synonyme for ${editWord.name}");
+        }
+
+        //   navigateToDetail(
+        //       const Word(
+        //           id: -99,
+        //           uuid: "",
+        //           name: title1,
+        //           description: description,
+        //           mean: "",
+        //           baseLang: 0,
+        //           rootWordID: 0),
+        //       "Add synonym");
+        // },
+        );
+  }
+
+  Widget buildWidgetExamplesView(List<ReordableElement> examples,
+      {int maxDesc = 100}) {
+    List<Widget> listChildren = [];
+    int maxLengthSynonymsList = maxDesc;
+    String titleList = "";
+    if (examples.isNotEmpty) {
+      int maxCount = examples.length > maxLengthSynonymsList
+          ? maxLengthSynonymsList
+          : examples.length;
+      titleList = examples
+          .map((e) {
+            return " ${e.name}";
+          })
+          .toList()
+          .sublist(0, maxCount)
+          .join(", ");
+      var listSynonymsSliced = examples.sublist(0);
+      for (var _item in listSynonymsSliced) {
+        listChildren.add(_addListTitleExample(_item.name, _item.name, _item));
+
+        // ))
+      }
+    }
+
+    return ExpansionTile(
+      title: const Text("Examples: "),
+      subtitle: Text(titleList),
+      initiallyExpanded: false,
+      trailing: IconButton(
+        icon: const Icon(Icons.download),
+        onPressed: () {
+          setState(() {
+            isLoading = true;
+          });
+          // for (var synItem in listSynonyms) {
+          //   if (synItem.synonymWord == 0) {
+          //     addNewWordWithAllData(synItem.name, editWord);
+          //   }
+          // }
+          db.getSynonymsByWord(editWord.id).then((value) {
+            listSynonyms = value;
+            setState(() {
+              isLoading = false;
+            });
+            db.getExamplesByWord(editWord.id).then((onValue) {
+              listExamples = onValue;
+              setState(() {
+                isLoading = false;
+              });
+            });
+          });
+        },
+      ),
+      children: listChildren,
+    );
+  }
+
+  Widget buildWidgetSynonymsView(List<ReordableElement> listSynonyms) {
     List<Widget> listChildren = [];
     int maxLengthSynonymsList = 100;
     String titleList = "";
@@ -303,7 +419,7 @@ class WordsDetailState extends State<WordsDetail> {
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
       for (var _item in listSynonymsSliced) {
         listChildren
-            .add(_addListTitleSynonym(_item.name, _item.translatedName, _item));
+            .add(_addListTitleSynonym(_item.name, _item.translate, _item));
 
         // ))
       }
@@ -319,11 +435,11 @@ class WordsDetailState extends State<WordsDetail> {
           setState(() {
             isLoading = true;
           });
-          for (var synItem in listSynonyms) {
-            if (synItem.synonymWord == 0) {
-              addNewWordWithAllData(synItem.name, editWord);
-            }
-          }
+          // for (var synItem in listSynonyms) {
+          //   if (synItem.synonymWord == 0) {
+          //     addNewWordWithAllData(synItem.name, editWord);
+          //   }
+          // }
           db.getSynonymsByWord(editWord.id).then((value) {
             listSynonyms = value;
             setState(() {
@@ -423,7 +539,7 @@ class WordsDetailState extends State<WordsDetail> {
         isChanched = true;
       }
       if (isChanched) {
-        var result = await db.updateWord(toUpdate);
+        await db.updateWord(toUpdate);
         wordToUpdate = toUpdate.copyWith();
       }
     }
@@ -467,7 +583,7 @@ class WordsDetailState extends State<WordsDetail> {
       var leipzigdate = await db.getLeipzigDataByWord(editWord);
       if (leipzigdate != null) {}
     } on Exception catch (e) {
-      // TODO
+      print(e);
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
     listExamples = await db.getExamplesByWord(editWord.id);
@@ -493,15 +609,15 @@ class WordsDetailState extends State<WordsDetail> {
     if (result) {}
   }
 
-  viewWord(Synonym item) async {
-    Word? synonymWord = await db.getWordByName(item.name);
+  viewWord(String item) async {
+    Word? synonymWord = await db.getWordByName(item);
     synonymWord ??= Word(
         id: -99,
         uuid: "",
-        name: item.name,
+        name: item,
         description: "",
         mean: "",
-        immportant: "",
+        important: "",
         baseForm: "",
         baseLang: 0,
         rootWordID: editWord.id);
@@ -549,6 +665,23 @@ class WordsDetailState extends State<WordsDetail> {
     }));
     if (result) {
       setState(() {});
+    }
+  }
+
+  _showOrEditReordable(
+      BuildContext context, List<ReordableElement> elements) async {
+    // var dbmeans = await db.getSynonymsByWord(editWord.id);
+    // List<ReordableElement> orders = [];
+    // for (var item in dbmeans) {
+    //   orders.add(ReordableElement(
+    //       id: 0, name: item.name, translate: item.translatedName, order: 0));
+    // }
+    final List<ReordableElement> result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return ModalShowReordableView(listToView: elements);
+    }));
+    if (result.isNotEmpty) {
+      // toUpdate =
     }
   }
 }

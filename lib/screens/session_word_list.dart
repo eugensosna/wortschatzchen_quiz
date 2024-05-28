@@ -47,12 +47,10 @@ class _SessionWordListState extends State<SessionWordList> {
     _getListSessions();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final String empty = getDefaultSessionName();
     return Scaffold(
-      backgroundColor: Colors.grey,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -70,9 +68,19 @@ class _SessionWordListState extends State<SessionWordList> {
           SliverList.builder(
             itemBuilder: (context, index) {
               var itemWord = listWords.elementAt(index);
-              return ListTile(
-                title: Text("${itemWord.name},${itemWord.baseForm} "),
-                leading: Text(itemWord.mean),
+              return GestureDetector(
+                onDoubleTap: () {
+                  navigateToDetail(itemWord, "View ${itemWord.name}");
+                },
+                child: Dismissible(
+                  key: Key(itemWord.uuid),
+                  direction: DismissDirection.startToEnd,
+                  child: ListTile(
+                    title: Text(
+                        "${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
+                    leading: Text(" ${itemWord.important} ${itemWord.mean} "),
+                  ),
+                ),
               );
             },
             itemCount: listWords.length,
@@ -108,15 +116,16 @@ class _SessionWordListState extends State<SessionWordList> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: DropdownMenu<String>(
-          initialSelection: llistSessions.isNotEmpty ? llistSessions[0].description : empty,
-            enableFilter: true,
-            enableSearch: true,
-            controller: sessionsController,
-            dropdownMenuEntries: llistSessions.map((toElement) {
-              return DropdownMenuEntry<String>(
+          initialSelection:
+              llistSessions.isNotEmpty ? llistSessions[0].description : empty,
+          enableFilter: true,
+          enableSearch: true,
+          controller: sessionsController,
+          dropdownMenuEntries: llistSessions.map((toElement) {
+            return DropdownMenuEntry<String>(
               value: toElement.typesession,
               label: toElement.description,
-              );
+            );
           }).toList(),
           onSelected: (value) {
             widget.talker.info("selected session item $value");
@@ -172,13 +181,16 @@ class _SessionWordListState extends State<SessionWordList> {
         defaultSession = "${item.typesession} (${item.count})";
       }
       result.add(SessionHeader(
-          typesession: item.typesession, description: "${item.typesession} (${item.count})"));
+          typesession: item.typesession,
+          description: "${item.typesession} (${item.count})"));
     }
 
     if (defaultSession.isEmpty) {
       defaultSession = todaySession;
       result.insert(
-          0, SessionHeader(typesession: defaultSession, description: "$defaultSession (0)"));
+          0,
+          SessionHeader(
+              typesession: defaultSession, description: "$defaultSession (0)"));
     }
     return result;
   }
@@ -191,7 +203,6 @@ class _SessionWordListState extends State<SessionWordList> {
     });
   }
 
-
   Future<void> addWord(String name) async {
     navigateToDetail(
         Word(
@@ -199,7 +210,7 @@ class _SessionWordListState extends State<SessionWordList> {
             uuid: "",
             name: name,
             description: "",
-            immportant: "",
+            important: "",
             mean: "",
             baseForm: "",
             baseLang: 0,
@@ -208,12 +219,13 @@ class _SessionWordListState extends State<SessionWordList> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
       print(wordToEdit.id);
       return WordsDetail(wordToEdit, title, widget.db);
     }));
     if (result) {
-      await _upda
+      listWords = await _updateWordsList();
       setState(() {
         isLoad = false;
       });

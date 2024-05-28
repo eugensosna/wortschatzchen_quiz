@@ -1,4 +1,24 @@
 {
     "cmake.configureOnOpen": false,
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cSpell.words": [
+        "ARGB",
+        "Artikel",
+        "auch",
+        "Autocomplit",
+        "Beschreibung",
+        "Complite",
+        "Grundform",
+        "Hrefs",
+        "Kompositum",
+        "leipz",
+        "leipzigsynonyms",
+        "Reordable",
+        "Sachgebiet",
+        "Screenn",
+        "Siehe",
+        "Silbentrennung",
+        "typesession",
+        "Wortart"
+    ]
 }
