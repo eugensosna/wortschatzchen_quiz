@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
@@ -213,8 +214,12 @@ class WordsDetailState extends State<WordsDetail> {
                       onPressed: Goverbformen,
                       icon: const Icon(Icons.add_task)),
                   IconButton(
-                      onPressed: () =>
-                          _showOrEditReordable(context, listSynonyms),
+                      onPressed: () async {
+                        var result =
+                            await _showOrEditReordable(context, listSynonyms);
+                        await _saveToExamples(result);
+                      },
+                          
                       icon: const Icon(Icons.edit)),
                 ],
               ),
@@ -362,7 +367,8 @@ class WordsDetailState extends State<WordsDetail> {
           .join(", ");
       var listSynonymsSliced = examples.sublist(0);
       for (var _item in listSynonymsSliced) {
-        listChildren.add(_addListTitleExample(_item.name, _item.name, _item));
+        listChildren
+            .add(_addListTitleExample(_item.name, _item.translate, _item));
 
         // ))
       }
@@ -374,7 +380,9 @@ class WordsDetailState extends State<WordsDetail> {
       initiallyExpanded: false,
       trailing: IconButton(
         icon: const Icon(Icons.download),
-        onPressed: () {
+        onPressed: () async {
+          var result = await _showOrEditReordable(context, listSynonyms);
+          await _saveToExamples(result);
           setState(() {
             isLoading = true;
           });
@@ -431,7 +439,13 @@ class WordsDetailState extends State<WordsDetail> {
       initiallyExpanded: false,
       trailing: IconButton(
         icon: const Icon(Icons.download),
-        onPressed: () {
+        onPressed: () async {
+          {
+            var result = await _showOrEditReordable(context, listSynonyms);
+            await _saveToExamples(result);
+          }
+
+
           setState(() {
             isLoading = true;
           });
@@ -668,7 +682,15 @@ class WordsDetailState extends State<WordsDetail> {
     }
   }
 
-  _showOrEditReordable(
+_saveToExamples(List<ReordableElement> elements) async {
+    await db.deleteSynonymsByWord(editWord);
+    for (var (index, item) in elements.indexed) {
+      await db.into(db.examples).insert(
+          ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
+    }
+  }
+
+  Future<List<ReordableElement>> _showOrEditReordable(
       BuildContext context, List<ReordableElement> elements) async {
     // var dbmeans = await db.getSynonymsByWord(editWord.id);
     // List<ReordableElement> orders = [];
@@ -683,5 +705,7 @@ class WordsDetailState extends State<WordsDetail> {
     if (result.isNotEmpty) {
       // toUpdate =
     }
+    return result;
   }
+
 }
