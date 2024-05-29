@@ -37,7 +37,8 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
             ListTile(
               key: Key("$index"),
               title: Text("${widget.listToView[index].name}"),
-              leading: Text("${widget.listToView[index].translate}"),
+              subtitle: Text("${widget.listToView[index].translate}"),
+              // leading: ,
             ),
         ],
         onReorder: (oldIndex, newIndex) {

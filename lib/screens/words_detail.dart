@@ -219,7 +219,6 @@ class WordsDetailState extends State<WordsDetail> {
                             await _showOrEditReordable(context, listSynonyms);
                         await _saveToExamples(result);
                       },
-                          
                       icon: const Icon(Icons.edit)),
                 ],
               ),
@@ -381,16 +380,12 @@ class WordsDetailState extends State<WordsDetail> {
       trailing: IconButton(
         icon: const Icon(Icons.download),
         onPressed: () async {
-          var result = await _showOrEditReordable(context, listSynonyms);
+          var result = await _showOrEditReordable(context, listExamples);
           await _saveToExamples(result);
           setState(() {
             isLoading = true;
           });
-          // for (var synItem in listSynonyms) {
-          //   if (synItem.synonymWord == 0) {
-          //     addNewWordWithAllData(synItem.name, editWord);
-          //   }
-          // }
+
           db.getSynonymsByWord(editWord.id).then((value) {
             listSynonyms = value;
             setState(() {
@@ -444,7 +439,6 @@ class WordsDetailState extends State<WordsDetail> {
             var result = await _showOrEditReordable(context, listSynonyms);
             await _saveToExamples(result);
           }
-
 
           setState(() {
             isLoading = true;
@@ -682,12 +676,31 @@ class WordsDetailState extends State<WordsDetail> {
     }
   }
 
-_saveToExamples(List<ReordableElement> elements) async {
-    await db.deleteSynonymsByWord(editWord);
+  _saveToExamples(List<ReordableElement> elements) async {
+    Example? elemExamples;
+    // await db.deleteSynonymsByWord(editWord);
     for (var (index, item) in elements.indexed) {
-      await db.into(db.examples).insert(
-          ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
-    }
+      if (item.id <= 0) {
+        int id = await db.into(db.examples).insert(
+            ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
+        elemExamples = await db.getExampleByIdOrUuid(id);
+        if (elemExamples != null) {
+          elemExamples = elemExamples.copyWith(exampleOrder: index);
+        }
+      } else {
+          elemExamples = Example(
+              id: item.id,
+              uuid: item.uuid,
+              baseWord: editWord.id,
+              name: item.name,
+              goaltext: "",
+              exampleOrder: index);
+        }
+        if (elemExamples != null) {
+          await db.update(db.examples).replace(elemExamples);
+        }
+      }
+    
   }
 
   Future<List<ReordableElement>> _showOrEditReordable(
@@ -702,10 +715,10 @@ _saveToExamples(List<ReordableElement> elements) async {
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return ModalShowReordableView(listToView: elements);
     }));
+
     if (result.isNotEmpty) {
       // toUpdate =
     }
     return result;
   }
-
 }

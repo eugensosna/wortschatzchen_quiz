@@ -115,23 +115,38 @@ class _SessionWordListState extends State<SessionWordList> {
       preferredSize: const Size.fromHeight(70),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        child: DropdownMenu<String>(
-          initialSelection:
-              llistSessions.isNotEmpty ? llistSessions[0].description : empty,
-          enableFilter: true,
-          enableSearch: true,
-          controller: sessionsController,
-          dropdownMenuEntries: llistSessions.map((toElement) {
-            return DropdownMenuEntry<String>(
-              value: toElement.typesession,
-              label: toElement.description,
-            );
-          }).toList(),
-          onSelected: (value) {
-            widget.talker.info("selected session item $value");
-            currentTypeSession = value!;
-            _updateWordsList();
-          },
+        child: Row(
+          children: [
+            DropdownMenu<String>(
+              // initialSelection: llistSessions.isNotEmpty
+              // ? llistSessions[0].description
+              // : empty,
+              enableFilter: false,
+              enableSearch: true,
+              controller: sessionsController,
+              dropdownMenuEntries: llistSessions.map((toElement) {
+                return DropdownMenuEntry<String>(
+                  value: toElement.typesession,
+                  label: toElement.description,
+                );
+              }).toList(),
+              onSelected: (value) {
+                widget.talker.info("selected session item $value");
+                currentTypeSession = value!;
+                _updateWordsList();
+              },
+            ),
+            IconButton(
+                onPressed: () {
+                  currentTypeSession = "";
+                  _updateWordsList();
+
+                  setState(() {
+                    sessionsController.clear();
+                  });
+                },
+                icon: Icon(Icons.cancel)),
+          ],
         ),
       ),
     );

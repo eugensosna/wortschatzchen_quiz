@@ -27,11 +27,13 @@ class DbHelper extends AppDatabase {
     // return result;
 
     var customQuery = customSelect('''
-        select synonyms.id,synonyms.uuid, translated_words.translated_name as translate, synonyms.name, synonyms.id as orderid from synonyms
+        select synonyms.id,Max(synonyms.uuid), Max( translated_words.translated_name) as translate, Max(synonyms.name), max(synonyms.id) as orderid from synonyms
+
 
         left JOIN translated_words
         on  translated_words.name = synonyms.name
         WHERE synonyms.base_word = ?
+        GROUP BY synonyms.id 
         order by orderid''',
         readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
     var listExamples = await customQuery.get();
@@ -54,11 +56,12 @@ class DbHelper extends AppDatabase {
 
     // List<SessionsGroupedByName> result = [];
     var customQuery = customSelect('''
-        select examples.id,examples.uuid, translated_words.translated_name as translate, examples.name, examples.example_order as orderid from examples
+        select examples.id,Max(examples.uuid) as uuid, Max(translated_words.translated_name) as translate, Max(examples.name) as name, Max(examples.example_order) as orderid from examples
 
         left JOIN translated_words
         on  translated_words.name = examples.name
         WHERE examples.base_word = ?
+        Group By examples.id
         order by orderid''',
         readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
     var listExamples = await customQuery.get();
@@ -77,6 +80,16 @@ class DbHelper extends AppDatabase {
               [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
         .getSingleOrNull();
   }
+  Future<Example?> getExampleByIdOrUuid(int id, {String uuid = ""}) async {
+    var selectRowBy =
+        (select(examples)..where((tbl) => Expression.and([tbl.id.equals(id)])));
+    if (uuid.isNotEmpty) {
+      selectRowBy = (select(examples)
+        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)])));
+    }
+    return selectRowBy.getSingleOrNull();
+  }
+
 
   Future<Language?> getLangById(int id) {
     return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingle();
@@ -116,6 +129,9 @@ class DbHelper extends AppDatabase {
 
   Future<bool> updateWord(Word item) async {
     return update(words).replace(item);
+  }
+  Future<bool> updateExample(Example item) async {
+    return update(examples).replace(item);
   }
 
   Future<bool> updateLeipzigData(LeipzigDataFromIntranetData item) async {
