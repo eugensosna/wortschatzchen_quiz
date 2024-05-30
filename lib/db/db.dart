@@ -131,7 +131,8 @@ class AppDatabase extends _$AppDatabase {
 
           } else {
             if (from < 11) {
-              await customStatement('ALTER TABLE means   ADD COLUMN meansorder INTEGER;');
+              await customStatement(
+                  'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
               await customStatement("""update means set meansorder=0;""");
 
             } else {
@@ -178,6 +179,11 @@ class AppDatabase extends _$AppDatabase {
         if (from < 6) {
           m.createTable(sessions);
           m.createIndex(typeSession);
+        }
+        if (from < 11) {
+          await customStatement(
+              'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
+          await customStatement("""update means set means_order=0;""");
         }
         
 

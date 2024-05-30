@@ -101,33 +101,29 @@ class WordsDetailState extends State<WordsDetail> {
             LanguagesCompanion.insert(name: "German", shortName: "de")));
         baseLang = (await db.getLangById(id))!;
       }
-      if (editWord.name.isNotEmpty && editWord.id > 0) {
-        fillControllers(editWord);
-        UpdateWordIfNeed(editWord);
-        //await addWord();
-
-        db.getSynonymsByWord(editWord.id).then((value) {
-          listSynonyms = value;
-
-          setState(() {});
-        });
-        db.getExamplesByWord(editWord.id).then((onValue) {
-          setState(() {
-            listExamples = onValue;
-          });
-        });
-        db.getLeipzigDataByWord(editWord).then(
-          (value) {
-            if (value != null) {
-              setState(() {
-                article = value.article;
-                baseWord = value.wordOfBase;
-              });
-            }
-          },
-        );
-      } else {}
     }
+
+    if (editWord.name.isNotEmpty && editWord.id > 0) {
+      fillControllers(editWord);
+      UpdateWordIfNeed(editWord);
+      //await addWord();
+
+      listSynonyms = await db.getSynonymsByWord(editWord.id);
+      listExamples = await db.getExamplesByWord(editWord.id);
+
+      var data = await db.getLeipzigDataByWord(editWord);
+      if (data != null) {
+        article = data.article;
+        baseWord = data.wordOfBase;
+      }
+      Future.delayed(Duration(seconds: 1)).then(
+        (value) {
+          setState(() {
+          
+        });
+        },
+      );
+    } else {}
 
     return "Ok";
   }
@@ -532,7 +528,7 @@ class WordsDetailState extends State<WordsDetail> {
       } else {*/
       Error();
     } else {
-      var isChanched = true;
+      var isChanched = false;
 
       Word toUpdate = wordToUpdate.copyWith();
 
@@ -559,7 +555,6 @@ class WordsDetailState extends State<WordsDetail> {
       var word = await addNewWord(titleController.text, editWord);
       if (word != null) {
         editWord = word.copyWith();
-        
       } else {
         Error();
       }
@@ -687,24 +682,34 @@ class WordsDetailState extends State<WordsDetail> {
       if (item.id <= 0) {
         int id = await db.into(db.examples).insert(
             ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
-        elemExamples = await db.getExampleByIdOrUuid(id);
+        elemExamples = await db
+            .
+
+            /// The code snippet provided is a Dart function named
+            /// `getExampleByIdOrUuid`. This function is likely designed to retrieve
+            /// an example object based on either its ID or UUID. The function
+            /// signature suggests that it takes a single parameter, which could be
+            /// either an ID or a UUID, and returns the corresponding example
+            /// object. The actual implementation of this function would involve
+            /// querying a data source (such as a database) to find the example
+            /// object based on the provided ID or UUID.
+            getExampleByIdOrUuid(id);
         if (elemExamples != null) {
           elemExamples = elemExamples.copyWith(exampleOrder: index);
         }
       } else {
-          elemExamples = Example(
-              id: item.id,
-              uuid: item.uuid,
-              baseWord: editWord.id,
-              name: item.name,
-              goaltext: "",
-              exampleOrder: index);
-        }
-        if (elemExamples != null) {
-          await db.update(db.examples).replace(elemExamples);
-        }
+        elemExamples = Example(
+            id: item.id,
+            uuid: item.uuid,
+            baseWord: editWord.id,
+            name: item.name,
+            goaltext: "",
+            exampleOrder: index);
       }
-    
+      if (elemExamples != null) {
+        await db.update(db.examples).replace(elemExamples);
+      }
+    }
   }
 
   Future<List<ReordableElement>> _showOrEditReordable(

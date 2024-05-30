@@ -78,7 +78,7 @@ class _SessionWordListState extends State<SessionWordList> {
                   child: ListTile(
                     title: Text(
                         "${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
-                    leading: Text(" ${itemWord.important} ${itemWord.mean} "),
+                    leading: Text(" ${itemWord.important}  "),
                   ),
                 ),
               );

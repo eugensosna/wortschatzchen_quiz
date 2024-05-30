@@ -151,15 +151,6 @@ class WordsListState extends State<WordsList> {
         //style: const TextStyle(fontSize: 6),
       ),
       subtitle: Text("${itemWord.description} ${itemWord.mean}"),
-      trailing: GestureDetector(
-        child: const Icon(
-          Icons.delete,
-          color: Colors.grey,
-        ),
-        onTap: () {
-          _delete(itemWord);
-        },
-      ),
       onTap: () {
         debugPrint("lit Tap");
       },
