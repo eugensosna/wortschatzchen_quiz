@@ -115,6 +115,13 @@ class WordsListState extends State<WordsList> {
                   ),
                   onDismissed: (direction) {
                     widget.talker.debug("Dismissible delete ${wordItem.name} ");
+                    _delete(wordItem).then(
+                      (value) {
+                        setState(() {});
+                      },
+                    );
+                    
+                    
                   },
                   child: listWordView(wordItem),
                 )),
@@ -231,10 +238,11 @@ class WordsListState extends State<WordsList> {
     }
   }
 
-  void _delete(Word itemWord) async {
-    DbHelper().deleteWord(itemWord).then((value) {
+  Future<int> _delete(Word itemWord) async {
+    db.deleteWord(itemWord).then((value) {
       updateListWords();
     });
+    return 0;
   }
 
   bottomNavigationBar(BuildContext context) {

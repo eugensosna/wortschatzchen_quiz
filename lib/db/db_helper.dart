@@ -27,7 +27,7 @@ class DbHelper extends AppDatabase {
     // return result;
 
     var customQuery = customSelect('''
-        select synonyms.id,Max(synonyms.uuid), Max( translated_words.translated_name) as translate, Max(synonyms.name), max(synonyms.id) as orderid from synonyms
+        select synonyms.id as id,Max(synonyms.uuid) as uuid, Max( translated_words.translated_name) as translate, Max(synonyms.name) as name, max(synonyms.id) as orderid from synonyms
 
 
         left JOIN translated_words
@@ -152,7 +152,7 @@ class DbHelper extends AppDatabase {
                 tbl.baseLang.equals(baseLangID),
                 tbl.targetLang.equals(targetLangID)
               ])))
-        .getSingle();
+        .getSingleOrNull();
   }
 
   Future<Synonym?> getSynonymEntry(String inputText, Word basedWord) async {

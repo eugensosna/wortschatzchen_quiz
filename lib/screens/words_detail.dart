@@ -95,7 +95,7 @@ class WordsDetailState extends State<WordsDetail> {
     if (editWord.baseLang > 0) {
       baseLang = (await db.getLangById(editWord.baseLang))!;
     } else {
-      var baseLang1 = await DbHelper().getLangByShortName("de");
+      var baseLang1 = await db.getLangByShortName("de");
       if (baseLang1 == null) {
         int id = (await db.into(db.languages).insert(
             LanguagesCompanion.insert(name: "German", shortName: "de")));
@@ -559,6 +559,7 @@ class WordsDetailState extends State<WordsDetail> {
       var word = await addNewWord(titleController.text, editWord);
       if (word != null) {
         editWord = word.copyWith();
+        
       } else {
         Error();
       }
@@ -573,6 +574,9 @@ class WordsDetailState extends State<WordsDetail> {
         editWord = toUpdate.copyWith();
       }
     }
+
+    descriptionController.text = editWord.description;
+    setState(() {});
     return editWord;
   }
 

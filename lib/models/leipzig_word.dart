@@ -3,7 +3,6 @@ import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:dio/dio.dart';
-import 'package:intl/intl.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 import '../api/leipzig_parse.dart';
@@ -90,16 +89,20 @@ class LeipzigWord {
 
   Future<Word?> addNewWord(
       String name, Word editWord, Language? baseLang) async {
-    var leipzigTranslator = LeipzigTranslator(db: db);
-    leipzigTranslator.baseLang = baseLang ??
-        await db.getLangByShortName(leipzigTranslator.inputLanguage);
 
-    var word = await db.getWordByName(name);
+    Word? word;
+    var leipzigTranslator = LeipzigTranslator(db: db);
+    await leipzigTranslator.updateLanguagesData();
+    // leipzigTranslator.baseLang = baseLang ??
+    //     await db.getLangByShortName(leipzigTranslator.inputLanguage);
+
+
+    //var word = await db.getWordByName(name);
     if (word == null) {
-      var translatedName = await leipzigTranslator.translate(name);
+      //var translatedName = await leipzigTranslator.translate(name);
       int id = await db.into(db.words).insert(WordsCompanion.insert(
             name: name,
-            description: translatedName,
+            description: "",
             mean: "",
             baseForm: "",
             important: "",
@@ -110,6 +113,14 @@ class LeipzigWord {
       await addToSession(id);
 
       word = await db.getWordById(id);
+
+      if (word != null && word.description.isEmpty) {
+        var translatedName = await leipzigTranslator.translate(name);
+        if (translatedName.isNotEmpty) {
+          word = word.copyWith(description: translatedName);
+          db.update(db.words).replace(word);
+        }
+      }
     }
     return word;
   }
@@ -118,6 +129,7 @@ class LeipzigWord {
       LeipzigWord word, DbHelper db, Word editWord) async {
     var wordToUpdate = editWord.copyWith();
     translator = LeipzigTranslator(db: db);
+    await translator.updateLanguagesData();
     if (word.Synonym.isNotEmpty) {
       await db.deleteSynonymsByWord(editWord);
     }
@@ -212,8 +224,8 @@ class LeipzigTranslator {
 
     int id = await db.into(db.translatedWords).insert(
         TranslatedWordsCompanion.insert(
-            baseLang: baseLang == null ? baseLangLocal!.id : 0,
-            targetLang: targetLanguage == null ? targetLanguageLocal!.id : 0,
+        baseLang: baseLang == null ? baseLangLocal!.id : baseLang!.id,
+        targetLang: targetLanguage == null ? targetLanguageLocal!.id : targetLanguage!.id,
             name: input,
             translatedName: outputText));
     return id;
@@ -226,13 +238,13 @@ class LeipzigTranslator {
     Language? baseLangLocal = await db.getLangByShortName(inputLanguage);
     Language? targetLanguageLocal = await db.getLangByShortName(outputLanguage);
     if (baseLangLocal != null &&
-        targetLanguage != null &&
+        targetLanguageLocal != null &&
         (baseLang == null || targetLanguage == null)) {
-      baseLang = baseLangLocal!;
-      targetLanguage = targetLanguageLocal!;
+      baseLang = baseLangLocal;
+      targetLanguage = targetLanguageLocal;
     }
     final shonTranslated =
-        await db.getTranslatedWord(inputText, baseLang!.id, targetLanguage!.id);
+        await db.getTranslatedWord(inputText, baseLangLocal!.id, targetLanguageLocal!.id);
     if (shonTranslated != null) {
       result = shonTranslated.translatedName;
     } else {
@@ -252,6 +264,14 @@ class LeipzigTranslator {
     return result;
   }
 
+  updateLanguagesData() async {
+    Language? baseLangLocal = await db.getLangByShortName(inputLanguage);
+    Language? targetLanguageLocal = await db.getLangByShortName(outputLanguage);
+    if (baseLangLocal != null && targetLanguageLocal != null) {
+      baseLang = baseLangLocal;
+      targetLanguage = targetLanguageLocal;
+    }
+  }
   LeipzigTranslator(
       {this.inputLanguage = "de",
       this.outputLanguage = "uk",

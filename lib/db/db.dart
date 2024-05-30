@@ -154,13 +154,13 @@ class AppDatabase extends _$AppDatabase {
 
           
           }
-          if (from <= 14 && to == 15) {
+          if (from <= 14) {
             await customStatement(
                 'ALTER TABLE words RENAME COLUMN immportant TO important;');
           }
           if (from <= 15 && to == 16) {
-            await customStatement(
-                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
+//            await customStatement(
+//                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
           }
 
 
