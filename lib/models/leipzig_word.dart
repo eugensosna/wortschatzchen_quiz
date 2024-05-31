@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
@@ -24,6 +26,45 @@ class LeipzigWord {
   LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
 
   LeipzigWord(this.name, this.db);
+
+  Future<List<AutocomplitDataHelper>> getAutocompiltLocal(
+      String partOfWord) async {
+    var result = <AutocomplitDataHelper>[];
+    var words = await db.getWordsByNameLike(partOfWord);
+    result = words
+        .map((e) =>
+            AutocomplitDataHelper(isIntern: true, name: e.name, uuid: e.uuid))
+        .toList();
+
+    return result;
+  }
+
+  Future<List<AutocomplitDataHelper>> getAutocompilt(String partOfWord) async {
+    var result = <AutocomplitDataHelper>[];
+
+    final dio = Dio();
+    String url =
+        "https://api.wortschatz-leipzig.de/ws/words/deu_news_2012_3M/prefixword/${Uri.encodeFull(partOfWord)}?minFreq=1&limit=10";
+    final response = await dio.get(Uri.parse(url).toString());
+
+    //print('Response status: ${response.statusCode}');
+    // print('Response body: ${response.body}');
+    if (response.statusCode == 200) {
+      var listRawData = response.data as List;
+      // print(response.data);
+
+      // var listRawData = json.decode(response.data);
+      for (var item in listRawData) {
+        var elem = LeipzigApiAutoComplit.fromJson(item);
+        result.add(AutocomplitDataHelper(
+            name: elem.word!, isIntern: false, uuid: elem.id.toString()));
+      }
+      // var externalData =
+      // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
+    }
+
+    return result;
+  }
 
   Future<bool> getFromInternet() async {
     try {
@@ -89,13 +130,11 @@ class LeipzigWord {
 
   Future<Word?> addNewWord(
       String name, Word editWord, Language? baseLang) async {
-
     Word? word;
     var leipzigTranslator = LeipzigTranslator(db: db);
     await leipzigTranslator.updateLanguagesData();
     // leipzigTranslator.baseLang = baseLang ??
     //     await db.getLangByShortName(leipzigTranslator.inputLanguage);
-
 
     //var word = await db.getWordByName(name);
     if (word == null) {
@@ -155,7 +194,7 @@ class LeipzigWord {
             .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
       }
     }
-    if (Examples.isNotEmpty) {
+    if (word.Examples.isNotEmpty) {
       var listExamples = await db.getExamplesByWord(editWord.id);
       for (var item in word.Examples) {
         await translator.translate(item.Value!);
@@ -224,8 +263,10 @@ class LeipzigTranslator {
 
     int id = await db.into(db.translatedWords).insert(
         TranslatedWordsCompanion.insert(
-        baseLang: baseLang == null ? baseLangLocal!.id : baseLang!.id,
-        targetLang: targetLanguage == null ? targetLanguageLocal!.id : targetLanguage!.id,
+            baseLang: baseLang == null ? baseLangLocal!.id : baseLang!.id,
+            targetLang: targetLanguage == null
+                ? targetLanguageLocal!.id
+                : targetLanguage!.id,
             name: input,
             translatedName: outputText));
     return id;
@@ -243,8 +284,8 @@ class LeipzigTranslator {
       baseLang = baseLangLocal;
       targetLanguage = targetLanguageLocal;
     }
-    final shonTranslated =
-        await db.getTranslatedWord(inputText, baseLangLocal!.id, targetLanguageLocal!.id);
+    final shonTranslated = await db.getTranslatedWord(
+        inputText, baseLangLocal!.id, targetLanguageLocal!.id);
     if (shonTranslated != null) {
       result = shonTranslated.translatedName;
     } else {
@@ -272,6 +313,7 @@ class LeipzigTranslator {
       targetLanguage = targetLanguageLocal;
     }
   }
+
   LeipzigTranslator(
       {this.inputLanguage = "de",
       this.outputLanguage = "uk",
@@ -291,4 +333,40 @@ class MapTextUrls {
   String? Value;
   String? href;
   MapTextUrls({this.Value = "", this.href = ""});
+}
+
+class LeipzigApiAutoComplit {
+  int? id;
+  String? word;
+  int? freq;
+
+  LeipzigApiAutoComplit({this.id, this.word, this.freq});
+
+  LeipzigApiAutoComplit.fromJson(Map<dynamic, dynamic> json) {
+    id = json['id'];
+    word = json['word'];
+    freq = json['freq'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['word'] = this.word;
+    data['freq'] = this.freq;
+    return data;
+  }
+}
+
+class AutocomplitDataHelper {
+  final String name;
+  final bool isIntern;
+  final String uuid;
+
+  AutocomplitDataHelper(
+      {required this.name, required this.isIntern, required this.uuid});
+
+  @override
+  String toString() {
+    return isIntern ? " $name" : "+ $name";
+  }
 }

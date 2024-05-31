@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -18,7 +20,10 @@ class WordsListState extends State<WordsList> {
   int count = 2;
   final DbHelper db;
   bool isLoad = false;
-  List<AutocomplitDataHelper> autoComplitData = [];
+  List<AutocomplitDataHelper> autoComplitData = [
+    AutocomplitDataHelper(name: "test", isIntern: true, uuid: "uuid"),
+  ];
+  TextEditingController autocompleteController = TextEditingController();
 
   int selectedIndex = 2;
 
@@ -44,8 +49,69 @@ class WordsListState extends State<WordsList> {
       appBar: AppBar(title: const Text('Words')),
       body: isLoad
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(8), child: getWordsListView()),
+          : Column(
+              children: [
+                Autocomplete<AutocomplitDataHelper>(
+                  optionsBuilder: (textEditingValue) async {
+                    final textToTest = textEditingValue.text.trim();
+                    if (textToTest.isEmpty || textToTest.length <= 3) {
+                      return const Iterable<AutocomplitDataHelper>.empty();
+                    }
+
+                    var leipzig = LeipzigWord(textToTest, db);
+                    autoComplitData =
+                        await leipzig.getAutocompiltLocal(textToTest);
+                    autoComplitData.insert(
+                        0,
+                        AutocomplitDataHelper(
+                            name: textToTest, isIntern: false, uuid: ""));
+                    var autoComplitDataExt =
+                        await leipzig.getAutocompilt(textToTest);
+                    autoComplitData.addAll(autoComplitDataExt);
+                    return autoComplitData;
+                  },
+                  onSelected: (AutocomplitDataHelper item) {
+                    debugPrint(item.name);
+                    if (item.isIntern) {
+                      // navigateToDetail(wordItem, "View ${wordItem.name}");
+                    } else {
+                      navigateToDetail(
+                          Word(
+                              id: -99,
+                              uuid: "uuid",
+                              name: item.name,
+                              important: "",
+                              description: "",
+                              mean: "",
+                              baseForm: "",
+                              baseLang: 0,
+                              rootWordID: 0),
+                          "Add ${item.name}");
+                    }
+                  },
+                  fieldViewBuilder: (context, textEditingController, focusNode,
+                      onFieldSubmitted) {
+                    return TextFormField(
+                      autofocus: true,
+                      focusNode: focusNode,
+                      controller: textEditingController,
+                      onFieldSubmitted: (value) {
+                        onFieldSubmitted();
+                      },
+                      decoration: InputDecoration(hoverColor: Colors.black38),
+                    );
+                  },
+                ),
+                Expanded(
+                  child: Container(
+                    color: Colors.green.shade100,
+                    child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: getWordsListView()),
+                  ),
+                )
+              ],
+            ),
 
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
@@ -120,8 +186,6 @@ class WordsListState extends State<WordsList> {
                         setState(() {});
                       },
                     );
-                    
-                    
                   },
                   child: listWordView(wordItem),
                 )),
@@ -172,10 +236,11 @@ class WordsListState extends State<WordsList> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      print(wordToEdit.id);
       return WordsDetail(wordToEdit, title, db);
     }));
     if (result) {
+      
+      autocompleteController.clear();
       updateListWords().then((onValue) {
         listWords = onValue;
         setState(() {
@@ -269,13 +334,4 @@ class WordsListState extends State<WordsList> {
             rootWordID: 0),
         "Add new");
   }
-}
-
-class AutocomplitDataHelper {
-  final String name;
-  final bool isIntern;
-  final String uuid;
-
-  AutocomplitDataHelper(
-      {required this.name, required this.isIntern, required this.uuid});
 }

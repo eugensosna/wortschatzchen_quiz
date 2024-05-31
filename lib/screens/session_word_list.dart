@@ -11,8 +11,13 @@ import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 class SessionWordList extends StatefulWidget {
   final DbHelper db;
   final Talker talker;
+  final String currentSesion;
 
-  const SessionWordList({super.key, required this.talker, required this.db});
+  const SessionWordList(
+      {super.key,
+      required this.talker,
+      required this.db,
+      required this.currentSesion});
   @override
   _SessionWordListState createState() => _SessionWordListState();
 }
@@ -30,14 +35,15 @@ class _SessionWordListState extends State<SessionWordList> {
   @override
   void initState() {
     // TODO: implement initState
-    _getListSessions().then(
-      (value) {
-        setState(() {
-          llistSessions = value;
-        });
-      },
-    );
+    // _getListSessions().then(
+    //   (value) {
+    //     setState(() {
+    //       llistSessions = value;
+    //     });
+    //   },
+    // );
     super.initState();
+    _updateWordsList();
   }
 
   @override
@@ -55,11 +61,17 @@ class _SessionWordListState extends State<SessionWordList> {
         slivers: [
           SliverAppBar(
             centerTitle: true,
-            title: SessionListtChoiceView(empty),
+            // title: SessionListtChoiceView(empty),
             pinned: true,
             floating: true,
             snap: true,
             elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async {
+                moveToLastScreen();
+              },
+            ),
             surfaceTintColor: Colors.transparent,
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(70),
@@ -190,7 +202,17 @@ class _SessionWordListState extends State<SessionWordList> {
 
     List<SessionHeader> result = [];
     //def =  getFormattedDate(DateTime.now());
-    final sessions = await widget.db.getGroupedSessionsByName();
+    final sessions = await widget.db
+        .
+
+        /// The `getGroupedSessionsByName` method is a function that
+        /// retrieves a list of sessions grouped by name from the database.
+        /// It returns a list of `SessionHeader` objects, where each object
+        /// contains information about the session type and its description
+        /// (including the count of items in that session). This method is
+        /// used in the `_getListSessions` function to populate the list of
+        /// sessions displayed in the UI.
+        getGroupedSessionsByName();
     for (var item in sessions) {
       if (item.typesession.contains(todaySession)) {
         defaultSession = "${item.typesession} (${item.count})";
@@ -210,8 +232,14 @@ class _SessionWordListState extends State<SessionWordList> {
     return result;
   }
 
+  void moveToLastScreen() async {
+    Navigator.pop(context, true);
+
+    return;
+  }
+
   _updateWordsList() async {
-    List<Word> result = await widget.db.getWordsBySession(currentTypeSession);
+    List<Word> result = await widget.db.getWordsBySession(widget.currentSesion);
 
     setState(() {
       listWords = result;

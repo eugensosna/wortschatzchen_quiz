@@ -26,8 +26,6 @@ Future<Response> getLeipzigHtml(String word) async {
       "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=${Uri.encodeFull(word)}";
   final response = await dio.get(Uri.parse(url).toString());
 
-  //print('Response status: ${response.statusCode}');
-  // print('Response body: ${response.body}');
   if (response.statusCode == 200) {}
 
   return response;

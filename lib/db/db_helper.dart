@@ -99,6 +99,10 @@ class DbHelper extends AppDatabase {
     return (select(words)..where((tbl) => tbl.name.equals(name)))
         .getSingleOrNull();
   }
+  
+  Future<List<Word>> getWordsByNameLike(String name) async {
+    return (select(words)..where((tbl) => tbl.name.contains(name))).get();
+  }
 
   Future<Word?> getWordById(int id) async {
     return (select(words)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();

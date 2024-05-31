@@ -4,6 +4,7 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
+import 'package:wortschatzchen_quiz/screens/sessions_dates.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
 class HomePage extends StatefulWidget {
@@ -29,14 +30,8 @@ class HomePageState extends State<HomePage> {
     dbH.setTalker(widget.talker);
 
     tabBarPages = [
-      SessionWordList(
-        talker: widget.talker,
-        db: dbH,
-      ),
-      WordsList(
-        dbH,
-        talker: widget.talker,
-      ),
+      SessionsDates(db: dbH, talker: widget.talker),
+      SessionsDates(db: dbH, talker: widget.talker),
       WordsList(
         dbH,
         talker: widget.talker,
@@ -54,17 +49,7 @@ class HomePageState extends State<HomePage> {
 
       ImageToText(db: dbH)
     ];
-    // tabBarPages = [
-    //   const WordsList(),
-    //   const WordsList(),
-    //   const WordsList(
-    //     db: dbH,
-    //   ),
-    //   const WordsList(
-    //     db: dbH,
-    //   ),
-    //   const ImageToText(db: dbH),
-    // ];
+    
     super.initState();
   }
 
