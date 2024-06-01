@@ -7,7 +7,7 @@ class AutoComplitHelper {
       {required this.name, required this.isIntern, required this.uuid});
 }
 
-class wordsListsHelper {
+class WordListHelper {
   final int id;
   final String get;
 
@@ -21,7 +21,7 @@ class wordsListsHelper {
   final int baseLang;
   final int rootWordID;
 
-  wordsListsHelper(
+  WordListHelper(
       {required this.id,
       required this.get,
       required this.name,
@@ -50,7 +50,7 @@ class ReordableElement {
     return ReordableElement(
         id: data["id"],
         name: data["name"],
-        translate: data["translate"] == null ? "" : data["translate"],
+        translate: data["translate"] ?? "",
         orderId: data["orderid"],
         uuid: data["uuid"]);
   }

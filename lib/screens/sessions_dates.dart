@@ -15,15 +15,14 @@ class SessionsDates extends StatefulWidget {
   });
 
   @override
-  _SessionsDatesState createState() => _SessionsDatesState();
+  SessionsDatesState createState() => SessionsDatesState();
 }
 
-class _SessionsDatesState extends State<SessionsDates> {
+class SessionsDatesState extends State<SessionsDates> {
   List<SessionHeader> listSessions = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getListSessions().then((value) {
       setState(() {
@@ -33,11 +32,9 @@ class _SessionsDatesState extends State<SessionsDates> {
   }
 
   Future<List<SessionHeader>> _getListSessions() async {
-    final String todaySession = getDefaultSessionName();
-    String defaultSession = "";
+    getDefaultSessionName();
 
     List<SessionHeader> result = [];
-    //def =  getFormattedDate(DateTime.now());
     final sessions = await widget.db.getGroupedSessionsByName();
     for (var item in sessions) {
       // if (item.typesession.contains(todaySession)) {
@@ -55,7 +52,7 @@ class _SessionsDatesState extends State<SessionsDates> {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return SessionWordList(
-          talker: widget.talker, db: widget.db, currentSesion: session);
+          talker: widget.talker, db: widget.db, currentSession: session);
     }));
     if (result) {
       _getListSessions().then((onValue) {
@@ -73,7 +70,7 @@ class _SessionsDatesState extends State<SessionsDates> {
         slivers: [
           SliverGrid.builder(
             itemCount: listSessions.length,
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200,
                 mainAxisExtent: 200,
                 crossAxisSpacing: 3,
@@ -87,7 +84,7 @@ class _SessionsDatesState extends State<SessionsDates> {
                       ? Colors.red.shade300
                       : Colors.amber.shade400,
                   child: Text(
-                    "${item.description}",
+                    item.description,
                   ),
                 ),
                 onTap: () {

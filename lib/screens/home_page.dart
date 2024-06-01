@@ -46,7 +46,10 @@ class HomePageState extends State<HomePage> {
             },
           )),
 
-      ImageToText(db: dbH)
+      ImageToText(
+        db: dbH,
+        talker: widget.talker,
+      )
     ];
     
     super.initState();

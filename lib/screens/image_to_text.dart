@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
@@ -12,14 +13,15 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 
 class ImageToText extends StatefulWidget {
   final DbHelper db;
+  final Talker talker;
 
-  const ImageToText({super.key, required this.db});
+  const ImageToText({super.key, required this.db, required this.talker});
 
   @override
-  _ImageToTextState createState() => _ImageToTextState();
+  ImageToTextState createState() => ImageToTextState();
 }
 
-class _ImageToTextState extends State<ImageToText> {
+class ImageToTextState extends State<ImageToText> {
   List<String> wordsInImage = [];
   List<String> lines = [];
   List<String> transLines = [];
@@ -46,8 +48,6 @@ class _ImageToTextState extends State<ImageToText> {
         _image = XFile(pickedFile.path);
       });
     }
-    //   String a = await getImageTotext(image!.path);
-
     setState(() {});
   }
 
@@ -99,8 +99,14 @@ class _ImageToTextState extends State<ImageToText> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WordsDetail(wordToEdit, title, db);
+    final result =
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return WordsDetail(
+        wordToEdit,
+        title,
+        db,
+        talker: widget.talker,
+      );
     }));
     if (result) {}
   }
@@ -260,7 +266,8 @@ class _ImageToTextState extends State<ImageToText> {
   Future getImageTotext(final imagePath) async {
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     var image = InputImage.fromFilePath(imagePath);
-    final RecognizedText recognizedText = await textRecognizer.processImage(image);
+    final RecognizedText recognizedText =
+        await textRecognizer.processImage(image);
     String text = recognizedText.text.toString();
     return text;
   }

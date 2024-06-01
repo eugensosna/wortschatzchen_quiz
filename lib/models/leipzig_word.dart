@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
@@ -10,7 +9,7 @@ import '../api/leipzig_parse.dart';
 
 class LeipzigWord {
   String name;
-  List<leipzSynonym> synonyms = [];
+  List<LeipzigSynonym> synonyms = [];
   List<MapTextUrls> examples = [];
   List<String> definitions = []; // means
   String kindOfWort = "";
@@ -84,11 +83,10 @@ class LeipzigWord {
     } on Exception catch (e) {
       print(e);
       return false;
-      // TODO
     }
   }
 
-  Future<Word?> addWodrUpdateshort(String name, String description,
+  Future<Word?> addWordUpdateShort(String name, String description,
       Word editWord, Language? baseLang) async {
     var word = await db.getWordByName(name);
     if (word == null) {
@@ -193,15 +191,15 @@ class LeipzigWord {
     }
     if (word.examples.isNotEmpty) {
       for (var item in word.examples) {
-        await translator.translate(item.Value!);
+        await translator.translate(item.value!);
         var example =
-            await db.getExampleByNameAndWord(item.Value!, editWord.id);
+            await db.getExampleByNameAndWord(item.value!, editWord.id);
         if (example != null) {
           continue;
         }
 
         await db.into(db.examples).insert(
-            ExamplesCompanion.insert(baseWord: editWord.id, name: item.Value!));
+            ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
       }
     }
     for (var item in word.synonyms) {
@@ -255,7 +253,7 @@ class LeipzigTranslator {
     Language? baseLangLocal =
         (baseLang ?? await db.getLangByShortName(inputLanguage));
     var targetLanguageLocal =
-        this.targetLanguage ?? await db.getLangByShortName(outputLanguage);
+        targetLanguage ?? await db.getLangByShortName(outputLanguage);
 
     int id = await db.into(db.translatedWords).insert(
         TranslatedWordsCompanion.insert(
@@ -270,6 +268,7 @@ class LeipzigTranslator {
 
   Future<String> translate(String inputText) async {
     String result = "";
+    const int countMillisecondsForGoogle = 270;
 
     var timeStart = DateTime.now().millisecond;
     Language? baseLangLocal = await db.getLangByShortName(inputLanguage);
@@ -280,14 +279,17 @@ class LeipzigTranslator {
       baseLang = baseLangLocal;
       targetLanguage = targetLanguageLocal;
     }
-    final shonTranslated = await db.getTranslatedWord(
+    final alreadyTranslated = await db.getTranslatedWord(
         inputText, baseLangLocal!.id, targetLanguageLocal!.id);
-    if (shonTranslated != null) {
-      result = shonTranslated.translatedName;
+    if (alreadyTranslated != null) {
+      result = alreadyTranslated.translatedName;
     } else {
-      await Future.delayed(const Duration(milliseconds: 270));
+      if ((DateTime.now().millisecond - timeStart) >
+          countMillisecondsForGoogle) {
+        await Future.delayed(
+            const Duration(milliseconds: countMillisecondsForGoogle));
+      }
 
-      print((DateTime.now().millisecond - timeStart) / 1000);
       try {
         final translated = await translator.translate(inputText,
             from: inputLanguage, to: outputLanguage);
@@ -316,19 +318,19 @@ class LeipzigTranslator {
       required this.db});
 }
 
-class leipzSynonym {
+class LeipzigSynonym {
   String name;
   String translate;
   String leipzigHref = "";
-  leipzSynonym(this.name, this.translate, this.leipzigHref);
+  LeipzigSynonym(this.name, this.translate, this.leipzigHref);
   Map<String, dynamic> toMap() =>
       {"name": name, "translate": translate, "href": leipzigHref};
 }
 
 class MapTextUrls {
-  String? Value;
+  String? value;
   String? href;
-  MapTextUrls({this.Value = "", this.href = ""});
+  MapTextUrls({this.value = "", this.href = ""});
 }
 
 class LeipzigApiAutoComplit {
@@ -345,10 +347,10 @@ class LeipzigApiAutoComplit {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['word'] = this.word;
-    data['freq'] = this.freq;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['word'] = word;
+    data['freq'] = freq;
     return data;
   }
 }

@@ -44,7 +44,7 @@ Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
   wortObj.examples.clear();
   for (var value in examples.values) {
     for (var item in value) {
-      wortObj.examples.add(MapTextUrls(Value: item));
+      wortObj.examples.add(MapTextUrls(value: item));
     }
   }
 
@@ -75,10 +75,10 @@ Map<String, dynamic> getBaseHeaders(
           basicValue = [];
           if (basicKindOfWord == "Synonym:") {
             List<MapTextUrls> synonyms = getTextFromListHrefs(value.parent!);
-            List<leipzSynonym> leipzigsynonyms = [];
+            List<LeipzigSynonym> leipzigsynonyms = [];
             for (var element in synonyms) {
               leipzigsynonyms
-                  .add(leipzSynonym(element.Value!, "", element.href!));
+                  .add(LeipzigSynonym(element.value!, "", element.href!));
             }
 
             mapOfHead[basicKindOfWord] = leipzigsynonyms;
@@ -154,7 +154,7 @@ List<MapTextUrls> getTextFromListHrefs(dom.Element root) {
   List<dom.Element> temp = root.getElementsByTagName('a');
   for (var element in temp) {
     result.add(MapTextUrls(
-        Value: element.text.trim(), href: element.attributes["href"]!));
+        value: element.text.trim(), href: element.attributes["href"]!));
     // print(element.text);
   }
   // List<String> wortObj;

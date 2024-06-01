@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:talker/talker.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -14,10 +14,13 @@ class WordsDetail extends StatefulWidget {
   final Word editWord;
   final String title;
   final DbHelper db;
+  final Talker talker;
 
-  const WordsDetail(this.editWord, this.title, this.db, {super.key});
+  const WordsDetail(this.editWord, this.title, this.db,
+      {super.key, required this.talker});
 
   @override
+  // ignore: no_logic_in_create_state
   WordsDetailState createState() => WordsDetailState(editWord, title, db);
 }
 
@@ -75,7 +78,10 @@ class WordsDetailState extends State<WordsDetail> {
     super.initState();
     try {
       setBaseSettings().then((value) {});
-    } catch (e) {}
+    } catch (e) {
+      widget.talker
+          .error("detail init state error fill for ${editWord.name}", e);
+    }
   }
 
   fillControllers(Word editWord) {
@@ -87,9 +93,9 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<String> setBaseSettings() async {
     if (editWord.id > 0) {
-      var editWordupdated = await db.getWordById(editWord.id);
-      if (editWordupdated != null) {
-        editWord = editWordupdated;
+      var editWordUpdated = await db.getWordById(editWord.id);
+      if (editWordUpdated != null) {
+        editWord = editWordUpdated;
       }
     }
     if (editWord.baseLang > 0) {
@@ -105,7 +111,7 @@ class WordsDetailState extends State<WordsDetail> {
 
     if (editWord.name.isNotEmpty && editWord.id > 0) {
       fillControllers(editWord);
-      UpdateWordIfNeed(editWord);
+      updateWordIfNeed(editWord);
       //await addWord();
 
       listSynonyms = await db.getSynonymsByWord(editWord.id);
@@ -116,11 +122,9 @@ class WordsDetailState extends State<WordsDetail> {
         article = data.article;
         baseWord = data.wordOfBase;
       }
-      Future.delayed(Duration(seconds: 1)).then(
+      Future.delayed(const Duration(seconds: 1)).then(
         (value) {
-          setState(() {
-          
-        });
+          setState(() {});
         },
       );
     } else {}
@@ -167,10 +171,6 @@ class WordsDetailState extends State<WordsDetail> {
               child: TextField(
                 controller: descriptionController,
                 style: textStyle,
-                onChanged: (value) {
-                  //FIXME: add save
-                  // updateDescription();
-                },
                 decoration: InputDecoration(
                     labelText: 'Description',
                     labelStyle: textStyle,
@@ -205,9 +205,9 @@ class WordsDetailState extends State<WordsDetail> {
                   IconButton(
                       onPressed: _fillData,
                       icon: const Icon(Icons.downloading)),
-                  IconButton(onPressed: SaveWord, icon: const Icon(Icons.save)),
+                  IconButton(onPressed: saveWord, icon: const Icon(Icons.save)),
                   IconButton(
-                      onPressed: Goverbformen,
+                      onPressed: goToVerbForm,
                       icon: const Icon(Icons.add_task)),
                   IconButton(
                       onPressed: () async {
@@ -224,14 +224,14 @@ class WordsDetailState extends State<WordsDetail> {
     );
   }
 
-  Future<String> SaveWord() async {
+  Future<String> saveWord() async {
     editWord = editWord.copyWith(
         name: titleController.text,
         description: descriptionController.text,
         mean: meanController.text,
         important: importantController.text);
     if (editWord.id > 0) {
-      await UpdateWordIfNeed(editWord);
+      await updateWordIfNeed(editWord);
     } else {
       await addWord();
     }
@@ -275,9 +275,7 @@ class WordsDetailState extends State<WordsDetail> {
                       baseForm: "",
                       baseLang: baseLang.id,
                       rootWordID: editWord.id),
-              wordToEdit != null
-                  ? "View synonyme for '${editWord.name}'"
-                  : "Add synonyme for ${editWord.name}");
+              "Add synonym for ${editWord.name}");
         }
 
         //   navigateToDetail(
@@ -325,9 +323,7 @@ class WordsDetailState extends State<WordsDetail> {
                       baseForm: "",
                       baseLang: baseLang.id,
                       rootWordID: editWord.id),
-              wordToEdit != null
-                  ? "View synonyme for '${editWord.name}'"
-                  : "Add synonyme for ${editWord.name}");
+              "Add synonym for ${editWord.name}");
         }
 
         //   navigateToDetail(
@@ -361,9 +357,8 @@ class WordsDetailState extends State<WordsDetail> {
           .sublist(0, maxCount)
           .join(", ");
       var listSynonymsSliced = examples.sublist(0);
-      for (var _item in listSynonymsSliced) {
-        listChildren
-            .add(_addListTitleExample(_item.name, _item.translate, _item));
+      for (var item in listSynonymsSliced) {
+        listChildren.add(_addListTitleExample(item.name, item.translate, item));
 
         // ))
       }
@@ -416,9 +411,8 @@ class WordsDetailState extends State<WordsDetail> {
           .sublist(0, maxCount)
           .join(", ");
       var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
-      for (var _item in listSynonymsSliced) {
-        listChildren
-            .add(_addListTitleSynonym(_item.name, _item.translate, _item));
+      for (var item in listSynonymsSliced) {
+        listChildren.add(_addListTitleSynonym(item.name, item.translate, item));
 
         // ))
       }
@@ -490,7 +484,7 @@ class WordsDetailState extends State<WordsDetail> {
       String name, String translated, Word editWord) async {
     var leipzigSynonyms = LeipzigWord(editWord.name, db);
     leipzigSynonyms.db = db;
-    var word = await leipzigSynonyms.addWodrUpdateshort(
+    var word = await leipzigSynonyms.addWordUpdateShort(
         name, translated, editWord, baseLang);
     return word;
   }
@@ -520,7 +514,7 @@ class WordsDetailState extends State<WordsDetail> {
     // return word;
   }
 
-  Future<Word> UpdateWordIfNeed(Word wordToUpdate) async {
+  Future<Word> updateWordIfNeed(Word wordToUpdate) async {
     if (wordToUpdate.id <= 0) {
       /*var word = await addNewWord(titleController.text, editWord);
       if (word != null) {
@@ -590,7 +584,7 @@ class WordsDetailState extends State<WordsDetail> {
       var leipzigdate = await db.getLeipzigDataByWord(editWord);
       if (leipzigdate != null) {}
     } on Exception catch (e) {
-      print(e);
+      widget.talker.error("get data from Internet ${editWord.name}", e);
     }
     listSynonyms = await db.getSynonymsByWord(editWord.id);
     listExamples = await db.getExamplesByWord(editWord.id);
@@ -611,7 +605,7 @@ class WordsDetailState extends State<WordsDetail> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WordsDetail(wordToEdit, title, db);
+      return WordsDetail(wordToEdit, title, db, talker: widget.talker);
     }));
     if (result) {}
   }
@@ -664,10 +658,10 @@ class WordsDetailState extends State<WordsDetail> {
     });
   }
 
-  void Goverbformen() async {
+  void goToVerbForm() async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      print(editWord.id);
+      widget.talker.info("go to verbform ${editWord.name}");
       return WebViewControllerWord(editWord: editWord, title: editWord.name);
     }));
     if (result) {

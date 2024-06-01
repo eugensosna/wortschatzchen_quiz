@@ -8,22 +8,20 @@ class WebViewControllerWord extends StatefulWidget {
   const WebViewControllerWord({super.key, required this.editWord, required this.title});
 
   @override
-  _WebViewControllerWordState createState() =>
-      _WebViewControllerWordState(editWord, appBarText: title);
+  WebViewControllerWordState createState() => WebViewControllerWordState();
 }
 
-class _WebViewControllerWordState extends State<WebViewControllerWord> {
-  final Word editWord;
-  final String appBarText;
-  final contoler = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
+class WebViewControllerWordState extends State<WebViewControllerWord> {
+  final controller = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted);
 
-  _WebViewControllerWordState(this.editWord, {required this.appBarText});
+  // WebViewControllerWordState();
   @override
   Widget build(BuildContext context) {
-    Uri uri = Uri.parse("https://www.verbformen.de/?w=$appBarText");
+    Uri uri = Uri.parse("https://www.verbformen.de/?w=${widget.title}");
     return Scaffold(
       appBar: AppBar(
-          title: Text(appBarText),
+          title: Text(widget.title),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -31,7 +29,7 @@ class _WebViewControllerWordState extends State<WebViewControllerWord> {
             },
           )),
       body: WebViewWidget(
-        controller: contoler..loadRequest(uri),
+        controller: controller..loadRequest(uri),
       ),
     );
   }

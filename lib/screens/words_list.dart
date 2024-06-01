@@ -12,12 +12,11 @@ class WordsList extends StatefulWidget {
   const WordsList(this.db, {super.key, required this.talker});
 
   @override
-  State<StatefulWidget> createState() => WordsListState(db);
+  State<StatefulWidget> createState() => WordsListState();
 }
 
 class WordsListState extends State<WordsList> {
   int count = 2;
-  final DbHelper db;
   bool isLoad = false;
   List<AutocompleteDataHelper> autoComplitData = [
     AutocompleteDataHelper(name: "test", isIntern: true, uuid: "uuid"),
@@ -27,13 +26,10 @@ class WordsListState extends State<WordsList> {
   int selectedIndex = 2;
 
   List<Word> listWords = [];
-
-  WordsListState(this.db);
-  List<Word> ordersListWords = [];
+  List<Word> orderedListWords = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     updateListWords().then((value) {
       setState(() {
         isLoad = false;
@@ -57,7 +53,7 @@ class WordsListState extends State<WordsList> {
                       return const Iterable<AutocompleteDataHelper>.empty();
                     }
 
-                    var leipzig = LeipzigWord(textToTest, db);
+                    var leipzig = LeipzigWord(textToTest, widget.db);
                     autoComplitData =
                         await leipzig.getAutocompleteLocal(textToTest);
                     autoComplitData.insert(
@@ -97,7 +93,8 @@ class WordsListState extends State<WordsList> {
                       onFieldSubmitted: (value) {
                         onFieldSubmitted();
                       },
-                      decoration: InputDecoration(hoverColor: Colors.black38),
+                      decoration:
+                          const InputDecoration(hoverColor: Colors.black38),
                     );
                   },
                 ),
@@ -161,8 +158,6 @@ class WordsListState extends State<WordsList> {
           if (wordItem.rootWordID > 0) {}
           return GestureDetector(
             onDoubleTap: () {
-              print(wordItem.name);
-              widget.talker.debug("doubletape edit ${wordItem.name}");
               navigateToDetail(wordItem, "View ${wordItem.name}");
             },
             child: Container(
@@ -235,7 +230,7 @@ class WordsListState extends State<WordsList> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WordsDetail(wordToEdit, title, db);
+      return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
     if (result) {
       
@@ -257,8 +252,8 @@ class WordsListState extends State<WordsList> {
     treeOrder.add(root);
     ids.add(root.id);
 
-    List<Word> childs = await db.getChildrenWordList(root);
-    for (var item in childs) {
+    List<Word> chields = await widget.db.getChildrenWordList(root);
+    for (var item in chields) {
       // ignore: unused_local_variable
       var newTreeOrder = await getRecursiveWordTree(treeOrder, ids, item);
     }
@@ -272,7 +267,7 @@ class WordsListState extends State<WordsList> {
     });
     widget.talker.info("start get wordList");
     Future<List<Word>> fListWords =
-        db.getOrdersWordList(); //db.select(db.words).get();
+        widget.db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
       listWords = value;
       setState(() {
@@ -280,7 +275,7 @@ class WordsListState extends State<WordsList> {
         isLoad = false;
       });
       widget.talker.info("end get wordList");
-      return ordersListWords;
+      return orderedListWords;
     });
 
     return listWords;
@@ -295,7 +290,7 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<int> _delete(Word itemWord) async {
-    db.deleteWord(itemWord).then((value) {
+    widget.db.deleteWord(itemWord).then((value) {
       updateListWords();
     });
     return 0;
@@ -320,7 +315,7 @@ class WordsListState extends State<WordsList> {
   }
 
   void addNewWord() {
-    db.getGroupedSessionsByName().then((onValue) {});
+    widget.db.getGroupedSessionsByName().then((onValue) {});
     navigateToDetail(
         const Word(
             id: -99,

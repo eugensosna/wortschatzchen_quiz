@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -6,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:talker/talker.dart';
 import 'package:uuid/uuid.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 import 'package:path/path.dart' as p;
 
@@ -115,7 +117,6 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 16;
   @override
-  // TODO: implement migration
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {

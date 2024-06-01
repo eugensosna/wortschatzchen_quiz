@@ -11,57 +11,46 @@ import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 class SessionWordList extends StatefulWidget {
   final DbHelper db;
   final Talker talker;
-  final String currentSesion;
+  final String currentSession;
 
   const SessionWordList(
       {super.key,
       required this.talker,
       required this.db,
-      required this.currentSesion});
+      required this.currentSession});
   @override
-  _SessionWordListState createState() => _SessionWordListState();
+  SessionWordListState createState() => SessionWordListState();
 }
 
-class _SessionWordListState extends State<SessionWordList> {
+class SessionWordListState extends State<SessionWordList> {
   String currentTypeSession = "";
   bool isLoad = false;
   List<Word> listWords = [];
   List<AutoComplitHelper> autoComplitData = [];
-  List<SessionHeader> llistSessions = [];
+  List<SessionHeader> listSessions = [];
   String defaultSession = "";
   final TextEditingController sessionsController = TextEditingController();
   final autoComplitController = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
-    // _getListSessions().then(
-    //   (value) {
-    //     setState(() {
-    //       llistSessions = value;
-    //     });
-    //   },
-    // );
     super.initState();
     _updateWordsList();
   }
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     _getListSessions();
   }
 
   @override
   Widget build(BuildContext context) {
-    final String empty = getDefaultSessionName();
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             centerTitle: true,
-            // title: SessionListtChoiceView(empty),
             pinned: true,
             floating: true,
             snap: true,
@@ -75,7 +64,7 @@ class _SessionWordListState extends State<SessionWordList> {
             surfaceTintColor: Colors.transparent,
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(70),
-                child: SearchWordsButton()),
+                child: searchWordsButton()),
           ),
           SliverList.builder(
             itemBuilder: (context, index) {
@@ -107,7 +96,7 @@ class _SessionWordListState extends State<SessionWordList> {
     );
   }
 
-  Container SearchWordsButton() {
+  Container searchWordsButton() {
     return Container(
         width: double.maxFinite,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -117,12 +106,12 @@ class _SessionWordListState extends State<SessionWordList> {
         ),
         child: TextField(
           controller: autoComplitController,
-          decoration: const InputDecoration(label: Text("Suchen")),
+          decoration: const InputDecoration(label: Text("Search")),
           onChanged: (value) {},
         ));
   }
 
-  PreferredSize SessionListtChoiceView(String empty) {
+  PreferredSize sessionListChoiceView(String empty) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(70),
       child: Padding(
@@ -130,13 +119,10 @@ class _SessionWordListState extends State<SessionWordList> {
         child: Row(
           children: [
             DropdownMenu<String>(
-              // initialSelection: llistSessions.isNotEmpty
-              // ? llistSessions[0].description
-              // : empty,
               enableFilter: false,
               enableSearch: true,
               controller: sessionsController,
-              dropdownMenuEntries: llistSessions.map((toElement) {
+              dropdownMenuEntries: listSessions.map((toElement) {
                 return DropdownMenuEntry<String>(
                   value: toElement.typesession,
                   label: toElement.description,
@@ -157,7 +143,7 @@ class _SessionWordListState extends State<SessionWordList> {
                     sessionsController.clear();
                   });
                 },
-                icon: Icon(Icons.cancel)),
+                icon: const Icon(Icons.cancel)),
           ],
         ),
       ),
@@ -239,7 +225,8 @@ class _SessionWordListState extends State<SessionWordList> {
   }
 
   _updateWordsList() async {
-    List<Word> result = await widget.db.getWordsBySession(widget.currentSesion);
+    List<Word> result =
+        await widget.db.getWordsBySession(widget.currentSession);
 
     setState(() {
       listWords = result;
@@ -264,8 +251,13 @@ class _SessionWordListState extends State<SessionWordList> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      print(wordToEdit.id);
-      return WordsDetail(wordToEdit, title, widget.db);
+      widget.talker.info("session word list route to detail ", wordToEdit);
+      return WordsDetail(
+        wordToEdit,
+        title,
+        widget.db,
+        talker: widget.talker,
+      );
     }));
     if (result) {
       listWords = await _updateWordsList();
