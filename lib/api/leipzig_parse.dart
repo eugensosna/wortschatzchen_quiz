@@ -5,7 +5,6 @@ import 'package:html/dom.dart' as dom;
 
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
-import 'package:talker/talker.dart';
 import '../models/leipzig_word.dart';
 
 // class leipzigApiParser {
@@ -42,11 +41,10 @@ Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
   getBaseHeaders(wortObj, pElements);
   var respond = await getLeipzigExamples(wortObj.name);
   var examples = parseHtmlExamples(respond);
-  wortObj.Examples.clear();
+  wortObj.examples.clear();
   for (var value in examples.values) {
-    print(value.toString());
     for (var item in value) {
-      wortObj.Examples.add(MapTextUrls(Value: item));
+      wortObj.examples.add(MapTextUrls(Value: item));
     }
   }
 
@@ -106,28 +104,28 @@ Map<String, dynamic> getBaseHeaders(
         {}
       case "Grundform:":
         {
-          wortObj.BaseWord =
+          wortObj.baseWord =
               (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
         }
       case "Grundform von:":
         {
-          wortObj.BaseWordFor =
+          wortObj.baseWordFor =
               (value as List<String>).isNotEmpty ? (value)[0] : wortObj.name;
         }
       case "Wortart:":
         {
-          wortObj.KindOfWort =
+          wortObj.kindOfWort =
               (value as List<String>).isNotEmpty ? (value).join(",") : "";
         }
       case "Artikel:":
         {
-          wortObj.Artikel = (value as List<String>).isNotEmpty
+          wortObj.article = (value as List<String>).isNotEmpty
               ? (value[0]).toString().trim()
               : "";
         }
       case "Beschreibung:":
         {
-          wortObj.Definitions = value;
+          wortObj.definitions = value;
         }
       case "Kompositum:":
         {}
@@ -137,7 +135,7 @@ Map<String, dynamic> getBaseHeaders(
         {}
       case "Synonym:":
         {
-          wortObj.Synonym = value;
+          wortObj.synonyms = value;
         }
       case "Sachgebiet:":
         {}
@@ -147,7 +145,7 @@ Map<String, dynamic> getBaseHeaders(
         }
     }
   });
-  // wortObj.BaseWord = wortObj.BaseWord.isEmpty ? wortObj.name : wortObj.BaseWord;
+  // wortObj.baseWord = wortObj.baseWord.isEmpty ? wortObj.name : wortObj.baseWord;
   return mapOfHead;
 }
 
@@ -178,7 +176,7 @@ Future<String> getLeipzigExamples(String word) async {
   return result;
 }
 
-Future<String> getLeipzigDornseiff(String word) async {
+Future<String> getLeipzigDornseif(String word) async {
   String result = "";
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));

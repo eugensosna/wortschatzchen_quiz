@@ -581,8 +581,8 @@ class WordsDetailState extends State<WordsDetail> {
 
     try {
       await leipzigSynonyms.getFromInternet();
-      var baseForm = leipzigSynonyms.BaseWord;
-      if (leipzigSynonyms.BaseWord.isNotEmpty) {
+      var baseForm = leipzigSynonyms.baseWord;
+      if (leipzigSynonyms.baseWord.isNotEmpty) {
         var leipzigSynonyms = LeipzigWord(baseForm, db);
         await leipzigSynonyms.getFromInternet();
       }

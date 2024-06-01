@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -20,8 +19,8 @@ class WordsListState extends State<WordsList> {
   int count = 2;
   final DbHelper db;
   bool isLoad = false;
-  List<AutocomplitDataHelper> autoComplitData = [
-    AutocomplitDataHelper(name: "test", isIntern: true, uuid: "uuid"),
+  List<AutocompleteDataHelper> autoComplitData = [
+    AutocompleteDataHelper(name: "test", isIntern: true, uuid: "uuid"),
   ];
   TextEditingController autocompleteController = TextEditingController();
 
@@ -51,26 +50,26 @@ class WordsListState extends State<WordsList> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Autocomplete<AutocomplitDataHelper>(
+                Autocomplete<AutocompleteDataHelper>(
                   optionsBuilder: (textEditingValue) async {
                     final textToTest = textEditingValue.text.trim();
                     if (textToTest.isEmpty || textToTest.length <= 3) {
-                      return const Iterable<AutocomplitDataHelper>.empty();
+                      return const Iterable<AutocompleteDataHelper>.empty();
                     }
 
                     var leipzig = LeipzigWord(textToTest, db);
                     autoComplitData =
-                        await leipzig.getAutocompiltLocal(textToTest);
+                        await leipzig.getAutocompleteLocal(textToTest);
                     autoComplitData.insert(
                         0,
-                        AutocomplitDataHelper(
+                        AutocompleteDataHelper(
                             name: textToTest, isIntern: false, uuid: ""));
                     var autoComplitDataExt =
-                        await leipzig.getAutocompilt(textToTest);
+                        await leipzig.getAutocomplete(textToTest);
                     autoComplitData.addAll(autoComplitDataExt);
                     return autoComplitData;
                   },
-                  onSelected: (AutocomplitDataHelper item) {
+                  onSelected: (AutocompleteDataHelper item) {
                     debugPrint(item.name);
                     if (item.isIntern) {
                       // navigateToDetail(wordItem, "View ${wordItem.name}");
@@ -126,7 +125,7 @@ class WordsListState extends State<WordsList> {
     return Autocomplete(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
-          return const Iterable<AutocomplitDataHelper>.empty();
+          return const Iterable<AutocompleteDataHelper>.empty();
         } else {
           if (autoComplitData.isNotEmpty) {
             return autoComplitData;
@@ -260,7 +259,8 @@ class WordsListState extends State<WordsList> {
 
     List<Word> childs = await db.getChildrenWordList(root);
     for (var item in childs) {
-      var newtreeOrder = await getRecursiveWordTree(treeOrder, ids, item);
+      // ignore: unused_local_variable
+      var newTreeOrder = await getRecursiveWordTree(treeOrder, ids, item);
     }
 
     return treeOrder;
