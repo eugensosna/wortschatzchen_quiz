@@ -51,6 +51,7 @@ dependencies:
   talker_flutter: ^4.2.2
   intl:
   sqlite3: ^2.4.3
+  talker_dio_logger: ^4.2.3
 
 
 
@@ -68,7 +69,7 @@ dev_dependencies:
   drift_dev: ^2.17.0
   uuid: ^4.4.0
   build_runner: ^2.4.9
-  intl: ^0.19.0
+  # intl: ^0.19.0
 
 
 # For information on the generic Dart part of this file, see the

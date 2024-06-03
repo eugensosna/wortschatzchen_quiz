@@ -16,9 +16,7 @@ import '../models/leipzig_word.dart';
 
 // }
 
-Future<Response> getLeipzigHtml(String word) async {
-  final dio = Dio();
-
+Future<Response> getLeipzigHtml(String word, Dio dio) async {
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
   String url =
@@ -39,7 +37,8 @@ Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
   var pElements = def!.getElementsByTagName("p");
 
   getBaseHeaders(wortObj, pElements);
-  var respond = await getLeipzigExamples(wortObj.name);
+
+  var respond = await getLeipzigExamples(wortObj.name, wortObj.getDio());
   var examples = parseHtmlExamples(respond);
   wortObj.examples.clear();
   for (var value in examples.values) {
@@ -161,13 +160,25 @@ List<MapTextUrls> getTextFromListHrefs(dom.Element root) {
   return result;
 }
 
-Future<String> getLeipzigExamples(String word) async {
+Future<String> getLeipzigExamples(String word, Dio dio) async {
   String result = "";
-  final dio = Dio();
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
   String url =
       "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
+  final response = await dio.get(Uri.parse(url).toString());
+
+  // print('Response body: ${response.body}');
+  result = response.data;
+
+  return result;
+}
+
+Future<String> getOpenthesaurus(String word, Dio dio) async {
+  String result = "";
+  // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
+  // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
+  String url = "https://www.openthesaurus.de/synonyme/${Uri.encodeFull(word)}";
   final response = await dio.get(Uri.parse(url).toString());
 
   // print('Response body: ${response.body}');
@@ -234,6 +245,25 @@ Map<int, List<String>> parseHtmlExamples(String text) {
         }
       }
       result[index] = line;
+    }
+  }
+  return result;
+}
+
+
+
+Future<List<String>> parseHtmlOpenthesaurus(String text) async {
+  List<String> result = [];
+  final document = html_parser.parse(text);
+  var wiktionaryList = document.getElementsByClassName("wiktionaryItem");
+  if (wiktionaryList.isNotEmpty) {
+    var parent = wiktionaryList[0].parent;
+    for (var item in parent!.nodes) {
+      if (item.text != null &&
+          item.nodeType == 3 &&
+          item.text!.trim().isNotEmpty) {
+        result.add(item.text!.trim());
+      }
     }
   }
   return result;

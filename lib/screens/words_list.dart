@@ -45,58 +45,75 @@ class WordsListState extends State<WordsList> {
       body: isLoad
           ? const Center(child: CircularProgressIndicator())
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Autocomplete<AutocompleteDataHelper>(
-                  optionsBuilder: (textEditingValue) async {
-                    final textToTest = textEditingValue.text.trim();
-                    if (textToTest.isEmpty || textToTest.length <= 3) {
-                      return const Iterable<AutocompleteDataHelper>.empty();
-                    }
+                // SizedBox(
+                //   height: 40,
+                //   child: Container(
+                //     decoration: BoxDecoration(color: Colors.blue),
+                //   ),
+                // ),
+                Container(
+                  padding: const EdgeInsets.only(left: 8.2),
+                  // decoration: BoxDecoration(
+                  //     border: Border.all(color: Colors.redAccent)),
+                  child: Autocomplete<AutocompleteDataHelper>(
+                    optionsBuilder: (textEditingValue) async {
+                      final textToTest = textEditingValue.text.trim();
+                      if (textToTest.isEmpty || textToTest.length <= 3) {
+                        return const Iterable<AutocompleteDataHelper>.empty();
+                      }
 
-                    var leipzig = LeipzigWord(textToTest, widget.db);
-                    autoComplitData =
-                        await leipzig.getAutocompleteLocal(textToTest);
-                    autoComplitData.insert(
-                        0,
-                        AutocompleteDataHelper(
-                            name: textToTest, isIntern: false, uuid: ""));
-                    var autoComplitDataExt =
-                        await leipzig.getAutocomplete(textToTest);
-                    autoComplitData.addAll(autoComplitDataExt);
-                    return autoComplitData;
-                  },
-                  onSelected: (AutocompleteDataHelper item) {
-                    debugPrint(item.name);
-                    if (item.isIntern) {
-                      // navigateToDetail(wordItem, "View ${wordItem.name}");
-                    } else {
-                      navigateToDetail(
-                          Word(
-                              id: -99,
-                              uuid: "uuid",
-                              name: item.name,
-                              important: "",
-                              description: "",
-                              mean: "",
-                              baseForm: "",
-                              baseLang: 0,
-                              rootWordID: 0),
-                          "Add ${item.name}");
-                    }
-                  },
-                  fieldViewBuilder: (context, textEditingController, focusNode,
-                      onFieldSubmitted) {
-                    return TextFormField(
-                      autofocus: true,
-                      focusNode: focusNode,
-                      controller: textEditingController,
-                      onFieldSubmitted: (value) {
-                        onFieldSubmitted();
-                      },
-                      decoration:
-                          const InputDecoration(hoverColor: Colors.black38),
-                    );
-                  },
+                      var leipzig =
+                          LeipzigWord(textToTest, widget.db, widget.talker);
+                      autoComplitData =
+                          await leipzig.getAutocompleteLocal(textToTest);
+                      autoComplitData.insert(
+                          0,
+                          AutocompleteDataHelper(
+                              name: textToTest, isIntern: false, uuid: ""));
+                      var autoComplitDataExt =
+                          await leipzig.getAutocomplete(textToTest);
+                      var autoComplitDataVerb =
+                          await leipzig.getAutocompleteVerbForm(textToTest);
+                  
+                      autoComplitData.addAll(autoComplitDataExt);
+                      autoComplitData.addAll(autoComplitDataVerb);
+                      return autoComplitData;
+                    },
+                    onSelected: (AutocompleteDataHelper item) {
+                      debugPrint(item.name);
+                      if (item.isIntern) {
+                        // navigateToDetail(wordItem, "View ${wordItem.name}");
+                      } else {
+                        navigateToDetail(
+                            Word(
+                                id: -99,
+                                uuid: "uuid",
+                                name: item.name,
+                                important: "",
+                                description: "",
+                                mean: "",
+                                baseForm: "",
+                                baseLang: 0,
+                                rootWordID: 0),
+                            "Add ${item.name}");
+                      }
+                    },
+                    fieldViewBuilder: (context, textEditingController,
+                        focusNode, onFieldSubmitted) {
+                      return TextFormField(
+                        autofocus: true,
+                        focusNode: focusNode,
+                        controller: textEditingController,
+                        onFieldSubmitted: (value) {
+                          onFieldSubmitted();
+                        },
+                        decoration:
+                            const InputDecoration(hoverColor: Colors.black38),
+                      );
+                    },
+                  ),
                 ),
                 Expanded(
                   child: Container(
@@ -233,7 +250,6 @@ class WordsListState extends State<WordsList> {
       return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
     if (result) {
-      
       autocompleteController.clear();
       updateListWords().then((onValue) {
         listWords = onValue;

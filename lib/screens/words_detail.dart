@@ -345,6 +345,7 @@ class WordsDetailState extends State<WordsDetail> {
     List<Widget> listChildren = [];
     int maxLengthSynonymsList = maxDesc;
     String titleList = "";
+    String translatedList = "";
     if (examples.isNotEmpty) {
       int maxCount = examples.length > maxLengthSynonymsList
           ? maxLengthSynonymsList
@@ -356,6 +357,13 @@ class WordsDetailState extends State<WordsDetail> {
           .toList()
           .sublist(0, maxCount)
           .join(", ");
+      translatedList = examples
+          .map((e) {
+            return " ${e.translate}";
+          })
+          .toList()
+          .sublist(0, maxCount)
+          .join(", ");
       var listSynonymsSliced = examples.sublist(0);
       for (var item in listSynonymsSliced) {
         listChildren.add(_addListTitleExample(item.name, item.translate, item));
@@ -363,10 +371,13 @@ class WordsDetailState extends State<WordsDetail> {
         // ))
       }
     }
+    var firstElement = examples.elementAtOrNull(0);
+    firstElement ??=
+        ReordableElement(id: 0, name: "", translate: "", orderId: 0, uuid: "");
 
     return ExpansionTile(
-      title: const Text("Examples: "),
-      subtitle: Text(titleList),
+      title: Text("Examples: ${titleList}"),
+      subtitle: Text(translatedList),
       initiallyExpanded: false,
       trailing: IconButton(
         icon: const Icon(Icons.download),
@@ -399,10 +410,18 @@ class WordsDetailState extends State<WordsDetail> {
     List<Widget> listChildren = [];
     int maxLengthSynonymsList = 100;
     String titleList = "";
+    String translatedList = "";
     if (listSynonyms.isNotEmpty) {
       int maxCount = listSynonyms.length > maxLengthSynonymsList
           ? maxLengthSynonymsList
           : listSynonyms.length;
+      translatedList = listSynonyms
+          .map((e) {
+            return " ${e.translate}";
+          })
+          .toList()
+          .sublist(0, maxCount)
+          .join(", ");
       titleList = listSynonyms
           .map((e) {
             return " ${e.name}";
@@ -419,8 +438,8 @@ class WordsDetailState extends State<WordsDetail> {
     }
 
     return ExpansionTile(
-      title: const Text("Synonyms: "),
-      subtitle: Text(titleList),
+      title: Text("Synonyms: $titleList "),
+      subtitle: Text(translatedList),
       initiallyExpanded: false,
       trailing: IconButton(
         icon: const Icon(Icons.download),
@@ -482,7 +501,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<Word?> addWordShort(
       String name, String translated, Word editWord) async {
-    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
     leipzigSynonyms.db = db;
     var word = await leipzigSynonyms.addWordUpdateShort(
         name, translated, editWord, baseLang);
@@ -490,7 +509,7 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<Word?> addNewWord(String name, Word editWord) async {
-    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
     leipzigSynonyms.db = db;
     var word = (await leipzigSynonyms.addNewWord(name, editWord, baseLang))!;
     return word;
@@ -571,13 +590,13 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<Word?> _addUpdateWord() async {
     editWord = await addWord();
-    var leipzigSynonyms = LeipzigWord(editWord.name, db);
+    var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
 
     try {
       await leipzigSynonyms.getFromInternet();
       var baseForm = leipzigSynonyms.baseWord;
       if (leipzigSynonyms.baseWord.isNotEmpty) {
-        var leipzigSynonyms = LeipzigWord(baseForm, db);
+        var leipzigSynonyms = LeipzigWord(baseForm, db, widget.talker);
         await leipzigSynonyms.getFromInternet();
       }
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
@@ -634,7 +653,7 @@ class WordsDetailState extends State<WordsDetail> {
         await db.updateSynonym(synToUpdate);
       }
 
-      var leipzigSynonyms = LeipzigWord(newWord.name, db);
+      var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
       await leipzigSynonyms.getFromInternet();
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
     }

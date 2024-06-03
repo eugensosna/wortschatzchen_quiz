@@ -3,6 +3,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
+import 'package:wortschatzchen_quiz/screens/quiz_page.dart';
 import 'package:wortschatzchen_quiz/screens/sessions_dates.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
 
@@ -29,7 +30,7 @@ class HomePageState extends State<HomePage> {
     dbH.setTalker(widget.talker);
 
     tabBarPages = [
-      SessionsDates(db: dbH, talker: widget.talker),
+      QuizPage(db: dbH, talker: widget.talker),
       SessionsDates(db: dbH, talker: widget.talker),
       WordsList(
         dbH,

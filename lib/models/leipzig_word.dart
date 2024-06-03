@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -8,6 +13,7 @@ import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import '../api/leipzig_parse.dart';
 
 class LeipzigWord {
+  final Talker talker;
   String name;
   List<LeipzigSynonym> synonyms = [];
   List<MapTextUrls> examples = [];
@@ -23,7 +29,7 @@ class LeipzigWord {
 
   LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
 
-  LeipzigWord(this.name, this.db);
+  LeipzigWord(this.name, this.db, this.talker);
 
   Future<List<AutocompleteDataHelper>> getAutocompleteLocal(
       String partOfWord) async {
@@ -65,15 +71,78 @@ class LeipzigWord {
     return result;
   }
 
+  Future<List<AutocompleteDataHelper>> getAutocompleteVerbForm(
+      String partOfWord) async {
+    var result = <AutocompleteDataHelper>[];
+
+    final dio = Dio();
+    String url =
+        "https://www.verbformen.de/suche/i/?w=${Uri.encodeFull(partOfWord)}";
+    final response = await dio.get(Uri.parse(url).toString());
+
+    //print('Response status: ${response.statusCode}');
+    // print('Response body: ${response.body}');
+    if (response.statusCode == 200) {
+      var listRawData = response.data as List;
+      // print(response.data);
+
+      // var listRawData = json.decode(response.data);
+      for (var (item as List) in listRawData) {
+        if (item.length > 1) {
+          var autocompleteName = item.elementAtOrNull(0);
+          var description = item.elementAtOrNull(1);
+
+          if (autocompleteName != null) {
+            result.add(AutocompleteDataHelper(
+                name: autocompleteName,
+                isIntern: false,
+                uuid: description ?? ""));
+          }
+        }
+      }
+      // var externalData =
+      // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
+    }
+
+    return result;
+  }
+
+  Dio getDio() {
+    final dio = Dio();
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (cert, host, port) => true;
+      return client;
+    };
+    dio.interceptors.add(
+      TalkerDioLogger(
+        talker: talker,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printResponseMessage: true,
+        ),
+      ),
+    );
+    return dio;
+  }
+
   Future<bool> getFromInternet() async {
     try {
-      Response response = await getLeipzigHtml(name);
+      var dio = getDio();
+      Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
-        parseHtml(response.data.toString(), this);
+        var wortObj = await parseHtml(response.data.toString(), this);
         if (baseWord.isNotEmpty && baseWord != name) {
-          var wordFromBaseWord = await getLeipzigHtml(baseWord);
-          parseHtml(wordFromBaseWord.data.toString(), this);
+          var wordFromBaseWord = await getLeipzigHtml(baseWord, dio);
+          wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
         }
+        examples = wortObj.examples;
+
+        var responseOpen = await getOpenthesaurus(name, dio);
+        var defOpenThesaurus = await parseHtmlOpenthesaurus(responseOpen);
+
+        this.definitions.addAll(defOpenThesaurus);
         url = response.realUri.toString();
       } else {
         return false;
@@ -167,37 +236,43 @@ class LeipzigWord {
     if (word.synonyms.isNotEmpty) {
       await db.deleteSynonymsByWord(editWord);
     }
-    if (editWord.baseForm.isEmpty) {
+    if (editWord.baseForm.isEmpty && word.baseWord.isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(baseForm: word.baseWord);
     }
 
-    if (word.article.isNotEmpty && wordToUpdate.baseForm.isEmpty) {
-      wordToUpdate =
-          wordToUpdate.copyWith(baseForm: "${word.article}  ${word.baseWord}");
-      await db.updateWord(wordToUpdate);
-    }
+    // if (word.article.isNotEmpty && wordToUpdate.baseForm.isEmpty) {
+    //   wordToUpdate =
+    //       wordToUpdate.copyWith(baseForm: "${word.article}  ${word.baseWord}");
+    //   await db.updateWord(wordToUpdate);
+    // }
     if (word.article.trim().isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(important: word.article.trim());
     }
-    if (word.definitions.isNotEmpty && wordToUpdate.mean.isEmpty) {
-      var mean = word.definitions.toString();
-      wordToUpdate = wordToUpdate.copyWith(mean: mean);
+    if (word.definitions.isNotEmpty) {
+      var mean = word.definitions[0];
+      if (wordToUpdate.mean.isEmpty) {
+        wordToUpdate = wordToUpdate.copyWith(mean: mean);
+      }
+      await db.deleteMeansByWord(editWord);
       for (var item in word.definitions) {
-        await translator.translate(item);
-        await db
-            .into(db.means)
-            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+        // var mean = await db.getMeanByNameAndWord(item, editWord.id);
+        // if (mean != null) {
+          // await translator.translate(item);
+          db
+              .into(db.means)
+              .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+          await translator.translate(item);
+        // }
       }
     }
     if (word.examples.isNotEmpty) {
       for (var item in word.examples) {
-        await translator.translate(item.value!);
         var example =
             await db.getExampleByNameAndWord(item.value!, editWord.id);
         if (example != null) {
           continue;
         }
-
+        await translator.translate(item.value!);
         await db.into(db.examples).insert(
             ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
       }

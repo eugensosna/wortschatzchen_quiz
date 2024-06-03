@@ -35,7 +35,11 @@ class SessionWordListState extends State<SessionWordList> {
   @override
   void initState() {
     super.initState();
-    _updateWordsList();
+    _updateWordsList().then((onValue) {
+      setState(() {
+        listWords = onValue;
+      });
+    });
   }
 
   @override
@@ -47,47 +51,49 @@ class SessionWordListState extends State<SessionWordList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            centerTitle: true,
-            pinned: true,
-            floating: true,
-            snap: true,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () async {
-                moveToLastScreen();
-              },
-            ),
-            surfaceTintColor: Colors.transparent,
-            bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(70),
-                child: searchWordsButton()),
-          ),
-          SliverList.builder(
-            itemBuilder: (context, index) {
-              var itemWord = listWords.elementAt(index);
-              return GestureDetector(
-                onDoubleTap: () {
-                  navigateToDetail(itemWord, "View ${itemWord.name}");
-                },
-                child: Dismissible(
-                  key: Key(itemWord.uuid),
-                  direction: DismissDirection.startToEnd,
-                  child: ListTile(
-                    title: Text(
-                        "${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
-                    leading: Text(" ${itemWord.important}  "),
+      body: isLoad
+          ? const Center(child: CircularProgressIndicator())
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  centerTitle: true,
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () async {
+                      moveToLastScreen();
+                    },
                   ),
+                  surfaceTintColor: Colors.transparent,
+                  bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(70),
+                      child: searchWordsButton()),
                 ),
-              );
-            },
-            itemCount: listWords.length,
-          )
-        ],
-      ),
+                SliverList.builder(
+                  itemBuilder: (context, index) {
+                    var itemWord = listWords.elementAt(index);
+                    return GestureDetector(
+                      onDoubleTap: () {
+                        navigateToDetail(itemWord, "View ${itemWord.name}");
+                      },
+                      child: Dismissible(
+                        key: Key(itemWord.uuid),
+                        direction: DismissDirection.startToEnd,
+                        child: ListTile(
+                          title: Text(
+                              "${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
+                          leading: Text(" ${itemWord.important}  "),
+                        ),
+                      ),
+                    );
+                  },
+                  itemCount: listWords.length,
+                )
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => addWord(""),
         tooltip: "Add new",
@@ -131,13 +137,22 @@ class SessionWordListState extends State<SessionWordList> {
               onSelected: (value) {
                 widget.talker.info("selected session item $value");
                 currentTypeSession = value!;
-                _updateWordsList();
+                _updateWordsList().then((onValue) {
+                  setState(() {
+                    listWords = onValue;
+                  });
+                });
+                ;
               },
             ),
             IconButton(
                 onPressed: () {
                   currentTypeSession = "";
-                  _updateWordsList();
+                  _updateWordsList().then((onValue) {
+                    setState(() {
+                      listWords = onValue;
+                    });
+                  });
 
                   setState(() {
                     sessionsController.clear();
@@ -224,13 +239,18 @@ class SessionWordListState extends State<SessionWordList> {
     return;
   }
 
-  _updateWordsList() async {
+  Future<List<Word>> _updateWordsList() async {
+    setState(() {
+      isLoad = true;
+    });
     List<Word> result =
         await widget.db.getWordsBySession(widget.currentSession);
 
     setState(() {
+      isLoad = false;
       listWords = result;
     });
+    return result;
   }
 
   Future<void> addWord(String name) async {

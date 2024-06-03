@@ -74,6 +74,12 @@ class DbHelper extends AppDatabase {
     return result;
   }
 
+  Future<Mean?> getMeanByNameAndWord(String name, int wordId) async {
+    return (select(means)
+          ..where((tbl) => Expression.and(
+              [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
+        .getSingleOrNull();
+  }
   Future<Example?> getExampleByNameAndWord(String name, int wordId) async {
     return (select(examples)
           ..where((tbl) => Expression.and(
@@ -115,6 +121,9 @@ class DbHelper extends AppDatabase {
   Future deleteSynonymsByWord(Word item) async {
     return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id)))
         .go();
+  }
+  Future deleteMeansByWord(Word item) async {
+    return (delete(means)..where((tbl) => tbl.baseWord.equals(item.id))).go();
   }
 
   Future<List<Word>> getOrdersWordList() {
