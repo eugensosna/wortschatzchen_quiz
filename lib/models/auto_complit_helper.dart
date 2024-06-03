@@ -34,7 +34,7 @@ class WordListHelper {
 }
 
 class ReordableElement {
-  final int id;
+  int id;
   String name;
   String translate;
   final int orderId;

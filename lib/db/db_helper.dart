@@ -74,6 +74,36 @@ class DbHelper extends AppDatabase {
     return result;
   }
 
+  
+  Future<List<ReordableElement>> getMeansByWord(int wordId) async {
+    List<ReordableElement> result = [];
+
+    // final listExamples = await (select(examples)
+    //       ..where((tbl) => tbl.baseWord.equals(wordId))
+    //       ..orderBy([(u) => OrderingTerm(expression: u.exampleOrder)]))
+    //     .get();
+
+    // List<SessionsGroupedByName> result = [];
+    var customQuery = customSelect('''
+        select means.id,Max(means.uuid) as uuid, Max(translated_words.translated_name) as translate, Max(means.name) as name, Max(means.means_order) as orderid from means
+
+        left JOIN translated_words
+        on  translated_words.name = means.name
+        WHERE means.base_word = ?
+        Group By means.id
+        order by orderid''',
+        readsFrom: {means}, variables: [Variable.withInt(wordId)]);
+    var listExamples = await customQuery.get();
+    for (var item in listExamples) {
+      var element = ReordableElement.map(item.data);
+      result.add(element);
+    }
+    //print(item.data.toString());
+
+    return result;
+  }
+
+
   Future<Mean?> getMeanByNameAndWord(String name, int wordId) async {
     return (select(means)
           ..where((tbl) => Expression.and(
@@ -91,6 +121,15 @@ class DbHelper extends AppDatabase {
         (select(examples)..where((tbl) => Expression.and([tbl.id.equals(id)])));
     if (uuid.isNotEmpty) {
       selectRowBy = (select(examples)
+        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)])));
+    }
+    return selectRowBy.getSingleOrNull();
+  }
+  Future<Mean?> getMeanByIdOrUuid(int id, {String uuid = ""}) async {
+    var selectRowBy =
+        (select(means)..where((tbl) => Expression.and([tbl.id.equals(id)])));
+    if (uuid.isNotEmpty) {
+      selectRowBy = (select(means)
         ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)])));
     }
     return selectRowBy.getSingleOrNull();
@@ -125,6 +164,12 @@ class DbHelper extends AppDatabase {
   Future deleteMeansByWord(Word item) async {
     return (delete(means)..where((tbl) => tbl.baseWord.equals(item.id))).go();
   }
+
+  Future deleteExamplesByWord(Word item) async {
+    return (delete(examples)..where((tbl) => tbl.baseWord.equals(item.id)))
+        .go();
+  }
+
 
   Future<List<Word>> getOrdersWordList() {
     return (select(words)

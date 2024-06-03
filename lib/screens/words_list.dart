@@ -249,14 +249,15 @@ class WordsListState extends State<WordsList> {
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
-    if (result) {
-      autocompleteController.clear();
-      updateListWords().then((onValue) {
+    autocompleteController.clear();
+    updateListWords().then((onValue) {
         listWords = onValue;
         setState(() {
           isLoad = false;
         });
       });
+
+    if (result != null) {
     }
   }
 

@@ -27,17 +27,38 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
               moveToLastScreen(context);
             }),
       ),
-      body: ReorderableListView(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        children: <Widget>[
-          for (int index = 0; index < widget.listToView.length; index += 1)
-            ListTile(
-              key: Key("$index"),
-              title: Text(widget.listToView[index].name),
-              subtitle: Text(widget.listToView[index].translate),
-              // leading: ,
-            ),
-        ],
+      body: ReorderableListView.builder(
+        itemCount: widget.listToView.length,
+        itemBuilder: (context, index) {
+          var item = widget.listToView.elementAt(index);
+          return GestureDetector(
+              key: Key(index.toString()),
+              onDoubleTap: () {
+                editItem(context, item);
+              },
+              child: Dismissible(
+                key: Key(index.toString()),
+                direction: DismissDirection.startToEnd,
+                background: Container(
+                  color: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                onDismissed: (direction) {
+                  // widget.talker.debug("Dismissible delete ${wordItem.name} ");
+                  _delete(index);
+                },
+                child: ListTile(
+                  key: Key(index.toString()),
+                  title: Text(item.name),
+                  subtitle: Text(item.translate),
+                  leading: Text("${item.orderId}"),
+                ),
+              ));
+        },
         onReorder: (oldIndex, newIndex) {
           setState(() {
             if (oldIndex < newIndex) {
@@ -49,13 +70,14 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
           });
         },
       ),
+
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          addNewWord(
+          editItem(
               context,
               ReordableElement(
-                  id: 0, name: "", translate: "", orderId: 0, uuid: ""));
+                  id: -1, name: "", translate: "", orderId: 0, uuid: ""));
         },
         tooltip: "Add new",
         child: const Icon(Icons.add),
@@ -68,10 +90,12 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
     return "";
   }
 
-  void addNewWord(BuildContext context, ReordableElement edit) async {
+  void editItem(BuildContext context, ReordableElement edit) async {
     TextEditingController descriptionController = TextEditingController();
 
     TextEditingController translateController = TextEditingController();
+    descriptionController.text = edit.name;
+    translateController.text = edit.translate;
 
     showDialog<void>(
         context: context,
@@ -121,7 +145,10 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
                 onPressed: () {
                   edit.name = descriptionController.text;
                   edit.translate = translateController.text;
-                  widget.listToView.insert(0, edit);
+                  if (edit.id < 0) {
+                    edit.id = 0;
+                    widget.listToView.insert(0, edit);
+                  }
                   setState(() {});
 
                   Navigator.of(context).pop(true);
@@ -130,6 +157,11 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
             ],
           );
         });
+  }
+
+  _delete(int index) {
+    widget.listToView.removeAt(index);
+    setState(() {});
   }
 }
 

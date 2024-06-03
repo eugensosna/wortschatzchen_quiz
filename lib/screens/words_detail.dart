@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/src/runtime/data_class.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:translator/translator.dart';
@@ -54,6 +55,8 @@ class WordsDetailState extends State<WordsDetail> {
       rootWordID: 0);
   List<ReordableElement> listSynonyms = [];
   List<ReordableElement> listExamples = [];
+  List<ReordableElement> listMeans = [];
+
   String article = "";
   String baseWord = "";
   Language baseLang =
@@ -116,6 +119,7 @@ class WordsDetailState extends State<WordsDetail> {
 
       listSynonyms = await db.getSynonymsByWord(editWord.id);
       listExamples = await db.getExamplesByWord(editWord.id);
+      listMeans = await db.getMeansByWord(editWord.id);
 
       var data = await db.getLeipzigDataByWord(editWord);
       if (data != null) {
@@ -181,6 +185,9 @@ class WordsDetailState extends State<WordsDetail> {
             TextField(
               controller: meanController,
               decoration: const InputDecoration(label: Text("Mean")),
+              onTap: () {
+                _showEditMeans(context, listMeans);
+              },
             ),
             // IconButton.filled(
             //     onPressed: _showEditMeans(context), icon: Icon(Icons.edit))
@@ -408,7 +415,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   Widget buildWidgetSynonymsView(List<ReordableElement> listSynonyms) {
     List<Widget> listChildren = [];
-    int maxLengthSynonymsList = 100;
+    int maxLengthSynonymsList = 4;
     String titleList = "";
     String translatedList = "";
     if (listSynonyms.isNotEmpty) {
@@ -429,7 +436,7 @@ class WordsDetailState extends State<WordsDetail> {
           .toList()
           .sublist(0, maxCount)
           .join(", ");
-      var listSynonymsSliced = listSynonyms.sublist(0, maxCount);
+      var listSynonymsSliced = listSynonyms.sublist(0);
       for (var item in listSynonymsSliced) {
         listChildren.add(_addListTitleSynonym(item.name, item.translate, item));
 
@@ -690,23 +697,12 @@ class WordsDetailState extends State<WordsDetail> {
 
   _saveToExamples(List<ReordableElement> elements) async {
     Example? elemExamples;
-    // await db.deleteSynonymsByWord(editWord);
+    //await db.deleteExamplesByWord(editWord);
     for (var (index, item) in elements.indexed) {
       if (item.id <= 0) {
         int id = await db.into(db.examples).insert(
             ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
-        elemExamples = await db
-            .
-
-            /// The code snippet provided is a Dart function named
-            /// `getExampleByIdOrUuid`. This function is likely designed to retrieve
-            /// an example object based on either its ID or UUID. The function
-            /// signature suggests that it takes a single parameter, which could be
-            /// either an ID or a UUID, and returns the corresponding example
-            /// object. The actual implementation of this function would involve
-            /// querying a data source (such as a database) to find the example
-            /// object based on the provided ID or UUID.
-            getExampleByIdOrUuid(id);
+        elemExamples = await db.getExampleByIdOrUuid(id);
         if (elemExamples != null) {
           elemExamples = elemExamples.copyWith(exampleOrder: index);
         }
@@ -723,6 +719,8 @@ class WordsDetailState extends State<WordsDetail> {
         await db.update(db.examples).replace(elemExamples);
       }
     }
+    await setBaseSettings();
+    setState(() {});
   }
 
   Future<List<ReordableElement>> _showOrEditReordable(
@@ -742,5 +740,39 @@ class WordsDetailState extends State<WordsDetail> {
       // toUpdate =
     }
     return result;
+  }
+
+  void _showEditMeans(
+      BuildContext context, List<ReordableElement> listElements) async {
+    Mean? element;
+    var result = await _showOrEditReordable(context, listMeans);
+    //await db.deleteMeansByWord(editWord);
+    for (var (index, item) in result.indexed) {
+      if (item.id <= 0) {
+        int id = await db.into(db.means).insert(
+            MeansCompanion.insert(baseWord: editWord.id, name: item.name));
+        element = await db.getMeanByIdOrUuid(id);
+        if (element != null) {
+          element = element.copyWith(meansOrder: index);
+        }
+      } else {
+        element = Mean(
+            id: item.id,
+            uuid: item.uuid,
+            baseWord: editWord.id,
+            name: item.name,
+            meansOrder: index);
+      }
+      if (element != null) {
+        await db.update(db.means).replace(element);
+      }
+    }
+    if (result.isNotEmpty) {
+      var toUpdate = editWord.copyWith(mean: result[0].name);
+      db.updateWord(toUpdate);
+    }
+    // fillControllers(editWord);
+    await setBaseSettings();
+    setState(() {});
   }
 }
