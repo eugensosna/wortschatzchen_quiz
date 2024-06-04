@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:drift/src/runtime/data_class.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:translator/translator.dart';

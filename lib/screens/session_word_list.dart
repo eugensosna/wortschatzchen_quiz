@@ -7,6 +7,7 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
+import 'package:wortschatzchen_quiz/widgets/animated_Card.dart';
 
 class SessionWordList extends StatefulWidget {
   final DbHelper db;
@@ -31,6 +32,8 @@ class SessionWordListState extends State<SessionWordList> {
   String defaultSession = "";
   final TextEditingController sessionsController = TextEditingController();
   final autoComplitController = TextEditingController();
+
+  
 
   @override
   void initState() {
@@ -68,9 +71,25 @@ class SessionWordListState extends State<SessionWordList> {
                     },
                   ),
                   surfaceTintColor: Colors.transparent,
-                  bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(70),
-                      child: searchWordsButton()),
+                  // bottom: PreferredSize(
+                  //     preferredSize: const Size.fromHeight(70),
+                  //   // child: searchWordsButton()
+                  // ),
+                ),
+                SliverGrid.builder(
+                  itemCount: listWords.length,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200),
+                  itemBuilder: (context, index) {
+                    Word element = listWords.elementAt(index);
+                    return AnimatedCard(
+                        editWord: element,
+                        db: widget.db,
+                        talker: widget.talker);
+                    //  Card(
+                    //   color: Colors.amber,
+                    // );
+                  },
                 ),
                 SliverList.builder(
                   itemBuilder: (context, index) {
@@ -293,4 +312,7 @@ class SessionHeader {
   final String description;
 
   SessionHeader({required this.typesession, required this.description});
+
 }
+
+

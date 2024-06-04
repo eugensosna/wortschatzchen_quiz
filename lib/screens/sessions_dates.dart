@@ -87,6 +87,7 @@ class SessionsDatesState extends State<SessionsDates> {
                     item.description,
                   ),
                 ),
+                on
                 onTap: () {
                   showWordsBySession(item.typesession);
                 },
