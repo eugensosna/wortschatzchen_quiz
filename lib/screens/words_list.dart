@@ -18,9 +18,7 @@ class WordsList extends StatefulWidget {
 class WordsListState extends State<WordsList> {
   int count = 2;
   bool isLoad = false;
-  List<AutocompleteDataHelper> autoComplitData = [
-    AutocompleteDataHelper(name: "test", isIntern: true, uuid: "uuid"),
-  ];
+  List<AutocompleteDataHelper> autoComplitData = [];
   TextEditingController autocompleteController = TextEditingController();
 
   int selectedIndex = 2;
@@ -60,7 +58,7 @@ class WordsListState extends State<WordsList> {
                   child: Autocomplete<AutocompleteDataHelper>(
                     optionsBuilder: (textEditingValue) async {
                       final textToTest = textEditingValue.text.trim();
-                      if (textToTest.isEmpty || textToTest.length <= 3) {
+                      if (textToTest.isEmpty || textToTest.length <= 1) {
                         return const Iterable<AutocompleteDataHelper>.empty();
                       }
 
@@ -76,14 +74,20 @@ class WordsListState extends State<WordsList> {
                           await leipzig.getAutocomplete(textToTest);
                       var autoComplitDataVerb =
                           await leipzig.getAutocompleteVerbForm(textToTest);
-                  
+
                       autoComplitData.addAll(autoComplitDataExt);
                       autoComplitData.addAll(autoComplitDataVerb);
                       return autoComplitData;
                     },
-                    onSelected: (AutocompleteDataHelper item) {
+                    onSelected: (AutocompleteDataHelper item) async {
+                      widget.talker.debug("onSelected ${item.name}");
                       debugPrint(item.name);
                       if (item.isIntern) {
+                        Word? wordItem =
+                            await widget.db.getWordByName(item.name);
+                        if (wordItem != null) {
+                          navigateToDetail(wordItem, "View");
+                        }
                         // navigateToDetail(wordItem, "View ${wordItem.name}");
                       } else {
                         navigateToDetail(
@@ -99,9 +103,14 @@ class WordsListState extends State<WordsList> {
                                 rootWordID: 0),
                             "Add ${item.name}");
                       }
+                      item.name = "";
+
+
                     },
                     fieldViewBuilder: (context, textEditingController,
                         focusNode, onFieldSubmitted) {
+                      widget.talker.debug(
+                          "fieldViewBuilder ${textEditingController.text}");
                       return TextFormField(
                         autofocus: true,
                         focusNode: focusNode,
@@ -154,7 +163,13 @@ class WordsListState extends State<WordsList> {
               itemBuilder: (context, index) {
                 var autoItem = options.elementAt(index);
                 return ListTile(
-                  title: Text(autoItem.name),
+                  title: Text(
+                    autoItem.name,
+                    style: TextStyle(
+                        backgroundColor: autoItem.isIntern
+                            ? Colors.transparent
+                            : Colors.black87),
+                  ),
                   onTap: () {
                     widget.talker.debug("on tap ${autoItem.name}");
                   },
@@ -245,20 +260,21 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
+    autocompleteController.text = "";
+
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
     autocompleteController.clear();
     updateListWords().then((onValue) {
-        listWords = onValue;
-        setState(() {
-          isLoad = false;
-        });
+      listWords = onValue;
+      setState(() {
+        isLoad = false;
       });
+    });
 
-    if (result != null) {
-    }
+    if (result != null) {}
   }
 
   Future<List<Word>> getRecursiveWordTree(

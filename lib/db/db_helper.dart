@@ -248,7 +248,7 @@ class DbHelper extends AppDatabase {
 LEFT join  words
 on sessions.base_word=words.id
 WHERE sessions.typesession=?
-ORDER by typesession DESC; ''',
+ORDER by words.name ; ''',
         readsFrom: {words}, variables: [Variable.withString(typesession)]);
     var cResult = await customQuery.get();
     for (var item in cResult) {

@@ -33,8 +33,6 @@ class SessionWordListState extends State<SessionWordList> {
   final TextEditingController sessionsController = TextEditingController();
   final autoComplitController = TextEditingController();
 
-  
-
   @override
   void initState() {
     super.initState();
@@ -79,7 +77,7 @@ class SessionWordListState extends State<SessionWordList> {
                 SliverGrid.builder(
                   itemCount: listWords.length,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 200),
+                      maxCrossAxisExtent: 400, crossAxisSpacing: 5),
                   itemBuilder: (context, index) {
                     Word element = listWords.elementAt(index);
                     return AnimatedCard(
@@ -299,6 +297,7 @@ class SessionWordListState extends State<SessionWordList> {
       );
     }));
     if (result) {
+      autoComplitController.text = "";
       listWords = await _updateWordsList();
       setState(() {
         isLoad = false;
@@ -312,7 +311,4 @@ class SessionHeader {
   final String description;
 
   SessionHeader({required this.typesession, required this.description});
-
 }
-
-

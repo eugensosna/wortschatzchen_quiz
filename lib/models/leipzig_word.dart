@@ -118,9 +118,9 @@ class LeipzigWord {
       TalkerDioLogger(
         talker: talker,
         settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printResponseMessage: true,
+          printRequestHeaders: false,
+          printResponseHeaders: false,
+          printResponseMessage: false,
         ),
       ),
     );
@@ -128,20 +128,29 @@ class LeipzigWord {
   }
 
   Future<bool> getFromInternet() async {
+    var timeStart = DateTime.now().second;
+
     try {
       var dio = getDio();
       Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
+        talker.info("get leipzig data " +
+            (DateTime.now().second - timeStart).toString());
         var wortObj = await parseHtml(response.data.toString(), this);
+        talker.info("parse leipzig data " +
+            (DateTime.now().second - timeStart).toString());
         if (baseWord.isNotEmpty && baseWord != name) {
           var wordFromBaseWord = await getLeipzigHtml(baseWord, dio);
           wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
+          talker.info(
+              "get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
         }
         examples = wortObj.examples;
 
         var responseOpen = await getOpenthesaurus(name, dio);
         var defOpenThesaurus = await parseHtmlOpenthesaurus(responseOpen);
-
+        talker.info("get+parse Openthesaurus leipzig data " +
+            (DateTime.now().second - timeStart).toString());
         this.definitions.addAll(defOpenThesaurus);
         url = response.realUri.toString();
       } else {
@@ -257,11 +266,11 @@ class LeipzigWord {
       for (var item in word.definitions) {
         // var mean = await db.getMeanByNameAndWord(item, editWord.id);
         // if (mean != null) {
-          // await translator.translate(item);
-          db
-              .into(db.means)
-              .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
-          await translator.translate(item);
+        // await translator.translate(item);
+        db
+            .into(db.means)
+            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+        await translator.translate(item);
         // }
       }
     }
@@ -431,7 +440,7 @@ class LeipzigApiAutoComplit {
 }
 
 class AutocompleteDataHelper {
-  final String name;
+  String name;
   final bool isIntern;
   final String uuid;
 

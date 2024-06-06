@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 // ignore: unnecessary_import
 import 'package:flutter/widgets.dart';
@@ -53,7 +52,6 @@ class _AnimatedCardState extends State<AnimatedCard>
 
   void updateHelpData() async {
     means = await widget.db.getMeansByWord(widget.editWord.id);
-    var examples = await widget.db.getExamplesByWord(widget.editWord.id);
     setState(() {});
   }
 
@@ -97,7 +95,7 @@ class _AnimatedCardState extends State<AnimatedCard>
         }
 
         setState(() {
-          transparentId = widget.editWord.id;
+          // transparentId = widget.editWord.id;
         });
       },
     );
@@ -139,7 +137,7 @@ class _AnimatedCardState extends State<AnimatedCard>
         color: Colors.blue,
         child: widgets.Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Center(
               child: Text(
@@ -147,7 +145,7 @@ class _AnimatedCardState extends State<AnimatedCard>
                 style: TextStyle(fontSize: 18),
               ),
             ),
-            Text("${widget.editWord.description} "),
+            Text("mean:${widget.editWord.description} "),
             Text("${widget.editWord.mean} "),
           ],
         ));

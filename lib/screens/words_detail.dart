@@ -87,10 +87,21 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   fillControllers(Word editWord) {
-    titleController.text = editWord.name;
+    titleController.text = editWord.name
+
+        /// The above code snippet appears to be written in Dart. It
+        /// seems to be setting the text of a description controller to
+        /// a value stored in a variable or constant named "editWo".
+        /// However, the code is incomplete and contains some syntax
+        /// errors, such as the semicolon after "Dart" and the random
+        /// characters "
+        ;
     descriptionController.text = editWord.description;
     meanController.text = editWord.mean;
     importantController.text = editWord.important;
+    if (listMeans.isNotEmpty && meanController.text.isEmpty) {
+      meanController.text = listMeans[0].name;
+    }
   }
 
   Future<String> setBaseSettings() async {
