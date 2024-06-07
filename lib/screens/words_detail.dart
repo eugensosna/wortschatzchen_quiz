@@ -311,15 +311,13 @@ class WordsDetailState extends State<WordsDetail> {
                   child: Text(element.typesession),
                 ))
             .toList(),
-        onChanged: (value)async {
+        onChanged: (value) async {
           currentWordSession = value ?? "";
           _moveWordToSession(currentWordSession, editWord);
 
-          setBaseSettings().then((onValue){
-            setState(() {
-              
-            });
-          })
+          setBaseSettings().then((onValue) {
+            setState(() {});
+          });
         });
   }
 
