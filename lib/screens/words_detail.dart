@@ -7,7 +7,9 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
+import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/screens/web_view_controller_word.dart';
+import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import 'package:wortschatzchen_quiz/widgets/modal_show_reordable_view.dart';
 
 class WordsDetail extends StatefulWidget {
@@ -46,9 +48,11 @@ class WordsDetailState extends State<WordsDetail> {
   List<ReordableElement> listSynonyms = [];
   List<ReordableElement> listExamples = [];
   List<ReordableElement> listMeans = [];
+  List<SessionHeader> listSessions = [];
 
   String article = "";
   String baseWord = "";
+  String currentWordSession = getDefaultSessionName();
   late Language baseLang;
 
   Future<String> translateText(String inputText) async {
@@ -63,6 +67,45 @@ class WordsDetailState extends State<WordsDetail> {
       // ignore: control_flow_in_finally
       return "";
     }
+  }
+
+  Future<String> _getWordSession(Word wordItem) async {
+    String result = getDefaultSessionName();
+    if (wordItem.id > 0) {
+      var sessionItem = await widget.db.getSessionEntryByWord(wordItem);
+      if (sessionItem != null) {
+        result = sessionItem.typesession;
+      }
+    }
+
+    return result;
+  }
+
+  Future<List<SessionHeader>> _getListSessions() async {
+    List<SessionHeader> result = [];
+    String defaultSession = getDefaultSessionName();
+    bool defaultFound = false;
+
+    final sessions = await widget.db.getGroupedSessionsByName();
+    for (var item in sessions) {
+      if (!defaultFound && item.typesession.contains(defaultSession)) {
+        defaultFound = true;
+      }
+      // if (item.typesession.contains(todaySession)) {
+      //   defaultSession = "${item.typesession} (${item.count})";
+      // }
+      result.add(SessionHeader(
+          typesession: item.typesession,
+          description: "${item.typesession} (${item.count})"));
+    }
+    if (!defaultFound) {
+      result.insert(
+          0,
+          SessionHeader(
+              typesession: defaultSession, description: defaultSession));
+    }
+
+    return result;
   }
 
   @override
@@ -121,9 +164,10 @@ class WordsDetailState extends State<WordsDetail> {
         if (baseLangOrNull != null) {
           baseLang = baseLangOrNull;
         }
-
       }
     }
+    listSessions = await _getListSessions();
+    currentWordSession = await _getWordSession(editWord);
 
     if (editWord.name.isNotEmpty && editWord.id > 0) {
       fillControllers(editWord);
@@ -230,6 +274,7 @@ class WordsDetailState extends State<WordsDetail> {
             buildWidgetSynonymsView(listSynonyms),
 
             buildWidgetExamplesView(listExamples, maxDesc: 1),
+            DroupDownSessionsChange(),
 
             Row(
               children: [
@@ -254,6 +299,36 @@ class WordsDetailState extends State<WordsDetail> {
         ),
       ),
     );
+  }
+
+  DropdownButtonFormField<String> DroupDownSessionsChange() {
+    return DropdownButtonFormField(
+        value: currentWordSession,
+        hint: const Text("Group"),
+        items: listSessions
+            .map((element) => DropdownMenuItem<String>(
+                  value: element.typesession,
+                  child: Text(element.typesession),
+                ))
+            .toList(),
+        onChanged: (value)async {
+          currentWordSession = value ?? "";
+          _moveWordToSession(currentWordSession, editWord);
+
+          setBaseSettings().then((onValue){
+            setState(() {
+              
+            });
+          })
+        });
+  }
+
+  _moveWordToSession(String newSession, Word wordItem) async {
+    var session = await widget.db.getSessionEntryByWord(wordItem);
+    if (session != null) {
+      var toUpdate = session.copyWith(typesession: newSession);
+      widget.db.update(widget.db.sessions).replace(toUpdate);
+    }
   }
 
   Future<Word> saveWord() async {

@@ -236,6 +236,15 @@ class DbHelper extends AppDatabase {
         .get();
   }
 
+  Future<Session?> getSessionEntryByWord(Word item) async {
+    return (select(sessions)
+          ..where((tbl) => Expression.and([
+                tbl.baseWord.equals(item.id),
+                // tbl.baseWord.equals(basedWord.id),
+              ])))
+        .getSingleOrNull();
+  }
+
   Future<bool> updateSynonym(Synonym item) async {
     return update(synonyms).replace(item);
   }
