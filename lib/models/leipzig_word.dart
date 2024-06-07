@@ -121,6 +121,7 @@ class LeipzigWord {
           printRequestHeaders: false,
           printResponseHeaders: false,
           printResponseMessage: false,
+          printResponseData: false,
         ),
       ),
     );
@@ -128,38 +129,47 @@ class LeipzigWord {
   }
 
   Future<bool> getFromInternet() async {
-    var timeStart = DateTime.now().second;
+    talker.debug("start getFromInternet $name");
+    var timeStart = DateTime.now().microsecond;
 
     try {
       var dio = getDio();
       Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
         talker.info("get leipzig data " +
-            (DateTime.now().second - timeStart).toString());
+            (DateTime.now().microsecond - timeStart).toString());
+        timeStart = DateTime.now().microsecond;
         var wortObj = await parseHtml(response.data.toString(), this);
+
         talker.info("parse leipzig data " +
-            (DateTime.now().second - timeStart).toString());
+            (DateTime.now().microsecond - timeStart).toString());
         if (baseWord.isNotEmpty && baseWord != name) {
+          timeStart = DateTime.now().microsecond;
           var wordFromBaseWord = await getLeipzigHtml(baseWord, dio);
           wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
           talker.info(
               "get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
         }
-        examples = wortObj.examples;
 
-        var responseOpen = await getOpenthesaurus(name, dio);
+        examples = wortObj.examples;
+        var nameToFind =
+            baseWord.isNotEmpty && baseWord != name ? baseWord : name;
+
+        var responseOpen = await getOpenthesaurus(nameToFind, dio);
         var defOpenThesaurus = await parseHtmlOpenthesaurus(responseOpen);
-        talker.info("get+parse Openthesaurus leipzig data " +
-            (DateTime.now().second - timeStart).toString());
+        talker.info(
+            "get+parse Openthesaurus leipzig data ${DateTime.now().second - timeStart}");
         this.definitions.addAll(defOpenThesaurus);
         url = response.realUri.toString();
       } else {
         return false;
       }
+      talker.debug("end getFromInternet $name");
+
 
       return true;
     } on Exception catch (e) {
-      print(e);
+      talker.error("getFromInternet $name", e);
       return false;
     }
   }
@@ -239,6 +249,9 @@ class LeipzigWord {
 
   Future<bool> updateDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
+
+    talker.debug("start getFromInternet $name");
+
     var wordToUpdate = editWord.copyWith();
     translator = LeipzigTranslator(db: db);
     await translator.updateLanguagesData();
@@ -321,6 +334,7 @@ class LeipzigWord {
               wordOfBase: baseWord));
     }
 
+    talker.debug("end  updateDateDB $name");
     return true;
   }
 }

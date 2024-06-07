@@ -42,24 +42,14 @@ class WordsDetailState extends State<WordsDetail> {
   TextEditingController importantController = TextEditingController();
 
   TextEditingController meanController = TextEditingController();
-  Word? wordEditing = const Word(
-      id: 0,
-      uuid: "",
-      name: "",
-      description: "",
-      important: "",
-      mean: "",
-      baseForm: "",
-      baseLang: 0,
-      rootWordID: 0);
+
   List<ReordableElement> listSynonyms = [];
   List<ReordableElement> listExamples = [];
   List<ReordableElement> listMeans = [];
 
   String article = "";
   String baseWord = "";
-  Language baseLang =
-      const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+  late Language baseLang;
 
   Future<String> translateText(String inputText) async {
     try {
@@ -67,6 +57,8 @@ class WordsDetailState extends State<WordsDetail> {
           from: inputLanguage, to: outputLanguage);
 
       return translated.text;
+    } catch (e) {
+      widget.talker.error(" detail translateText $inputText", e);
     } finally {
       // ignore: control_flow_in_finally
       return "";
@@ -75,6 +67,9 @@ class WordsDetailState extends State<WordsDetail> {
 
   @override
   void initState() {
+    baseLang =
+        const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+
     fillControllers(editWord);
 
     super.initState();
@@ -111,14 +106,22 @@ class WordsDetailState extends State<WordsDetail> {
         editWord = editWordUpdated;
       }
     }
+
     if (editWord.baseLang > 0) {
-      baseLang = (await db.getLangById(editWord.baseLang))!;
+      var baseLangOrNull = (await db.getLangById(editWord.baseLang))!;
+      if (baseLangOrNull != null) {
+        baseLang = baseLangOrNull;
+      }
     } else {
-      var baseLang1 = await db.getLangByShortName("de");
-      if (baseLang1 == null) {
+      var baseLangOrNull = await db.getLangByShortName("de");
+      if (baseLangOrNull == null) {
         int id = (await db.into(db.languages).insert(
             LanguagesCompanion.insert(name: "German", shortName: "de")));
-        baseLang = (await db.getLangById(id))!;
+        baseLangOrNull = (await db.getLangById(id))!;
+        if (baseLangOrNull != null) {
+          baseLang = baseLangOrNull;
+        }
+
       }
     }
 
@@ -141,7 +144,21 @@ class WordsDetailState extends State<WordsDetail> {
           setState(() {});
         },
       );
-    } else {}
+    } else {
+      if (editWord.name.isNotEmpty && editWord.id < 0) {
+        descriptionController.text = await translateText(editWord.name);
+        saveWord().then(
+          (value) {
+            _fillData().then(
+              (value) {
+                fillControllers(editWord);
+                setState(() {});
+              },
+            );
+          },
+        );
+      }
+    }
 
     return "Ok";
   }
@@ -214,46 +231,42 @@ class WordsDetailState extends State<WordsDetail> {
 
             buildWidgetExamplesView(listExamples, maxDesc: 1),
 
-            if (isLoading)
-              const LinearProgressIndicator()
-            else
-              Row(
-                children: [
-                  IconButton(
-                      onPressed: _fillData,
-                      icon: const Icon(Icons.downloading)),
-                  IconButton(onPressed: saveWord, icon: const Icon(Icons.save)),
-                  IconButton(
-                      onPressed: goToVerbForm,
-                      icon: const Icon(Icons.add_task)),
-                  IconButton(
-                      onPressed: () async {
-                        var result =
-                            await _showOrEditReordable(context, listSynonyms);
-                        await _saveToExamples(result);
-                      },
-                      icon: const Icon(Icons.edit)),
-                ],
-              ),
+            Row(
+              children: [
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : IconButton(
+                        onPressed: _fillData,
+                        icon: const Icon(Icons.downloading)),
+                IconButton(onPressed: saveWord, icon: const Icon(Icons.save)),
+                IconButton(
+                    onPressed: goToVerbForm, icon: const Icon(Icons.add_task)),
+                IconButton(
+                    onPressed: () async {
+                      var result =
+                          await _showOrEditReordable(context, listSynonyms);
+                      await _saveToExamples(result);
+                    },
+                    icon: const Icon(Icons.edit)),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Future<String> saveWord() async {
+  Future<Word> saveWord() async {
     editWord = editWord.copyWith(
         name: titleController.text,
         description: descriptionController.text,
         mean: meanController.text,
         important: importantController.text);
     if (editWord.id > 0) {
-      await updateWordIfNeed(editWord);
+      return await updateWordIfNeed(editWord);
     } else {
-      await addWord();
+      return await addWord();
     }
-    setState(() {});
-    return "";
   }
 
   Widget _addListTitleSynonym(
@@ -558,20 +571,20 @@ class WordsDetailState extends State<WordsDetail> {
       } else {*/
       Error();
     } else {
-      var isChanched = false;
+      var isChanched = true;
 
       Word toUpdate = wordToUpdate.copyWith();
 
-      if (wordToUpdate.name != titleController.text &&
-          titleController.text.isNotEmpty) {
-        toUpdate = toUpdate.copyWith(name: titleController.text);
-        isChanched = true;
-      }
-      if (wordToUpdate.description != descriptionController.text &&
-          descriptionController.text.isNotEmpty) {
-        toUpdate = toUpdate.copyWith(description: descriptionController.text);
-        isChanched = true;
-      }
+      // if (wordToUpdate.name != titleController.text &&
+      //     titleController.text.isNotEmpty) {
+      //   toUpdate = toUpdate.copyWith(name: titleController.text);
+      //   isChanched = true;
+      // }
+      // if (wordToUpdate.description != descriptionController.text &&
+      //     descriptionController.text.isNotEmpty) {
+      //   toUpdate = toUpdate.copyWith(description: descriptionController.text);
+      //   isChanched = true;
+      // }
       if (isChanched) {
         await db.updateWord(toUpdate);
         wordToUpdate = toUpdate.copyWith();

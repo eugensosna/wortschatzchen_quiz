@@ -46,15 +46,13 @@ class SessionWordListState extends State<SessionWordList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _getListSessions();
+    // _getListSessions();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isLoad
-          ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
+      body: CustomScrollView(
               slivers: [
                 SliverAppBar(
                   centerTitle: true,
@@ -62,6 +60,11 @@ class SessionWordListState extends State<SessionWordList> {
                   floating: true,
                   snap: true,
                   elevation: 0,
+            title: isLoad
+                ? const Center(child: CircularProgressIndicator())
+                : Text(widget.currentSession),
+
+
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () async {
@@ -221,16 +224,7 @@ class SessionWordListState extends State<SessionWordList> {
     List<SessionHeader> result = [];
     //def =  getFormattedDate(DateTime.now());
     final sessions = await widget.db
-        .
-
-        /// The `getGroupedSessionsByName` method is a function that
-        /// retrieves a list of sessions grouped by name from the database.
-        /// It returns a list of `SessionHeader` objects, where each object
-        /// contains information about the session type and its description
-        /// (including the count of items in that session). This method is
-        /// used in the `_getListSessions` function to populate the list of
-        /// sessions displayed in the UI.
-        getGroupedSessionsByName();
+        .getGroupedSessionsByName();
     for (var item in sessions) {
       if (item.typesession.contains(todaySession)) {
         defaultSession = "${item.typesession} (${item.count})";
@@ -257,9 +251,11 @@ class SessionWordListState extends State<SessionWordList> {
   }
 
   Future<List<Word>> _updateWordsList() async {
+    
     setState(() {
       isLoad = true;
     });
+
     List<Word> result =
         await widget.db.getWordsBySession(widget.currentSession);
 

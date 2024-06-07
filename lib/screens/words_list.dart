@@ -17,6 +17,7 @@ class WordsList extends StatefulWidget {
 
 class WordsListState extends State<WordsList> {
   int count = 2;
+  bool stateAutocomplit = false;
   bool isLoad = false;
   List<AutocompleteDataHelper> autoComplitData = [];
   TextEditingController autocompleteController = TextEditingController();
@@ -81,6 +82,7 @@ class WordsListState extends State<WordsList> {
                     },
                     onSelected: (AutocompleteDataHelper item) async {
                       widget.talker.debug("onSelected ${item.name}");
+                      stateAutocomplit = true;
                       debugPrint(item.name);
                       if (item.isIntern) {
                         Word? wordItem =
@@ -104,13 +106,18 @@ class WordsListState extends State<WordsList> {
                             "Add ${item.name}");
                       }
                       item.name = "";
-
-
                     },
                     fieldViewBuilder: (context, textEditingController,
                         focusNode, onFieldSubmitted) {
+                      
                       widget.talker.debug(
-                          "fieldViewBuilder ${textEditingController.text}");
+                          "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
+                      if (stateAutocomplit) {
+                        textEditingController.text = "";
+                        stateAutocomplit = false;
+                        // textEditingController.value = AutocompleteDataHelper(
+                        //     name: "", isIntern: false, uuid: "") as TextEditingValue;
+                      }
                       return TextFormField(
                         autofocus: true,
                         focusNode: focusNode,
@@ -348,7 +355,7 @@ class WordsListState extends State<WordsList> {
   }
 
   void addNewWord() {
-    widget.db.getGroupedSessionsByName().then((onValue) {});
+    //widget.db.getGroupedSessionsByName().then((onValue) {});
     navigateToDetail(
         const Word(
             id: -99,

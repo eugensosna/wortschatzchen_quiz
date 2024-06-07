@@ -74,7 +74,6 @@ class DbHelper extends AppDatabase {
     return result;
   }
 
-  
   Future<List<ReordableElement>> getMeansByWord(int wordId) async {
     List<ReordableElement> result = [];
 
@@ -103,19 +102,20 @@ class DbHelper extends AppDatabase {
     return result;
   }
 
-
   Future<Mean?> getMeanByNameAndWord(String name, int wordId) async {
     return (select(means)
           ..where((tbl) => Expression.and(
               [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
         .getSingleOrNull();
   }
+
   Future<Example?> getExampleByNameAndWord(String name, int wordId) async {
     return (select(examples)
           ..where((tbl) => Expression.and(
               [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
         .getSingleOrNull();
   }
+
   Future<Example?> getExampleByIdOrUuid(int id, {String uuid = ""}) async {
     var selectRowBy =
         (select(examples)..where((tbl) => Expression.and([tbl.id.equals(id)])));
@@ -125,6 +125,7 @@ class DbHelper extends AppDatabase {
     }
     return selectRowBy.getSingleOrNull();
   }
+
   Future<Mean?> getMeanByIdOrUuid(int id, {String uuid = ""}) async {
     var selectRowBy =
         (select(means)..where((tbl) => Expression.and([tbl.id.equals(id)])));
@@ -135,7 +136,6 @@ class DbHelper extends AppDatabase {
     return selectRowBy.getSingleOrNull();
   }
 
-
   Future<Language?> getLangById(int id) {
     return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingle();
   }
@@ -144,7 +144,7 @@ class DbHelper extends AppDatabase {
     return (select(words)..where((tbl) => tbl.name.equals(name)))
         .getSingleOrNull();
   }
-  
+
   Future<List<Word>> getWordsByNameLike(String name) async {
     return (select(words)..where((tbl) => tbl.name.contains(name))).get();
   }
@@ -157,10 +157,15 @@ class DbHelper extends AppDatabase {
     return (delete(words)..where((tbl) => tbl.id.equals(item.id))).go();
   }
 
+  Future deleteSession(Session item) async {
+    return (delete(sessions)..where((tbl) => tbl.id.equals(item.id))).go();
+  }
+
   Future deleteSynonymsByWord(Word item) async {
     return (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id)))
         .go();
   }
+
   Future deleteMeansByWord(Word item) async {
     return (delete(means)..where((tbl) => tbl.baseWord.equals(item.id))).go();
   }
@@ -169,7 +174,6 @@ class DbHelper extends AppDatabase {
     return (delete(examples)..where((tbl) => tbl.baseWord.equals(item.id)))
         .go();
   }
-
 
   Future<List<Word>> getOrdersWordList() {
     return (select(words)
@@ -188,6 +192,7 @@ class DbHelper extends AppDatabase {
   Future<bool> updateWord(Word item) async {
     return update(words).replace(item);
   }
+
   Future<bool> updateExample(Example item) async {
     return update(examples).replace(item);
   }
@@ -222,6 +227,15 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
+  Future<List<Session>> getSessionEntryByTypeSession(String typesession) async {
+    return (select(sessions)
+          ..where((tbl) => Expression.and([
+                tbl.typesession.equals(typesession),
+                // tbl.baseWord.equals(basedWord.id),
+              ])))
+        .get();
+  }
+
   Future<bool> updateSynonym(Synonym item) async {
     return update(synonyms).replace(item);
   }
@@ -248,12 +262,18 @@ class DbHelper extends AppDatabase {
 LEFT join  words
 on sessions.base_word=words.id
 WHERE sessions.typesession=?
+and words.id not null
 ORDER by words.name ; ''',
         readsFrom: {words}, variables: [Variable.withString(typesession)]);
+
     var cResult = await customQuery.get();
     for (var item in cResult) {
       //print(item.data.toString());
-      result.add(words.map(item.data));
+      try {
+        result.add(words.map(item.data));
+      } catch (e) {
+        print(e);
+      }
     }
 
     return result;

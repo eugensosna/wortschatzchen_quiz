@@ -28,6 +28,7 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
             }),
       ),
       body: ReorderableListView.builder(
+        
         itemCount: widget.listToView.length,
         itemBuilder: (context, index) {
           var item = widget.listToView.elementAt(index);
