@@ -27,11 +27,14 @@ class DbHelper extends AppDatabase {
     // return result;
 
     var customQuery = customSelect('''
-        select synonyms.id as id,Max(synonyms.uuid) as uuid, Max( translated_words.translated_name) as translate, Max(synonyms.name) as name, max(synonyms.id) as orderid from synonyms
+        select synonyms.id as id,Max(synonyms.uuid) as uuid, Max( translated_words.translated_name) as translate, max(words.description) as word_translate,  Max(synonyms.name) as name, max(synonyms.id) as orderid from synonyms
 
 
         left JOIN translated_words
         on  translated_words.name = synonyms.name
+        left JOIN words
+		on synonyms.name = words.name
+        
         WHERE synonyms.base_word = ?
         GROUP BY synonyms.id 
         order by orderid''',
@@ -39,6 +42,9 @@ class DbHelper extends AppDatabase {
     var listExamples = await customQuery.get();
     for (var item in listExamples) {
       var element = ReordableElement.map(item.data);
+      if (item.data["word_translate"] != null) {
+        element.translate = item.data["word_translate"];
+      }
       result.add(element);
     }
     //print(item.data.toString());

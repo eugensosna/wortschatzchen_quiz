@@ -43,6 +43,8 @@ class QuizPageState extends State<QuizPage> {
             children: [
               Expanded(
                 child: PageView.builder(
+                  
+                  
                   itemBuilder: (context, index) {
                     var item = _questions.elementAt(index);
                     return Center(
@@ -55,6 +57,7 @@ class QuizPageState extends State<QuizPage> {
                   itemCount: _questions.length,
                 ),
               ),
+              
             ]),
       ),
     );

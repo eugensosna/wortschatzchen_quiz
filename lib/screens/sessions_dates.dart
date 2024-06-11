@@ -21,6 +21,7 @@ class SessionsDates extends StatefulWidget {
 
 class SessionsDatesState extends State<SessionsDates> {
   List<SessionHeader> listSessions = [];
+  final widgetKey = GlobalKey();
 
   @override
   void initState() {
@@ -62,6 +63,20 @@ class SessionsDatesState extends State<SessionsDates> {
     }
   }
 
+  RelativeRect _getRelativeRect(GlobalKey key) {
+    return RelativeRect.fromSize(
+        _getWidgetGlobalRect(key), const Size(200, 200));
+  }
+
+  Rect _getWidgetGlobalRect(GlobalKey key) {
+    final RenderBox renderBox =
+        key.currentContext!.findRenderObject() as RenderBox;
+    var offset = renderBox.localToGlobal(Offset.zero);
+    debugPrint('Widget position: ${offset.dx} ${offset.dy}');
+    return Rect.fromLTWH(offset.dx / 3.1, offset.dy * 1.05,
+        renderBox.size.width, renderBox.size.height);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +112,30 @@ class SessionsDatesState extends State<SessionsDates> {
                   });
                 },
                 child: GestureDetector(
+                  
+                  // onLongPress: () {
+                  //   showMenu(
+                  //       context: context,
+                  //       position: _getRelativeRect(widgetKey),
+                  //       items: <PopupMenuEntry>[
+                  //         PopupMenuItem(
+                  //             child: Row(
+                  //           children: [
+                  //             ElevatedButton(
+                  //               onPressed: () {
+                  //                 _showEditDialog(item.typesession);
+                  //               },
+                  //               child: const Text("Rename"),
+                  //             ),
+                  //             ElevatedButton(
+                  //                 onPressed: () {
+                  //                   showWordsBySession(item.typesession);
+                  //                 },
+                  //                 child: const Text("Open"))
+                  //           ],
+                  //         ))
+                  //       ]);
+                  //},
                   onDoubleTap: () {
                     _showEditDialog(item.typesession);
                   },

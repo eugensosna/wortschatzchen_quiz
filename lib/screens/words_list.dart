@@ -68,20 +68,30 @@ class WordsListState extends State<WordsList> {
 
                       var leipzig =
                           LeipzigWord(textToTest, widget.db, widget.talker);
-                      autoComplitData =
+                      var autoComplitDataLoc =
                           await leipzig.getAutocompleteLocal(textToTest);
-                      autoComplitData.insert(
-                          0,
-                          AutocompleteDataHelper(
-                              name: textToTest, isIntern: false, uuid: ""));
+
                       var autoComplitDataExt =
                           await leipzig.getAutocomplete(textToTest);
                       var autoComplitDataVerb =
                           await leipzig.getAutocompleteVerbForm(textToTest);
 
-                      autoComplitData.addAll(autoComplitDataExt);
-                      autoComplitData.addAll(autoComplitDataVerb);
-                      return autoComplitData;
+                      autoComplitDataLoc.addAll(autoComplitDataExt);
+                      autoComplitDataLoc.addAll(autoComplitDataVerb);
+                      if (autoComplitDataLoc.isEmpty) {
+                        autoComplitDataLoc = autoComplitData;
+                        autoComplitDataLoc.insert(
+                            0,
+                            AutocompleteDataHelper(
+                                name: textToTest, isIntern: false, uuid: ""));
+                      } else {
+                        autoComplitData = autoComplitDataLoc;
+                        autoComplitDataLoc.insert(
+                            0,
+                            AutocompleteDataHelper(
+                                name: textToTest, isIntern: false, uuid: ""));
+                      }
+                      return autoComplitDataLoc;
                     },
                     onSelected: (AutocompleteDataHelper item) async {
                       widget.talker.debug("onSelected ${item.name}");
@@ -148,7 +158,6 @@ class WordsListState extends State<WordsList> {
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        
         onPressed: addNewWord,
         tooltip: "Add new",
         child: const Icon(Icons.add),
@@ -204,8 +213,22 @@ class WordsListState extends State<WordsList> {
       },
       physics: const BouncingScrollPhysics(),
       indexBarData: SuspensionUtil.getTagIndexList(listAzWords),
-      indexBarMargin: const EdgeInsets.all(4),
+      indexBarMargin: const EdgeInsets.all(15),
+      indexBarItemHeight: 30,
+      indexBarWidth: 25,
+      indexBarOptions: IndexBarOptions(
+        needRebuild: true,
+        decoration: getIndexBarDecoration(Colors.grey[50]!),
+        downDecoration: getIndexBarDecoration(Colors.grey[200]!),
+      ),
     );
+  }
+
+  Decoration getIndexBarDecoration(Color color) {
+    return BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20.0),
+        border: Border.all(color: Colors.grey[300]!, width: .5));
   }
 
   ListView getWordsListView() {

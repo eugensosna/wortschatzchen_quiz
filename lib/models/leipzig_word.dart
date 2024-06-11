@@ -50,22 +50,27 @@ class LeipzigWord {
     final dio = Dio();
     String url =
         "https://api.wortschatz-leipzig.de/ws/words/deu_news_2012_3M/prefixword/${Uri.encodeFull(partOfWord)}?minFreq=1&limit=10";
-    final response = await dio.get(Uri.parse(url).toString());
 
-    //print('Response status: ${response.statusCode}');
-    // print('Response body: ${response.body}');
-    if (response.statusCode == 200) {
-      var listRawData = response.data as List;
-      // print(response.data);
+    try {
+      final response = await dio.get(Uri.parse(url).toString());
 
-      // var listRawData = json.decode(response.data);
-      for (var item in listRawData) {
-        var elem = LeipzigApiAutoComplit.fromJson(item);
-        result.add(AutocompleteDataHelper(
-            name: elem.word!, isIntern: false, uuid: elem.id.toString()));
+      //print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        var listRawData = response.data as List;
+        // print(response.data);
+
+        // var listRawData = json.decode(response.data);
+        for (var item in listRawData) {
+          var elem = LeipzigApiAutoComplit.fromJson(item);
+          result.add(AutocompleteDataHelper(
+              name: elem.word!, isIntern: false, uuid: elem.id.toString()));
+        }
+        // var externalData =
+        // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
       }
-      // var externalData =
-      // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
+    } catch (e) {
+      talker.error("autocomplite for $partOfWord Url $url");
     }
 
     return result;
@@ -78,30 +83,34 @@ class LeipzigWord {
     final dio = Dio();
     String url =
         "https://www.verbformen.de/suche/i/?w=${Uri.encodeFull(partOfWord)}";
-    final response = await dio.get(Uri.parse(url).toString());
+    try {
+      final response = await dio.get(Uri.parse(url).toString());
 
-    //print('Response status: ${response.statusCode}');
-    // print('Response body: ${response.body}');
-    if (response.statusCode == 200) {
-      var listRawData = response.data as List;
-      // print(response.data);
+      //print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        var listRawData = response.data as List;
+        // print(response.data);
 
-      // var listRawData = json.decode(response.data);
-      for (var (item as List) in listRawData) {
-        if (item.length > 1) {
-          var autocompleteName = item.elementAtOrNull(0);
-          var description = item.elementAtOrNull(1);
+        // var listRawData = json.decode(response.data);
+        for (var (item as List) in listRawData) {
+          if (item.length > 1) {
+            var autocompleteName = item.elementAtOrNull(0);
+            var description = item.elementAtOrNull(1);
 
-          if (autocompleteName != null) {
-            result.add(AutocompleteDataHelper(
-                name: autocompleteName,
-                isIntern: false,
-                uuid: description ?? ""));
+            if (autocompleteName != null) {
+              result.add(AutocompleteDataHelper(
+                  name: autocompleteName,
+                  isIntern: false,
+                  uuid: description ?? ""));
+            }
           }
         }
+        // var externalData =
+        // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
       }
-      // var externalData =
-      // LeipzigApiAutoComplit.fromJson(json.decode(response.data));
+    } catch (e) {
+      talker.error("autocomplite $partOfWord url $url");
     }
 
     return result;
@@ -165,7 +174,6 @@ class LeipzigWord {
         return false;
       }
       talker.debug("end getFromInternet $name");
-
 
       return true;
     } on Exception catch (e) {
@@ -249,7 +257,6 @@ class LeipzigWord {
 
   Future<bool> updateDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
-
     talker.debug("start getFromInternet $name");
 
     var wordToUpdate = editWord.copyWith();

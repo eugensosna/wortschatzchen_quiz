@@ -704,15 +704,15 @@ class WordsDetailState extends State<WordsDetail> {
           .debug("end _addUpdateWord- getFromInternet ${editWord.name}");
 
       var baseForm = leipzigSynonyms.baseWord;
-      if (leipzigSynonyms.baseWord.isNotEmpty) {
+      // if (leipzigSynonyms.baseWord.isNotEmpty) {
         
 
-        var leipzigSynonyms = LeipzigWord(baseForm, db, widget.talker);
-        leipzigSynonyms.talker.debug(
-            "start _addUpdateWord- getFromInternet base form  ${baseForm}");
+      //   var leipzigSynonyms = LeipzigWord(baseForm, db, widget.talker);
+      //   leipzigSynonyms.talker.debug(
+      //       "start _addUpdateWord- getFromInternet base form  ${baseForm}");
 
-        await leipzigSynonyms.getFromInternet();
-      }
+      //   await leipzigSynonyms.getFromInternet();
+      // }
       leipzigSynonyms.talker
           .debug("start _addUpdateWord- updateDataDB $baseForm");
 
