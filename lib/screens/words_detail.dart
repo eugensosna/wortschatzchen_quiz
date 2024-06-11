@@ -585,6 +585,7 @@ class WordsDetailState extends State<WordsDetail> {
     if (descriptionController.text.isEmpty) {
       descriptionController.text = await translateText(titleController.text);
     }
+    
     _addUpdateWord().then((value) {
       setState(() {
         isLoading = false;
@@ -694,17 +695,31 @@ class WordsDetailState extends State<WordsDetail> {
   Future<Word?> _addUpdateWord() async {
     editWord = await addWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
+    leipzigSynonyms.talker
+        .debug("start _addUpdateWord- getFromInternet ${editWord.name}");
 
     try {
       await leipzigSynonyms.getFromInternet();
+      leipzigSynonyms.talker
+          .debug("end _addUpdateWord- getFromInternet ${editWord.name}");
+
       var baseForm = leipzigSynonyms.baseWord;
       if (leipzigSynonyms.baseWord.isNotEmpty) {
+        
+
         var leipzigSynonyms = LeipzigWord(baseForm, db, widget.talker);
+        leipzigSynonyms.talker.debug(
+            "start _addUpdateWord- getFromInternet base form  ${baseForm}");
+
         await leipzigSynonyms.getFromInternet();
       }
+      leipzigSynonyms.talker
+          .debug("start _addUpdateWord- updateDataDB $baseForm");
+
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       var leipzigdate = await db.getLeipzigDataByWord(editWord);
       if (leipzigdate != null) {}
+      widget.talker.debug("end updateDataDB ");
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }

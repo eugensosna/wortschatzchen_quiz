@@ -1,7 +1,9 @@
+import 'package:azlistview/azlistview.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
@@ -25,6 +27,7 @@ class WordsListState extends State<WordsList> {
   int selectedIndex = 2;
 
   List<Word> listWords = [];
+  List<AzWords> listAzWords = [];
   List<Word> orderedListWords = [];
 
   @override
@@ -109,9 +112,8 @@ class WordsListState extends State<WordsList> {
                     },
                     fieldViewBuilder: (context, textEditingController,
                         focusNode, onFieldSubmitted) {
-                      
-                      widget.talker.debug(
-                          "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
+                      // widget.talker.debug(
+                      //     "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
                       if (stateAutocomplit) {
                         textEditingController.text = "";
                         stateAutocomplit = false;
@@ -136,14 +138,17 @@ class WordsListState extends State<WordsList> {
                     color: Colors.green.shade100,
                     child: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: getWordsListView()),
+                        child: getAzWordListView()),
+                    // child: getWordsListView()),
                   ),
                 )
               ],
             ),
 
       // bottomNavigationBar: bottomNavigationBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
+        
         onPressed: addNewWord,
         tooltip: "Add new",
         child: const Icon(Icons.add),
@@ -189,40 +194,27 @@ class WordsListState extends State<WordsList> {
     );
   }
 
+  Widget getAzWordListView() {
+    return AzListView(
+      data: listAzWords,
+      itemCount: listAzWords.length,
+      itemBuilder: (BuildContext context, int index) {
+        Word wordItem = listAzWords[index].word;
+        return listItemWidget(wordItem);
+      },
+      physics: const BouncingScrollPhysics(),
+      indexBarData: SuspensionUtil.getTagIndexList(listAzWords),
+      indexBarMargin: const EdgeInsets.all(4),
+    );
+  }
+
   ListView getWordsListView() {
     return ListView.builder(
         itemCount: listWords.length,
         itemBuilder: (context, index) {
           Word wordItem = listWords[index];
           if (wordItem.rootWordID > 0) {}
-          return GestureDetector(
-            onDoubleTap: () {
-              navigateToDetail(wordItem, "View ${wordItem.name}");
-            },
-            child: Container(
-                margin: const EdgeInsets.all(8.0),
-                child: Dismissible(
-                  key: Key(wordItem.uuid),
-                  direction: DismissDirection.startToEnd,
-                  background: Container(
-                    color: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(
-                      Icons.delete,
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                  onDismissed: (direction) {
-                    widget.talker.debug("Dismissible delete ${wordItem.name} ");
-                    _delete(wordItem).then(
-                      (value) {
-                        setState(() {});
-                      },
-                    );
-                  },
-                  child: listWordView(wordItem),
-                )),
-          );
+          return listItemWidget(wordItem);
         }
 
         //   Card(
@@ -232,6 +224,37 @@ class WordsListState extends State<WordsList> {
         //   );
         // },
         );
+  }
+
+  GestureDetector listItemWidget(Word wordItem) {
+    return GestureDetector(
+      onDoubleTap: () {
+        navigateToDetail(wordItem, "View ${wordItem.name}");
+      },
+      child: Container(
+          margin: const EdgeInsets.all(8.0),
+          child: Dismissible(
+            key: Key(wordItem.uuid),
+            direction: DismissDirection.startToEnd,
+            background: Container(
+              color: Colors.blueAccent,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.redAccent,
+              ),
+            ),
+            onDismissed: (direction) {
+              widget.talker.debug("Dismissible delete ${wordItem.name} ");
+              _delete(wordItem).then(
+                (value) {
+                  setState(() {});
+                },
+              );
+            },
+            child: listWordView(wordItem),
+          )),
+    );
   }
 
   ListTile listWordView(Word itemWord) {
@@ -256,8 +279,10 @@ class WordsListState extends State<WordsList> {
 
   @override
   void didChangeDependencies() {
-    updateListWords();
     super.didChangeDependencies();
+    updateListWords().then((onValue) {
+      setState(() {});
+    });
   }
 
   void onItemTapped(int index) {
@@ -310,6 +335,12 @@ class WordsListState extends State<WordsList> {
         widget.db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
       listWords = value;
+      listAzWords = value.map((e) {
+        return AzWords(e, e.name, e.name.trim().substring(0, 1).toUpperCase());
+      }).toList();
+      SuspensionUtil.sortListBySuspensionTag(listAzWords);
+      SuspensionUtil.setShowSuspensionStatus(listAzWords);
+
       setState(() {
         listWords = value;
         isLoad = false;

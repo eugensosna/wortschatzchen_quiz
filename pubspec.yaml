@@ -52,6 +52,7 @@ dependencies:
   intl:
   sqlite3: ^2.4.3
   talker_dio_logger: ^4.2.3
+  azlistview: ^2.0.0
 
 
 

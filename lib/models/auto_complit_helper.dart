@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:azlistview/azlistview.dart';
+import 'package:wortschatzchen_quiz/db/db.dart';
+
 class AutoComplitHelper {
   final String name;
   final bool isIntern;
@@ -54,4 +59,24 @@ class ReordableElement {
         orderId: data["orderid"],
         uuid: data["uuid"]);
   }
+}
+
+class AzWords extends ISuspensionBean {
+  Word word;
+  String? tagIndex;
+
+  String name;
+  AzWords(this.word, this.name, this.tagIndex);
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      // "id": this.word.id,
+    };
+  }
+
+  @override
+  String getSuspensionTag() => tagIndex!;
+  @override
+  String toString() => json.encode(this);
 }

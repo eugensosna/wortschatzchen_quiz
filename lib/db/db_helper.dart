@@ -178,8 +178,8 @@ class DbHelper extends AppDatabase {
   Future<List<Word>> getOrdersWordList() {
     return (select(words)
           ..orderBy([
-            (tbl) => OrderingTerm(expression: (tbl.rootWordID)),
-            ((tbl) => OrderingTerm(expression: tbl.id))
+            (tbl) => OrderingTerm(expression: (tbl.name)),
+            // ((tbl) => OrderingTerm(expression: tbl.id))
           ]))
         .get();
   }
