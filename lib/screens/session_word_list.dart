@@ -206,7 +206,7 @@ class SessionWordListState extends State<SessionWordList> {
                 return ListTile(
                   title: Text(autoItem.name),
                   onTap: () {
-                    widget.talker.debug("on tap ${autoItem.name}");
+                    // widget.talker.debug("on tap ${autoItem.name}");
                   },
                 );
               },
@@ -284,7 +284,7 @@ class SessionWordListState extends State<SessionWordList> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      widget.talker.info("session word list route to detail ", wordToEdit);
+      // widget.talker.info("session word list route to detail ", wordToEdit);
       return WordsDetail(
         wordToEdit,
         title,

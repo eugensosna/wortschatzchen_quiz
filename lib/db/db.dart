@@ -123,7 +123,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
-        talker.info("start migrate");
+        // talker.info("start migrate");
         await transaction(() async {
           await customStatement('PRAGMA foreign_keys = OFF');
           if (from < 9) {
@@ -190,7 +190,7 @@ class AppDatabase extends _$AppDatabase {
 
       },
       beforeOpen: (details) async {
-        talker.info("start before open");
+        // talker.info("start before open");
         if (details.wasCreated) {
           (await into(languages).insert(
               LanguagesCompanion.insert(name: "German", shortName: "de")));

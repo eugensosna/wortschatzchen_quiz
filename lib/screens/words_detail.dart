@@ -117,7 +117,7 @@ class WordsDetailState extends State<WordsDetail> {
 
     super.initState();
     try {
-      setBaseSettings().then((value) {});
+      setBaseSettings(editWord).then((value) {});
     } catch (e) {
       widget.talker
           .error("detail init state error fill for ${editWord.name}", e);
@@ -142,7 +142,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
   }
 
-  Future<String> setBaseSettings() async {
+  Future<String> setBaseSettings(Word editWord) async {
     if (editWord.id > 0) {
       var editWordUpdated = await db.getWordById(editWord.id);
       if (editWordUpdated != null) {
@@ -151,7 +151,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
 
     if (editWord.baseLang > 0) {
-      var baseLangOrNull = (await db.getLangById(editWord.baseLang))!;
+      var baseLangOrNull = (await db.getLangById(editWord.baseLang));
       if (baseLangOrNull != null) {
         baseLang = baseLangOrNull;
       }
@@ -160,7 +160,7 @@ class WordsDetailState extends State<WordsDetail> {
       if (baseLangOrNull == null) {
         int id = (await db.into(db.languages).insert(
             LanguagesCompanion.insert(name: "German", shortName: "de")));
-        baseLangOrNull = (await db.getLangById(id))!;
+        baseLangOrNull = (await db.getLangById(id));
         if (baseLangOrNull != null) {
           baseLang = baseLangOrNull;
         }
@@ -315,7 +315,7 @@ class WordsDetailState extends State<WordsDetail> {
           currentWordSession = value ?? "";
           _moveWordToSession(currentWordSession, editWord);
 
-          setBaseSettings().then((onValue) {
+          setBaseSettings(editWord).then((onValue) {
             setState(() {});
           });
         });
@@ -618,47 +618,16 @@ class WordsDetailState extends State<WordsDetail> {
     var word = (await leipzigSynonyms.addNewWord(name, editWord, baseLang))!;
     return word;
 
-    // var leipzigTranslator = LeipzigTranslator(db: db);
-    // leipzigTranslator.baseLang = baseLang;
-
-    // var word = await db.getWordByName(name);
-    // if (word == null) {
-    //   var translatedName = await leipzigTranslator.translate(name);
-    //   int id = await db.into(db.words).insert(WordsCompanion.insert(
-    //         name: name,
-    //         description: translatedName,
-    //         mean: "",
-    //         baseForm: "",
-    //         rootWordID: editWord.id,
-    //         baseLang: editWord.id <= 0 ? baseLang.id : editWord.id,
-    //       ));
-    //   word = await db.getWordById(id);
-    // }
-    // return word;
   }
 
   Future<Word> updateWordIfNeed(Word wordToUpdate) async {
     if (wordToUpdate.id <= 0) {
-      /*var word = await addNewWord(titleController.text, editWord);
-      if (word != null) {
-        editWord = word.copyWith();
-      } else {*/
       Error();
     } else {
       var isChanched = true;
 
       Word toUpdate = wordToUpdate.copyWith();
 
-      // if (wordToUpdate.name != titleController.text &&
-      //     titleController.text.isNotEmpty) {
-      //   toUpdate = toUpdate.copyWith(name: titleController.text);
-      //   isChanched = true;
-      // }
-      // if (wordToUpdate.description != descriptionController.text &&
-      //     descriptionController.text.isNotEmpty) {
-      //   toUpdate = toUpdate.copyWith(description: descriptionController.text);
-      //   isChanched = true;
-      // }
       if (isChanched) {
         await db.updateWord(toUpdate);
         wordToUpdate = toUpdate.copyWith();
@@ -704,22 +673,17 @@ class WordsDetailState extends State<WordsDetail> {
           .debug("end _addUpdateWord- getFromInternet ${editWord.name}");
 
       var baseForm = leipzigSynonyms.baseWord;
-      // if (leipzigSynonyms.baseWord.isNotEmpty) {
-        
-
-      //   var leipzigSynonyms = LeipzigWord(baseForm, db, widget.talker);
-      //   leipzigSynonyms.talker.debug(
-      //       "start _addUpdateWord- getFromInternet base form  ${baseForm}");
-
-      //   await leipzigSynonyms.getFromInternet();
-      // }
       leipzigSynonyms.talker
           .debug("start _addUpdateWord- updateDataDB $baseForm");
 
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
-      var leipzigdate = await db.getLeipzigDataByWord(editWord);
-      if (leipzigdate != null) {}
-      widget.talker.debug("end updateDataDB ");
+      leipzigSynonyms.translateNeededWords().then((onValue) async {
+        await setBaseSettings(editWord);
+        // setState(() {
+          
+        // });
+      });
+
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }
@@ -774,6 +738,14 @@ class WordsDetailState extends State<WordsDetail> {
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
       await leipzigSynonyms.getFromInternet();
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
+      leipzigSynonyms.translateNeededWords().then((onValue) async {
+        
+        // await setBaseSettings();
+        await setBaseSettings(newWord);
+        setState(() {
+          
+        });
+      });
     }
     return newWord;
   }
@@ -798,7 +770,7 @@ class WordsDetailState extends State<WordsDetail> {
   void goToVerbForm() async {
     final result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      widget.talker.info("go to verbform ${editWord.name}");
+      widget.talker.debug("go to verbform ${editWord.name}");
       return WebViewControllerWord(editWord: editWord, title: editWord.name);
     }));
     if (result) {
@@ -830,7 +802,7 @@ class WordsDetailState extends State<WordsDetail> {
         await db.update(db.examples).replace(elemExamples);
       }
     }
-    await setBaseSettings();
+    await setBaseSettings(editWord);
     setState(() {});
   }
 
@@ -883,7 +855,7 @@ class WordsDetailState extends State<WordsDetail> {
       db.updateWord(toUpdate);
     }
     // fillControllers(editWord);
-    await setBaseSettings();
+    await setBaseSettings(editWord);
     setState(() {});
   }
 }

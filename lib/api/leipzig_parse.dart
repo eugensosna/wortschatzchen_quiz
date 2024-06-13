@@ -29,7 +29,7 @@ Future<Response> getLeipzigHtml(String word, Dio dio) async {
 }
 
 Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
-  final document = html_parser.parse(text);
+  final document =  html_parser.parse(text);
   wortObj.rawHTML = text;
 
   var wordbox = document.getElementById('wordBox');

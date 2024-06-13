@@ -31,6 +31,20 @@ class LeipzigWord {
 
   LeipzigWord(this.name, this.db, this.talker);
 
+  Future <String> translateNeededWords() async{
+    var listTranslatedWords = await db.getStringsToTranslate();
+    for (var item in listTranslatedWords) {
+      if (item.translatedName.isEmpty){
+        var translatedString = await translator.translate(item.name, addtoBase: false);
+        var toWrite = item.copyWith(translatedName: translatedString);
+        db.update(db.translatedWords).replace(toWrite);
+      }
+
+      
+    }
+    return "ok";
+  }
+
   Future<List<AutocompleteDataHelper>> getAutocompleteLocal(
       String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
@@ -138,26 +152,24 @@ class LeipzigWord {
   }
 
   Future<bool> getFromInternet() async {
-    talker.debug("start getFromInternet $name");
+    talker.info("start getFromInternet $name");
     var timeStart = DateTime.now().microsecond;
 
     try {
       var dio = getDio();
       Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
-        talker.info("get leipzig data " +
-            (DateTime.now().microsecond - timeStart).toString());
+        talker.info("get leipzig data $name ${DateTime.now().microsecond - timeStart}");
         timeStart = DateTime.now().microsecond;
         var wortObj = await parseHtml(response.data.toString(), this);
 
-        talker.info("parse leipzig data " +
-            (DateTime.now().microsecond - timeStart).toString());
+        talker.info("parsed leipzig data $name ${DateTime.now().microsecond - timeStart}");
         if (baseWord.isNotEmpty && baseWord != name) {
           timeStart = DateTime.now().microsecond;
           var wordFromBaseWord = await getLeipzigHtml(baseWord, dio);
           wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
           talker.info(
-              "get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
+              " start get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
         }
 
         examples = wortObj.examples;
@@ -167,13 +179,13 @@ class LeipzigWord {
         var responseOpen = await getOpenthesaurus(nameToFind, dio);
         var defOpenThesaurus = await parseHtmlOpenthesaurus(responseOpen);
         talker.info(
-            "get+parse Openthesaurus leipzig data ${DateTime.now().second - timeStart}");
+            "get+parse  Openthesaurus $name ${DateTime.now().second - timeStart}");
         this.definitions.addAll(defOpenThesaurus);
         url = response.realUri.toString();
       } else {
         return false;
       }
-      talker.debug("end getFromInternet $name");
+      talker.info("end getFromInternet $name");
 
       return true;
     } on Exception catch (e) {
@@ -246,6 +258,7 @@ class LeipzigWord {
     word = await db.getWordById(id);
 
     if (word != null && word.description.isEmpty) {
+
       var translatedName = await leipzigTranslator.translate(name);
       if (translatedName.isNotEmpty) {
         word = word.copyWith(description: translatedName);
@@ -257,7 +270,7 @@ class LeipzigWord {
 
   Future<bool> updateDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
-    talker.debug("start getFromInternet $name");
+    talker.info("start updateDataDB $name");
 
     var wordToUpdate = editWord.copyWith();
     translator = LeipzigTranslator(db: db);
@@ -290,7 +303,10 @@ class LeipzigWord {
         db
             .into(db.means)
             .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
-        await translator.translate(item);
+        translator.addToBase(item, "");
+        // translator.translate(item).then((onValue){
+        // talker.log("translated string for $item is $onValue");
+        // });
         // }
       }
     }
@@ -301,7 +317,11 @@ class LeipzigWord {
         if (example != null) {
           continue;
         }
-        await translator.translate(item.value!);
+        translator.addToBase(item.value!, "");
+
+        // translator.translate(item.value!).then((onValue){
+        // talker.log("translated string for $item is $onValue");
+        // });
         await db.into(db.examples).insert(
             ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
       }
@@ -309,8 +329,13 @@ class LeipzigWord {
     for (var item in word.synonyms) {
       Word? elemWordSynonym = await db.getWordByName(item.name);
       var translatedName = elemWordSynonym == null
-          ? await translator.translate(item.name)
+          ? ""
           : elemWordSynonym.description;
+              translator.addToBase(item.name, "");
+
+      // translator.translate(item.name).then((onValue){
+      //   talker.log("translated string for ${item.name} is $onValue");
+      //   });
 
       await db.into(db.synonyms).insert(SynonymsCompanion.insert(
           name: item.name,
@@ -341,7 +366,7 @@ class LeipzigWord {
               wordOfBase: baseWord));
     }
 
-    talker.debug("end  updateDateDB $name");
+    talker.info("end  updateDateDB $name");
     return true;
   }
 }
@@ -371,7 +396,8 @@ class LeipzigTranslator {
     return id;
   }
 
-  Future<String> translate(String inputText) async {
+
+  Future<String> translate(String inputText, { bool addtoBase = true}) async {
     String result = "";
     const int countMillisecondsForGoogle = 270;
 
@@ -384,11 +410,11 @@ class LeipzigTranslator {
       baseLang = baseLangLocal;
       targetLanguage = targetLanguageLocal;
     }
-    final alreadyTranslated = await db.getTranslatedWord(
-        inputText, baseLangLocal!.id, targetLanguageLocal!.id);
-    if (alreadyTranslated != null) {
-      result = alreadyTranslated.translatedName;
-    } else {
+    // final alreadyTranslated = await db.getTranslatedWord(
+    //     inputText, baseLangLocal!.id, targetLanguageLocal!.id);
+    // if (alreadyTranslated != null) {
+    //   result = alreadyTranslated.translatedName;
+    // } else {
       if ((DateTime.now().millisecond - timeStart) >
           countMillisecondsForGoogle) {
         await Future.delayed(
@@ -400,11 +426,13 @@ class LeipzigTranslator {
             from: inputLanguage, to: outputLanguage);
         result = translated.text;
 
+        if (addtoBase){
         addToBase(inputText, result).then((value) => null);
+        }
       } catch (e) {
         debugPrint("$e");
       }
-    }
+    // }
     return result;
   }
 

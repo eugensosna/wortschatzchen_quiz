@@ -94,7 +94,7 @@ class WordsListState extends State<WordsList> {
                       return autoComplitDataLoc;
                     },
                     onSelected: (AutocompleteDataHelper item) async {
-                      widget.talker.debug("onSelected ${item.name}");
+                      // widget.talker.debug("onSelected ${item.name}");
                       stateAutocomplit = true;
                       debugPrint(item.name);
                       if (item.isIntern) {
@@ -192,7 +192,7 @@ class WordsListState extends State<WordsList> {
                             : Colors.black87),
                   ),
                   onTap: () {
-                    widget.talker.debug("on tap ${autoItem.name}");
+                    // widget.talker.debug("on tap ${autoItem.name}");
                   },
                 );
               },
@@ -353,7 +353,7 @@ class WordsListState extends State<WordsList> {
     setState(() {
       isLoad = true;
     });
-    widget.talker.info("start get wordList");
+    // widget.talker.info("start get wordList");
     Future<List<Word>> fListWords =
         widget.db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
@@ -368,7 +368,7 @@ class WordsListState extends State<WordsList> {
         listWords = value;
         isLoad = false;
       });
-      widget.talker.info("end get wordList");
+      // widget.talker.info("end get wordList");
       return orderedListWords;
     });
 

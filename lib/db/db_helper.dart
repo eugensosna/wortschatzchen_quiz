@@ -143,8 +143,9 @@ class DbHelper extends AppDatabase {
   }
 
   Future<Language?> getLangById(int id) {
-    return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingle();
+    return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
   }
+
 
   Future<Word?> getWordByName(String name) async {
     return (select(words)..where((tbl) => tbl.name.equals(name)))
@@ -188,6 +189,10 @@ class DbHelper extends AppDatabase {
             // ((tbl) => OrderingTerm(expression: tbl.id))
           ]))
         .get();
+  }
+  Future <List<translatedwords>> getStringsToTranslate() async{
+    return (select(translatedWords)..
+    where((tbl)=> tbl.translatedName.equals(""))).get();
   }
 
   Future<List<Word>> getChildrenWordList(Word item) {

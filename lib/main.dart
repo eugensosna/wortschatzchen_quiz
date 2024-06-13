@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   db = AppDatabase();
   final talker = Talker();
-  talker.info("init Talker ");
+  // talker.info("init Talker ");
   runApp(MyApp(
     talker: talker,
   ));
