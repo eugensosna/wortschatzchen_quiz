@@ -103,7 +103,6 @@ class SessionsDatesState extends State<SessionsDates> {
                   ),
                 ),
                 onDismissed: (direction) async {
-                  // widget.talker.debug("dismiss ${item.typesession}");
                   listSessions.removeAt(index);
                   _removeSession(item.typesession).then((onValue) {
                     setState(() {

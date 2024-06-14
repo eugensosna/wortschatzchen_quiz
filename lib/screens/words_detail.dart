@@ -553,7 +553,7 @@ class WordsDetailState extends State<WordsDetail> {
           }
 
           setState(() {
-            isLoading = true;
+            // isLoading = true;
           });
           // for (var synItem in listSynonyms) {
           //   if (synItem.synonymWord == 0) {
@@ -579,6 +579,7 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<String> _fillData() async {
+    widget.talker.info("_fillData STart");
     setState(() {
       isLoading = true;
     });
@@ -587,6 +588,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
     
     _addUpdateWord().then((value) {
+      widget.talker.info("_fillData End");
       setState(() {
         isLoading = false;
       });
@@ -665,24 +667,25 @@ class WordsDetailState extends State<WordsDetail> {
     editWord = await addWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
     leipzigSynonyms.talker
-        .debug("start _addUpdateWord- getFromInternet ${editWord.name}");
+        .warning("start _addUpdateWord- getFromInternet ${editWord.name}");
 
     try {
-      await leipzigSynonyms.getFromInternet();
+      var leipzigTempWord =
+          await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name);
+      // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
-          .debug("end _addUpdateWord- getFromInternet ${editWord.name}");
+          .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
 
       var baseForm = leipzigSynonyms.baseWord;
       leipzigSynonyms.talker
-          .debug("start _addUpdateWord- updateDataDB $baseForm");
+          .warning("start _addUpdateWord- updateDataDB $baseForm");
 
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       leipzigSynonyms.translateNeededWords().then((onValue) async {
         await setBaseSettings(editWord);
-        // setState(() {
-          
-        // });
       });
+
+
 
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
@@ -736,7 +739,7 @@ class WordsDetailState extends State<WordsDetail> {
       }
 
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
-      await leipzigSynonyms.getFromInternet();
+      await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name);
       await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
       leipzigSynonyms.translateNeededWords().then((onValue) async {
         

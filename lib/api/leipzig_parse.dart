@@ -16,11 +16,24 @@ import '../models/leipzig_word.dart';
 
 // }
 
+String getUrlForLeipzigCorporaWord(String word,
+    {String corpusId = "deu_news_2023"}) {
+  return "https://corpora.uni-leipzig.de/de/res?corpusId=$corpusId&word=${Uri.encodeFull(word)}";
+}
+
+String getUrlExamplesForLeipzigCorporaWord(String word,
+    {String corpusId = "deu_news_2023"}) {
+  // "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
+
+  return "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=$corpusId&&action=loadExamples&word=${Uri.encodeFull(word)}";
+}
+
+
 Future<Response> getLeipzigHtml(String word, Dio dio) async {
   // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
   // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
-  String url =
-      "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=${Uri.encodeFull(word)}";
+  String url = getUrlForLeipzigCorporaWord(word);
+      
   final response = await dio.get(Uri.parse(url).toString());
 
   if (response.statusCode == 200) {}
@@ -38,14 +51,14 @@ Future<LeipzigWord> parseHtml(String text, LeipzigWord wortObj) async {
 
   getBaseHeaders(wortObj, pElements);
 
-  var respond = await getLeipzigExamples(wortObj.name, wortObj.getDio());
-  var examples = parseHtmlExamples(respond);
-  wortObj.examples.clear();
-  for (var value in examples.values) {
-    for (var item in value) {
-      wortObj.examples.add(MapTextUrls(value: item));
-    }
-  }
+  // var respond = await getLeipzigExamples(wortObj.name, wortObj.getDio());
+  // var examples = parseHtmlExamples(respond);
+  // wortObj.examples.clear();
+  // for (var value in examples.values) {
+  //   for (var item in value) {
+  //     wortObj.examples.add(MapTextUrls(value: item));
+  //   }
+  // }
 
   return wortObj;
 }
@@ -162,10 +175,8 @@ List<MapTextUrls> getTextFromListHrefs(dom.Element root) {
 
 Future<String> getLeipzigExamples(String word, Dio dio) async {
   String result = "";
-  // var uriConstr = Uri.https("corpora.uni-leipzig.de", "de/res",
-  // "?corpusId=deu_news_2023&word=" + Uri.encodeFull(word));
-  String url =
-      "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
+  String url = getUrlExamplesForLeipzigCorporaWord(word);
+  // "https://corpora.uni-leipzig.de/de/webservice/index?corpusId=deu_news_2023&action=loadExamples&word=${Uri.encodeFull(word)}";
   final response = await dio.get(Uri.parse(url).toString());
 
   // print('Response body: ${response.body}');

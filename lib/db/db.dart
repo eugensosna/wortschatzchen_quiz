@@ -65,6 +65,9 @@ class LeipzigDataFromIntranet extends Table {
 
   TextColumn get url => text()();
   TextColumn get html => text()();
+  TextColumn get htmlOpen=> text()();
+  TextColumn get htmlExamples=> text()();
+  
   TextColumn get article => text()();
   // ignore: non_constant_identifier_names
   TextColumn get KindOfWort => text()();

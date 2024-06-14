@@ -206,7 +206,6 @@ class SessionWordListState extends State<SessionWordList> {
                 return ListTile(
                   title: Text(autoItem.name),
                   onTap: () {
-                    // widget.talker.debug("on tap ${autoItem.name}");
                   },
                 );
               },

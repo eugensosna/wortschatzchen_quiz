@@ -23,6 +23,8 @@ class LeipzigWord {
   String baseWordFor = "";
   List<String> baseWordsFor = [];
   String rawHTML = "";
+  String rawHTMLOpen = "";
+  String rawHTMLExamples = "";
   String url = "";
   String article = "";
   DbHelper db;
@@ -32,6 +34,7 @@ class LeipzigWord {
   LeipzigWord(this.name, this.db, this.talker);
 
   Future <String> translateNeededWords() async{
+    talker.info("start translateNeededWords");
     var listTranslatedWords = await db.getStringsToTranslate();
     for (var item in listTranslatedWords) {
       if (item.translatedName.isEmpty){
@@ -42,6 +45,7 @@ class LeipzigWord {
 
       
     }
+    talker.info("end translateNeededWords");
     return "ok";
   }
 
@@ -143,7 +147,7 @@ class LeipzigWord {
         settings: const TalkerDioLoggerSettings(
           printRequestHeaders: false,
           printResponseHeaders: false,
-          printResponseMessage: false,
+          printResponseMessage: true,
           printResponseData: false,
         ),
       ),
@@ -151,47 +155,109 @@ class LeipzigWord {
     return dio;
   }
 
-  Future<bool> getFromInternet() async {
+  Future<LeipzigWord> parseDataLeipzigWord(LeipzigWord word) async {
+    talker.info("start leipzig parse ");
+    if (word.rawHTML.isNotEmpty) {
+      var temp = await parseHtml(word.rawHTML, word);
+    }
+    if (word.rawHTMLOpen.isNotEmpty) {
+      var listdefOpenThesaurus = await parseHtmlOpenthesaurus(word.rawHTMLOpen);
+      word.definitions.addAll(listdefOpenThesaurus);
+    }
+    if (word.rawHTMLExamples.isNotEmpty) {
+      var listExamplesLoc = await parseHtmlExamples(word.rawHTMLExamples);
+      if (listExamplesLoc.isNotEmpty) {
+        word.examples.clear();
+        for (var value in listExamplesLoc.values) {
+          for (var item in value) {
+            word.examples.add(MapTextUrls(value: item));
+          }
+        }
+      }
+    }
+
+    return word;
+  }
+
+  Future<LeipzigWord> parseRawHtmlData(String name) async {
+    var timeStart = DateTime.now().microsecond;
+
+    var tempWort = await getFromInternet(name);
+
+    rawHTML = tempWort.rawHTML;
+    rawHTMLOpen = tempWort.rawHTMLOpen;
+    rawHTMLExamples = tempWort.rawHTMLExamples;
+
+    var tempWortForBase = await parseDataLeipzigWord(tempWort);
+    name = tempWortForBase.name;
+    article = tempWortForBase.article;
+    baseWord = tempWortForBase.baseWord;
+    kindOfWort = tempWortForBase.kindOfWort;
+    url = tempWortForBase.url;
+    examples = tempWortForBase.examples;
+    definitions = tempWortForBase.definitions;
+    synonyms = tempWortForBase.synonyms;
+
+    // if (tempWortForBase.baseWord.isNotEmpty && tempWortForBase.baseWord != tempWortForBase.name) {
+    //   name = tempWortForBase.baseWord;
+    //   timeStart = DateTime.now().microsecond;
+
+    //   var tempWort = await getFromInternet(baseWord);
+    //   return await parseRawHtmlData(baseWord);
+
+    //   result.rawHTML = wordFromBaseWord.data.toString();
+    //   wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
+    //   talker.info(
+    //       " start get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
+    // }
+    // }
+
+    return tempWort;
+  }
+
+  Future<LeipzigWord> getFromInternet(String name) async {
+    LeipzigWord result = LeipzigWord(name, db, talker);
+    
     talker.info("start getFromInternet $name");
     var timeStart = DateTime.now().microsecond;
 
-    try {
       var dio = getDio();
+
+    try {
       Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
         talker.info("get leipzig data $name ${DateTime.now().microsecond - timeStart}");
         timeStart = DateTime.now().microsecond;
-        var wortObj = await parseHtml(response.data.toString(), this);
-
-        talker.info("parsed leipzig data $name ${DateTime.now().microsecond - timeStart}");
-        if (baseWord.isNotEmpty && baseWord != name) {
-          timeStart = DateTime.now().microsecond;
-          var wordFromBaseWord = await getLeipzigHtml(baseWord, dio);
-          wortObj = await parseHtml(wordFromBaseWord.data.toString(), this);
-          talker.info(
-              " start get+parse for base $baseWord leipzig data ${DateTime.now().second - timeStart}");
-        }
-
-        examples = wortObj.examples;
-        var nameToFind =
-            baseWord.isNotEmpty && baseWord != name ? baseWord : name;
-
-        var responseOpen = await getOpenthesaurus(nameToFind, dio);
-        var defOpenThesaurus = await parseHtmlOpenthesaurus(responseOpen);
-        talker.info(
-            "get+parse  Openthesaurus $name ${DateTime.now().second - timeStart}");
-        this.definitions.addAll(defOpenThesaurus);
-        url = response.realUri.toString();
-      } else {
-        return false;
+        result.rawHTML = response.data.toString();
+        result.url = getUrlForLeipzigCorporaWord(name);
       }
+    } catch (e) {
+      talker.error("getFromInternet Lepzig data $name", e);
+      
+    }
+    try {
+      //result.examples = wortObj.examples;
+      // var nameToFind =
+      //     baseWord.isNotEmpty && baseWord != name ? baseWord : name;
+
+      var responseOpen = await getOpenthesaurus(name, dio);
+      result.rawHTMLOpen = responseOpen;
+      result.rawHTMLExamples = await getLeipzigExamples(name, dio);
+
       talker.info("end getFromInternet $name");
 
-      return true;
-    } on Exception catch (e) {
-      talker.error("getFromInternet $name", e);
-      return false;
+      
+    } catch (e) {
+      talker.error("getFromInternet openthesaurus $name", e);
     }
+
+    try {
+      result.rawHTMLExamples = await getLeipzigExamples(name, dio);
+
+    } catch (e) {
+      talker.error("getFromInternet examples $name", e);
+    }
+    return result;
   }
 
   Future<Word?> addWordUpdateShort(String name, String description,
@@ -367,6 +433,7 @@ class LeipzigWord {
     }
 
     talker.info("end  updateDateDB $name");
+    translateNeededWords().then((onValue) => null);
     return true;
   }
 }
