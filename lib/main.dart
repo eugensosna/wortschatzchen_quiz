@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/home_page.dart';
 import 'package:talker/talker.dart';
 
@@ -8,12 +10,17 @@ import 'package:talker/talker.dart';
 late AppDatabase db;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  db = AppDatabase();
-  final talker = Talker();
+  var dataProviderTemp = AppDataProvider();
+  db = dataProviderTemp.db;
+  final talker = dataProviderTemp.talker;
   // talker.info("init Talker ");
-  runApp(MyApp(
+
+  
+  runApp(ChangeNotifierProvider(
+      create: (context) => dataProviderTemp,
+      child: MyApp(
     talker: talker,
-  ));
+      )));
 
   // runZonedGuarded(
   //   () => runApp(MyApp(
