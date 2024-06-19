@@ -162,7 +162,6 @@ class SessionWordListState extends State<SessionWordList> {
                     listWords = onValue;
                   });
                 });
-                ;
               },
             ),
             IconButton(

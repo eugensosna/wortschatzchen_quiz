@@ -479,7 +479,7 @@ class WordsDetailState extends State<WordsDetail> {
         ReordableElement(id: 0, name: "", translate: "", orderId: 0, uuid: "");
 
     return ExpansionTile(
-      title: Text("Examples: ${titleList}"),
+      title: Text("Examples: $titleList"),
       subtitle: Text(translatedList),
       initiallyExpanded: false,
       trailing: IconButton(

@@ -164,7 +164,7 @@ class LeipzigWord {
       word.definitions.addAll(listdefOpenThesaurus);
     }
     if (word.rawHTMLExamples.isNotEmpty) {
-      var listExamplesLoc = await parseHtmlExamples(word.rawHTMLExamples);
+      var listExamplesLoc = parseHtmlExamples(word.rawHTMLExamples);
       if (listExamplesLoc.isNotEmpty) {
         word.examples.clear();
         for (var value in listExamplesLoc.values) {

@@ -34,7 +34,7 @@ class QuizPageState extends State<QuizPage> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
         child: Column(

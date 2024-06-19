@@ -142,7 +142,7 @@ class _AnimatedCardState extends State<AnimatedCard>
             Center(
               child: Text(
                 "${widget.editWord.name} ",
-                style: TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18),
               ),
             ),
             Text("mean:${widget.editWord.description} "),
