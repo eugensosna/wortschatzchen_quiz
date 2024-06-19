@@ -179,6 +179,62 @@ class LeipzigWord {
     return word;
   }
 
+  Future<LeipzigWord> parseDataExamplesWord(
+      LeipzigWord word, Word editWord) async {
+    talker.info("start html parse ");
+    if (word.rawHTMLExamples.isNotEmpty) {
+      var listExamplesLoc = parseHtmlExamples(word.rawHTMLExamples);
+      if (listExamplesLoc.isNotEmpty) {
+        word.examples.clear();
+        for (var value in listExamplesLoc.values) {
+          for (var item in value) {
+            word.examples.add(MapTextUrls(value: item));
+          }
+        }
+      }
+    }
+    talker.info("return html parse ");
+
+    return word;
+  }
+
+  Future<LeipzigWord> getParseAllDataSpeed(
+      LeipzigWord wort, Word editWord) async {
+    talker.info("start then getLeipzigBaseFromInternet");
+    wort.getLeipzigBaseFromInternet().then((onValue) async {
+      wort.parseDataLeipzigWord(onValue).then((onValue) {
+        wort.saveBaseDataDB(onValue, db, editWord).then((onValue) async {
+          talker.info("end then getLeipzigBaseFromInternet");
+        });
+      });
+    });
+    talker.info("start getOpenthesaurusFromInternet");
+
+    wort = await wort.getOpenthesaurusFromInternet();
+    wort = await wort.parseOpenthesaurus(wort);
+
+    talker.info("start then getLeipzigExamplesFromInternet");
+
+    wort.getLeipzigExamplesFromInternet().then((onValue) {
+      onValue.parseDataExamplesWord(onValue, editWord).then((onValue) async {
+        await onValue.saveRelationsDataDB(onValue, db, editWord);
+        talker.info("end then getLeipzigExamplesFromInternet");
+      });
+    });
+    await wort.saveRelationsDataDB(wort, db, editWord);
+    talker.info("end getOpenthesaurusFromInternet");
+
+    return wort;
+  }
+
+  Future<LeipzigWord> parseOpenthesaurus(LeipzigWord wort) async {
+    if (wort.rawHTMLOpen.isNotEmpty) {
+      var tempWort = await parseHtmlOpenthesaurus(wort.rawHTML);
+      wort.definitions = tempWort;
+    }
+    return wort;
+  }
+
   Future<LeipzigWord> parseRawHtmlData(String name, Word editWord) async {
     var timeStart = DateTime.now().microsecond;
 
@@ -256,18 +312,36 @@ class LeipzigWord {
     return result;
   }
 
+  Future<LeipzigWord> getLeipzigExamplesFromInternet() async {
+    LeipzigWord result = LeipzigWord(name, db, talker);
+    var dio = Dio();
+
+    try {
+      String response = await getLeipzigExamples(name, dio);
+      if (response.isNotEmpty) {
+        //talker.info("get leipzig base data ");
+        result.rawHTMLExamples = response;
+        //result.url = getUrlForLeipzigCorporaWord(name);
+      }
+    } catch (e) {
+      talker.error("getFromInternet Examples data $name", e);
+    }
+
+    return result;
+  }
+
   Future<LeipzigWord> getOpenthesaurusFromInternet() async {
     LeipzigWord result = LeipzigWord(name, db, talker);
     var dio = Dio();
 
     try {
       var responseOpen = await getOpenthesaurus(name, dio);
-      result.rawHTMLOpen = responseOpen;
+      this.rawHTMLOpen = responseOpen;
     } catch (e) {
       talker.error("getFromInternet Openthesaurus data $name", e);
     }
 
-    return result;
+    return this;
   }
 
   Future<LeipzigWord> getFromInternet(String name) async {
@@ -385,6 +459,27 @@ class LeipzigWord {
     return word;
   }
 
+  Future<bool> saveExamplesDataDB(
+      LeipzigWord word, DbHelper db, Word editWord) async {
+    if (word.examples.isNotEmpty) {
+      for (var item in word.examples) {
+        var example =
+            await db.getExampleByNameAndWord(item.value!, editWord.id);
+        if (example != null) {
+          continue;
+        }
+        translator.addToBase(item.value!, "");
+
+        // translator.translate(item.value!).then((onValue){
+        // talker.log("translated string for $item is $onValue");
+        // });
+        await db.into(db.examples).insert(
+            ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
+      }
+    }
+    return true;
+  }
+
   Future<bool> saveRelationsDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
     var wordToUpdate = editWord.copyWith();
@@ -414,22 +509,8 @@ class LeipzigWord {
         // }
       }
     }
-    if (word.examples.isNotEmpty) {
-      for (var item in word.examples) {
-        var example =
-            await db.getExampleByNameAndWord(item.value!, editWord.id);
-        if (example != null) {
-          continue;
-        }
-        translator.addToBase(item.value!, "");
+    await saveExamplesDataDB(word, db, editWord);
 
-        // translator.translate(item.value!).then((onValue){
-        // talker.log("translated string for $item is $onValue");
-        // });
-        await db.into(db.examples).insert(
-            ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
-      }
-    }
     for (var item in word.synonyms) {
       Word? elemWordSynonym = await db.getWordByName(item.name);
       var translatedName =
@@ -447,6 +528,7 @@ class LeipzigWord {
           baseLang: editWord.baseLang,
           translatedName: translatedName));
     }
+    translateNeededWords().then((onValue) => null);
 
     return true;
   }

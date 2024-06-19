@@ -586,7 +586,7 @@ class WordsDetailState extends State<WordsDetail> {
     if (descriptionController.text.isEmpty) {
       descriptionController.text = await translateText(titleController.text);
     }
-    
+
     _addUpdateWord().then((value) {
       widget.talker.info("_fillData End");
       setState(() {
@@ -619,7 +619,6 @@ class WordsDetailState extends State<WordsDetail> {
     leipzigSynonyms.db = db;
     var word = (await leipzigSynonyms.addNewWord(name, editWord, baseLang))!;
     return word;
-
   }
 
   Future<Word> updateWordIfNeed(Word wordToUpdate) async {
@@ -671,23 +670,19 @@ class WordsDetailState extends State<WordsDetail> {
 
     try {
       var leipzigTempWord =
-          await leipzigSynonyms.parseRawHtmlData(
-          leipzigSynonyms.name, editWord);
+          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
           .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
 
-      var baseForm = leipzigSynonyms.baseWord;
-      leipzigSynonyms.talker
-          .warning("start _addUpdateWord- updateDataDB $baseForm");
+      // var baseForm = leipzigSynonyms.baseWord;
+      // leipzigSynonyms.talker
+      //     .warning("start _addUpdateWord- updateDataDB $baseForm");
 
-      await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
+      // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       leipzigSynonyms.translateNeededWords().then((onValue) async {
         await setBaseSettings(editWord);
       });
-
-
-
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }
@@ -740,15 +735,22 @@ class WordsDetailState extends State<WordsDetail> {
       }
 
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
-      await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name, editWord);
-      await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
+
+      leipzigSynonyms =
+          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
+      // await leipzigSynonyms
+      //     .getOpenthesaurusFromInternet()
+      //     .then((onValue) async {
+      //   var wort = await leipzigSynonyms.parseOpenthesaurus(onValue);
+      //   await leipzigSynonyms.saveRelationsDataDB(wort, db, editWord);
+      // });
+
+      // await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name, editWord);
+      // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
       leipzigSynonyms.translateNeededWords().then((onValue) async {
-        
         // await setBaseSettings();
         await setBaseSettings(newWord);
-        setState(() {
-          
-        });
+        setState(() {});
       });
     }
     return newWord;

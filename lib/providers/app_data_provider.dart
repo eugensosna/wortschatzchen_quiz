@@ -7,4 +7,6 @@ class AppDataProvider extends ChangeNotifier {
   final Talker _talker = Talker();
   AppDatabase get db => _db;
   Talker get talker => _talker;
+
+
 }
