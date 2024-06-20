@@ -247,6 +247,8 @@ class LeipzigWord {
         rawHTMLExamples = tempWort.rawHTMLExamples;
 
         var tempWortForBase = await parseDataLeipzigWord(tempWort);
+        talker.info("2. parseRawHtmlData parseDataLeipzigWord ");
+
         name = tempWortForBase.name;
         article = tempWortForBase.article;
         baseWord = tempWortForBase.baseWord;
@@ -255,9 +257,17 @@ class LeipzigWord {
         examples = tempWortForBase.examples;
         definitions = tempWortForBase.definitions;
         synonyms = tempWortForBase.synonyms;
-        updateDataDB(tempWort, db, editWord).then((onValue) {
-          talker.info("1. parseRawHtmlData end ");
-        });
+        parseDataLeipzigWord(tempWortForBase).then(
+          (value) {
+            talker.info("3. parseRawHtmlData parseDataLeipzigWord ");
+
+            updateDataDB(tempWort, db, editWord).then((onValue) {
+              talker.info("1. parseRawHtmlData END updateDataDB ");
+            });
+          },
+        );
+
+        
       });
     }
 
@@ -548,7 +558,30 @@ class LeipzigWord {
     if (word.article.trim().isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(important: word.article.trim());
     }
+
     await db.updateWord(wordToUpdate);
+    if (wordToUpdate.name != wordToUpdate.baseForm) {
+      addNewWord(
+              wordToUpdate.baseForm,
+              Word(
+                  id: -99,
+                  uuid: "",
+                  name: wordToUpdate.baseForm,
+                  important: "",
+                  description: "",
+                  mean: "",
+                  baseForm: "",
+                  baseLang: translator.baseLang!.id,
+                  rootWordID: 0),
+              translator.baseLang)
+          .then((onValue) {
+        if (onValue != null) {
+          var toUpdate = wordToUpdate.copyWith(rootWordID: onValue!.id);
+          db.updateWord(toUpdate);
+          parseRawHtmlData(onValue.name, editWord);
+        }
+      });
+    }
     return true;
   }
 

@@ -239,6 +239,19 @@ class WordsDetailState extends State<WordsDetail> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5)))),
             ),
+            editWord.baseForm.isNotEmpty
+                ? InkWell(
+                    child: Text(
+                      "Base form :${editWord.baseForm}",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                    onTap: () {
+                      viewWord(editWord.baseForm);
+                    },
+                  )
+                : Container(
+                    height: 2,
+                  ),
             // 3 element
             article.isNotEmpty ? Text(article) : Container(),
             Padding(

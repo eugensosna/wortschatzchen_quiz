@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/drawers/main_drawer.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/quiz_page.dart';
 import 'package:wortschatzchen_quiz/screens/sessions_dates.dart';
 import 'package:wortschatzchen_quiz/screens/words_list.dart';
+import 'package:wortschatzchen_quiz/utils/constaints.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.talker});
@@ -65,6 +67,11 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
+      appBar: AppBar(
+        title: Text(routeNameHome),
+      ),
+      
       bottomNavigationBar: bottomNavigationBar(context),
       body: Center(
         child: tabBarPages.elementAt(selectedIndex),
