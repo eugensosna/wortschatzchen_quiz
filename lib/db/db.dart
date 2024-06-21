@@ -65,9 +65,9 @@ class LeipzigDataFromIntranet extends Table {
 
   TextColumn get url => text()();
   TextColumn get html => text()();
-  TextColumn get htmlOpen=> text()();
-  TextColumn get htmlExamples=> text()();
-  
+  TextColumn get htmlOpen => text()();
+  TextColumn get htmlExamples => text()();
+
   TextColumn get article => text()();
   // ignore: non_constant_identifier_names
   TextColumn get KindOfWort => text()();
@@ -90,6 +90,7 @@ class Examples extends Table {
   TextColumn get goaltext => text().clientDefault(() => " ")();
   IntColumn get exampleOrder => integer().clientDefault(() => 100)();
 }
+
 @TableIndex(name: "type_session", columns: {#typesession})
 class Sessions extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -107,16 +108,22 @@ class Sessions extends Table {
   Means,
   Sessions,
   Examples,
-
 ])
 class AppDatabase extends _$AppDatabase {
+  String pathToFile = "";
   AppDatabase() : super(_openConnection());
   Talker talker = Talker();
 
+  Future<String> getDataFilePath() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'worts.sqlite'));
+    return file.path;
+  }
 
   void setTalker(Talker talker) {
     talker = talker;
   }
+
   @override
   int get schemaVersion => 16;
   @override
@@ -132,13 +139,11 @@ class AppDatabase extends _$AppDatabase {
           if (from < 9) {
             await customStatement('ALTER TABLE words  ADD immportant TEXT;');
             await customStatement("""update words set immportant=' ';""");
-
           } else {
             if (from < 11) {
               await customStatement(
                   'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
               await customStatement("""update means set meansorder=0;""");
-
             } else {
               if (from < 12) {
                 await customStatement('''
@@ -154,10 +159,6 @@ class AppDatabase extends _$AppDatabase {
                   ); ''');
               }
             }
-
-
-
-          
           }
           if (from <= 14) {
             await customStatement(
@@ -167,7 +168,6 @@ class AppDatabase extends _$AppDatabase {
 //            await customStatement(
 //                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
           }
-
 
           // put your migration logic here
           //await customStatement('PRAGMA foreign_keys = ON');
@@ -189,8 +189,6 @@ class AppDatabase extends _$AppDatabase {
               'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
           await customStatement("""update means set means_order=0;""");
         }
-        
-
       },
       beforeOpen: (details) async {
         // talker.info("start before open");
@@ -202,9 +200,6 @@ class AppDatabase extends _$AppDatabase {
         }
 
         if (details.hadUpgrade && details.versionBefore! < 10) {}
-
-
-
       },
     );
 
@@ -216,6 +211,8 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     // put the database file, called db.sqlite here, into the documents folder
     // for your app.
+    
+
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'worts.sqlite'));
 

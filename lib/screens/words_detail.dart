@@ -230,7 +230,7 @@ class WordsDetailState extends State<WordsDetail> {
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(9),
               child: TextField(
                   controller: titleController,
                   style: textStyle,
@@ -239,6 +239,19 @@ class WordsDetailState extends State<WordsDetail> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5)))),
             ),
+            editWord.baseForm.isNotEmpty
+                ? InkWell(
+                    child: Text(
+                      "Base form :${editWord.baseForm}",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                    onTap: () {
+                      viewWord(editWord.baseForm);
+                    },
+                  )
+                : Container(
+                    height: 2,
+                  ),
             // 3 element
             article.isNotEmpty ? Text(article) : Container(),
             Padding(
@@ -260,9 +273,20 @@ class WordsDetailState extends State<WordsDetail> {
                 _showEditMeans(context, listMeans);
               },
             ),
-            // IconButton.filled(
-            //     onPressed: _showEditMeans(context), icon: Icon(Icons.edit))
-
+            // Center(
+            //   child: Row(
+            //     children: [
+            //       Text("data"),
+            //       Padding(
+            //         padding: const EdgeInsets.all(8.0),
+            //         child: TextFormField(
+            //           controller: meanController,
+            //         ),
+            //       )
+            //     ],
+                
+            //   ),
+            // ),
             TextField(
               controller: importantController,
               decoration: const InputDecoration(label: Text("Important")),
@@ -694,11 +718,11 @@ class WordsDetailState extends State<WordsDetail> {
 
   void moveToLastScreen() async {
     if (titleController.text.isEmpty) {
-      Navigator.pop(context, false);
+      Navigator.pop(context, editWord);
 
       return;
     } else {
-      Navigator.pop(context, true);
+      Navigator.pop(context, editWord);
     }
   }
 

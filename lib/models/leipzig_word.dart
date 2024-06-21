@@ -27,6 +27,7 @@ class LeipzigWord {
   String rawHTMLExamples = "";
   String url = "";
   String article = "";
+  bool applyRecursionBaseForm = true;
   DbHelper db;
 
   LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
@@ -247,6 +248,8 @@ class LeipzigWord {
         rawHTMLExamples = tempWort.rawHTMLExamples;
 
         var tempWortForBase = await parseDataLeipzigWord(tempWort);
+        talker.info("2. parseRawHtmlData parseDataLeipzigWord ");
+
         name = tempWortForBase.name;
         article = tempWortForBase.article;
         baseWord = tempWortForBase.baseWord;
@@ -255,9 +258,15 @@ class LeipzigWord {
         examples = tempWortForBase.examples;
         definitions = tempWortForBase.definitions;
         synonyms = tempWortForBase.synonyms;
-        updateDataDB(tempWort, db, editWord).then((onValue) {
-          talker.info("1. parseRawHtmlData end ");
-        });
+        parseDataLeipzigWord(tempWortForBase).then(
+          (value) {
+            talker.info("3. parseRawHtmlData parseDataLeipzigWord ");
+
+            updateDataDB(tempWort, db, editWord).then((onValue) {
+              talker.info("1. parseRawHtmlData END updateDataDB ");
+            });
+          },
+        );
       });
     }
 
@@ -429,8 +438,14 @@ class LeipzigWord {
   Future<Word?> addNewWord(
       String name, Word editWord, Language? baseLang) async {
     Word? word;
+    String translatedName = "";
+
+    talker.info("add to DB $name");
     var leipzigTranslator = LeipzigTranslator(db: db);
     await leipzigTranslator.updateLanguagesData();
+    leipzigTranslator.translate(name).then((value) {
+      translatedName = value;
+    });
     // leipzigTranslator.baseLang = baseLang ??
     //     await db.getLangByShortName(leipzigTranslator.inputLanguage);
 
@@ -450,12 +465,13 @@ class LeipzigWord {
     word = await db.getWordById(id);
 
     if (word != null && word.description.isEmpty) {
-      var translatedName = await leipzigTranslator.translate(name);
-      if (translatedName.isNotEmpty) {
-        word = word.copyWith(description: translatedName);
-        db.update(db.words).replace(word);
+      if (translatedName.isEmpty) {
+        translatedName = await leipzigTranslator.translate(name);
       }
+      word = word.copyWith(description: translatedName);
+      db.update(db.words).replace(word);
     }
+
     return word;
   }
 
@@ -493,6 +509,7 @@ class LeipzigWord {
       var mean = word.definitions[0];
       if (wordToUpdate.mean.isEmpty) {
         wordToUpdate = wordToUpdate.copyWith(mean: mean);
+        db.updateWord(wordToUpdate);
       }
       await db.deleteMeansByWord(editWord);
       for (var item in word.definitions) {
@@ -548,7 +565,34 @@ class LeipzigWord {
     if (word.article.trim().isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(important: word.article.trim());
     }
+
     await db.updateWord(wordToUpdate);
+    if (wordToUpdate.baseForm.trim().isNotEmpty &&
+        wordToUpdate.name != wordToUpdate.baseForm &&
+        applyRecursionBaseForm) {
+      var baseFormWord = await addNewWord(
+          wordToUpdate.baseForm,
+          Word(
+              id: -99,
+              uuid: "",
+              name: wordToUpdate.baseForm,
+              important: "",
+              description: "",
+              mean: "",
+              baseForm: "",
+              baseLang: translator.baseLang!.id,
+              rootWordID: 0),
+          translator.baseLang);
+
+      if (baseFormWord != null) {
+        var leipzigRecursWord = LeipzigWord(wordToUpdate.baseForm, db, talker);
+        leipzigRecursWord.applyRecursionBaseForm = false;
+        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord!.id);
+        db.updateWord(toUpdate);
+        leipzigRecursWord.parseRawHtmlData(baseFormWord.name, baseFormWord);
+        // parseRawHtmlData(onValue.name, toUpdate);
+      }
+    }
     return true;
   }
 
