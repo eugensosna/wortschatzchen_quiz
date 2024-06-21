@@ -570,7 +570,9 @@ class LeipzigWord {
     if (wordToUpdate.baseForm.trim().isNotEmpty &&
         wordToUpdate.name != wordToUpdate.baseForm &&
         applyRecursionBaseForm) {
-      var baseFormWord = await addNewWord(
+      var baseFormWord = await db.getWordByName(wordToUpdate.baseForm);
+      baseFormWord = baseFormWord ??
+          await addNewWord(
           wordToUpdate.baseForm,
           Word(
               id: -99,
