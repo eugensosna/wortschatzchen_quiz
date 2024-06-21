@@ -468,10 +468,10 @@ class LeipzigWord {
       if (translatedName.isEmpty) {
         translatedName = await leipzigTranslator.translate(name);
       }
-        word = word.copyWith(description: translatedName);
-        db.update(db.words).replace(word);
-      }
-    
+      word = word.copyWith(description: translatedName);
+      db.update(db.words).replace(word);
+    }
+
     return word;
   }
 
@@ -509,6 +509,7 @@ class LeipzigWord {
       var mean = word.definitions[0];
       if (wordToUpdate.mean.isEmpty) {
         wordToUpdate = wordToUpdate.copyWith(mean: mean);
+        db.updateWord(wordToUpdate);
       }
       await db.deleteMeansByWord(editWord);
       for (var item in word.definitions) {
