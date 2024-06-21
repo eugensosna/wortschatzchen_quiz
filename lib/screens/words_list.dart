@@ -292,9 +292,10 @@ class WordsListState extends State<WordsList> {
     updateListWords().then((onValue) {
       var positionIndex = 0;
       listWords = onValue;
-      for (var (index, item) in listWords.indexed) {
+      for (var (index, item) in onValue.indexed) {
         if (item.id == result.id) {
           positionIndex = index;
+          break;
         }
       }
       setState(() {
