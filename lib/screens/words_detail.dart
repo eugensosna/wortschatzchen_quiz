@@ -707,11 +707,11 @@ class WordsDetailState extends State<WordsDetail> {
 
   void moveToLastScreen() async {
     if (titleController.text.isEmpty) {
-      Navigator.pop(context, false);
+      Navigator.pop(context, editWord);
 
       return;
     } else {
-      Navigator.pop(context, true);
+      Navigator.pop(context, editWord);
     }
   }
 

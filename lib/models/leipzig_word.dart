@@ -27,6 +27,7 @@ class LeipzigWord {
   String rawHTMLExamples = "";
   String url = "";
   String article = "";
+  bool applyRecursionBaseForm = true;
   DbHelper db;
 
   LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
@@ -266,8 +267,6 @@ class LeipzigWord {
             });
           },
         );
-
-        
       });
     }
 
@@ -439,8 +438,14 @@ class LeipzigWord {
   Future<Word?> addNewWord(
       String name, Word editWord, Language? baseLang) async {
     Word? word;
+    String translatedName = "";
+
+    talker.info("add to DB $name");
     var leipzigTranslator = LeipzigTranslator(db: db);
     await leipzigTranslator.updateLanguagesData();
+    leipzigTranslator.translate(name).then((value) {
+      translatedName = value;
+    });
     // leipzigTranslator.baseLang = baseLang ??
     //     await db.getLangByShortName(leipzigTranslator.inputLanguage);
 
@@ -460,12 +465,13 @@ class LeipzigWord {
     word = await db.getWordById(id);
 
     if (word != null && word.description.isEmpty) {
-      var translatedName = await leipzigTranslator.translate(name);
-      if (translatedName.isNotEmpty) {
+      if (translatedName.isEmpty) {
+        translatedName = await leipzigTranslator.translate(name);
+      }
         word = word.copyWith(description: translatedName);
         db.update(db.words).replace(word);
       }
-    }
+    
     return word;
   }
 
@@ -560,27 +566,31 @@ class LeipzigWord {
     }
 
     await db.updateWord(wordToUpdate);
-    if (wordToUpdate.name != wordToUpdate.baseForm) {
-      addNewWord(
-              wordToUpdate.baseForm,
-              Word(
-                  id: -99,
-                  uuid: "",
-                  name: wordToUpdate.baseForm,
-                  important: "",
-                  description: "",
-                  mean: "",
-                  baseForm: "",
-                  baseLang: translator.baseLang!.id,
-                  rootWordID: 0),
-              translator.baseLang)
-          .then((onValue) {
-        if (onValue != null) {
-          var toUpdate = wordToUpdate.copyWith(rootWordID: onValue!.id);
-          db.updateWord(toUpdate);
-          parseRawHtmlData(onValue.name, editWord);
-        }
-      });
+    if (wordToUpdate.baseForm.trim().isNotEmpty &&
+        wordToUpdate.name != wordToUpdate.baseForm &&
+        applyRecursionBaseForm) {
+      var baseFormWord = await addNewWord(
+          wordToUpdate.baseForm,
+          Word(
+              id: -99,
+              uuid: "",
+              name: wordToUpdate.baseForm,
+              important: "",
+              description: "",
+              mean: "",
+              baseForm: "",
+              baseLang: translator.baseLang!.id,
+              rootWordID: 0),
+          translator.baseLang);
+
+      if (baseFormWord != null) {
+        var leipzigRecursWord = LeipzigWord(wordToUpdate.baseForm, db, talker);
+        leipzigRecursWord.applyRecursionBaseForm = false;
+        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord!.id);
+        db.updateWord(toUpdate);
+        leipzigRecursWord.parseRawHtmlData(baseFormWord.name, baseFormWord);
+        // parseRawHtmlData(onValue.name, toUpdate);
+      }
     }
     return true;
   }

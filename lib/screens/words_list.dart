@@ -1,5 +1,6 @@
 import 'package:azlistview/azlistview.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -29,15 +30,16 @@ class WordsListState extends State<WordsList> {
   List<Word> listWords = [];
   List<AzWords> listAzWords = [];
   List<Word> orderedListWords = [];
+  ItemScrollController _scrollController = ItemScrollController();
 
   @override
   void initState() {
+    super.initState();
     updateListWords().then((value) {
       setState(() {
         isLoad = false;
       });
     });
-    super.initState();
   }
 
   @override
@@ -55,101 +57,14 @@ class WordsListState extends State<WordsList> {
                 //     decoration: BoxDecoration(color: Colors.blue),
                 //   ),
                 // ),
-                Container(
-                  padding: const EdgeInsets.only(left: 8.2),
-                  // decoration: BoxDecoration(
-                  //     border: Border.all(color: Colors.redAccent)),
-                  child: Autocomplete<AutocompleteDataHelper>(
-                    optionsBuilder: (textEditingValue) async {
-                      final textToTest = textEditingValue.text.trim();
-                      if (textToTest.isEmpty || textToTest.length <= 1) {
-                        return const Iterable<AutocompleteDataHelper>.empty();
-                      }
-
-                      var leipzig =
-                          LeipzigWord(textToTest, widget.db, widget.talker);
-                      var autoComplitDataLoc =
-                          await leipzig.getAutocompleteLocal(textToTest);
-
-                      var autoComplitDataExt =
-                          await leipzig.getAutocomplete(textToTest);
-                      var autoComplitDataVerb =
-                          await leipzig.getAutocompleteVerbForm(textToTest);
-
-                      autoComplitDataLoc.addAll(autoComplitDataExt);
-                      autoComplitDataLoc.addAll(autoComplitDataVerb);
-                      if (autoComplitDataLoc.isEmpty) {
-                        autoComplitDataLoc = autoComplitData;
-                        autoComplitDataLoc.insert(
-                            0,
-                            AutocompleteDataHelper(
-                                name: textToTest, isIntern: false, uuid: ""));
-                      } else {
-                        autoComplitData = autoComplitDataLoc;
-                        autoComplitDataLoc.insert(
-                            0,
-                            AutocompleteDataHelper(
-                                name: textToTest, isIntern: false, uuid: ""));
-                      }
-                      return autoComplitDataLoc;
-                    },
-                    onSelected: (AutocompleteDataHelper item) async {
-                      // widget.talker.debug("onSelected ${item.name}");
-                      stateAutocomplit = true;
-                      debugPrint(item.name);
-                      if (item.isIntern) {
-                        Word? wordItem =
-                            await widget.db.getWordByName(item.name);
-                        if (wordItem != null) {
-                          navigateToDetail(wordItem, "View");
-                        }
-                        // navigateToDetail(wordItem, "View ${wordItem.name}");
-                      } else {
-                        navigateToDetail(
-                            Word(
-                                id: -99,
-                                uuid: "uuid",
-                                name: item.name,
-                                important: "",
-                                description: "",
-                                mean: "",
-                                baseForm: "",
-                                baseLang: 0,
-                                rootWordID: 0),
-                            "Add ${item.name}");
-                      }
-                      item.name = "";
-                    },
-                    fieldViewBuilder: (context, textEditingController,
-                        focusNode, onFieldSubmitted) {
-                      // widget.talker.debug(
-                      //     "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
-                      if (stateAutocomplit) {
-                        textEditingController.text = "";
-                        stateAutocomplit = false;
-                        // textEditingController.value = AutocompleteDataHelper(
-                        //     name: "", isIntern: false, uuid: "") as TextEditingValue;
-                      }
-                      return TextFormField(
-                        autofocus: true,
-                        focusNode: focusNode,
-                        controller: textEditingController,
-                        onFieldSubmitted: (value) {
-                          onFieldSubmitted();
-                        },
-                        decoration:
-                            const InputDecoration(hoverColor: Colors.black38),
-                      );
-                    },
-                  ),
-                ),
+                autoCompliteWidget(),
                 Expanded(
                   child: Container(
                     color: Colors.green.shade100,
                     child: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: getAzWordListView()),
-                    // child: getWordsListView()),
+                        // child: getAzWordListView()),
+                        child: getWordsListView()),
                   ),
                 )
               ],
@@ -165,41 +80,90 @@ class WordsListState extends State<WordsList> {
     );
   }
 
-  Widget autoComplite() {
-    return Autocomplete(
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
-          return const Iterable<AutocompleteDataHelper>.empty();
-        } else {
-          if (autoComplitData.isNotEmpty) {
-            return autoComplitData;
+  Container autoCompliteWidget() {
+    return Container(
+      padding: const EdgeInsets.only(left: 8.2),
+      // decoration: BoxDecoration(
+      //     border: Border.all(color: Colors.redAccent)),
+      child: Autocomplete<AutocompleteDataHelper>(
+        optionsBuilder: (textEditingValue) async {
+          final textToTest = textEditingValue.text.trim();
+          if (textToTest.isEmpty || textToTest.length <= 1) {
+            return const Iterable<AutocompleteDataHelper>.empty();
           }
-          return autoComplitData;
-        }
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Material(
-          elevation: 2,
-          child: ListView.separated(
-              itemBuilder: (context, index) {
-                var autoItem = options.elementAt(index);
-                return ListTile(
-                  title: Text(
-                    autoItem.name,
-                    style: TextStyle(
-                        backgroundColor: autoItem.isIntern
-                            ? Colors.transparent
-                            : Colors.black87),
-                  ),
-                  onTap: () {
-                    // widget.talker.debug("on tap ${autoItem.name}");
-                  },
-                );
-              },
-              separatorBuilder: (context, index) => const Divider(),
-              itemCount: options.length),
-        );
-      },
+
+          var leipzig = LeipzigWord(textToTest, widget.db, widget.talker);
+          var autoComplitDataLoc =
+              await leipzig.getAutocompleteLocal(textToTest);
+
+          var autoComplitDataExt = await leipzig.getAutocomplete(textToTest);
+          var autoComplitDataVerb =
+              await leipzig.getAutocompleteVerbForm(textToTest);
+
+          autoComplitDataLoc.addAll(autoComplitDataExt);
+          autoComplitDataLoc.addAll(autoComplitDataVerb);
+          if (autoComplitDataLoc.isEmpty) {
+            autoComplitDataLoc = autoComplitData;
+            autoComplitDataLoc.insert(
+                0,
+                AutocompleteDataHelper(
+                    name: textToTest, isIntern: false, uuid: ""));
+          } else {
+            autoComplitData = autoComplitDataLoc;
+            autoComplitDataLoc.insert(
+                0,
+                AutocompleteDataHelper(
+                    name: textToTest, isIntern: false, uuid: ""));
+          }
+          return autoComplitDataLoc;
+        },
+        onSelected: (AutocompleteDataHelper item) async {
+          // widget.talker.debug("onSelected ${item.name}");
+          stateAutocomplit = true;
+          debugPrint(item.name);
+          if (item.isIntern) {
+            Word? wordItem = await widget.db.getWordByName(item.name);
+            if (wordItem != null) {
+              navigateToDetail(wordItem, "View");
+            }
+            // navigateToDetail(wordItem, "View ${wordItem.name}");
+          } else {
+            navigateToDetail(
+                Word(
+                    id: -99,
+                    uuid: "uuid",
+                    name: item.name,
+                    important: "",
+                    description: "",
+                    mean: "",
+                    baseForm: "",
+                    baseLang: 0,
+                    rootWordID: 0),
+                "Add ${item.name}");
+          }
+          item.name = "";
+        },
+        fieldViewBuilder:
+            (context, textEditingController, focusNode, onFieldSubmitted) {
+          // widget.talker.debug(
+          //     "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
+          if (stateAutocomplit) {
+            textEditingController.text = "";
+            stateAutocomplit = false;
+            // textEditingController.value = AutocompleteDataHelper(
+            //     name: "", isIntern: false, uuid: "") as TextEditingValue;
+          }
+          return TextFormField(
+            autofocus: true,
+            focusNode: focusNode,
+            controller: textEditingController,
+            onFieldSubmitted: (value) {
+              onFieldSubmitted();
+            },
+            decoration: const InputDecoration(hoverColor: Colors.black38),
+          );
+        },
+      ),
     );
   }
 
@@ -231,8 +195,9 @@ class WordsListState extends State<WordsList> {
         border: Border.all(color: Colors.grey[300]!, width: .5));
   }
 
-  ListView getWordsListView() {
-    return ListView.builder(
+  ScrollablePositionedList getWordsListView() {
+    return ScrollablePositionedList.builder(
+        itemScrollController: _scrollController,
         itemCount: listWords.length,
         itemBuilder: (context, index) {
           Word wordItem = listWords[index];
@@ -251,9 +216,9 @@ class WordsListState extends State<WordsList> {
 
   GestureDetector listItemWidget(Word wordItem) {
     return GestureDetector(
-      onDoubleTap: () {
-        navigateToDetail(wordItem, "View ${wordItem.name}");
-      },
+      // onDoubleTap: () {
+      //   navigateToDetail(wordItem, "View ${wordItem.name}");
+      // },
       child: Container(
           margin: const EdgeInsets.all(8.0),
           child: Dismissible(
@@ -295,6 +260,8 @@ class WordsListState extends State<WordsList> {
       ),
       subtitle: Text("${itemWord.description} ${itemWord.mean}"),
       onTap: () {
+        navigateToDetail(itemWord, "View");
+
         debugPrint("lit Tap");
       },
     );
@@ -317,16 +284,24 @@ class WordsListState extends State<WordsList> {
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
     autocompleteController.text = "";
 
-    final result =
+    final Word result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
     autocompleteController.clear();
     updateListWords().then((onValue) {
+      var positionIndex = 0;
       listWords = onValue;
+      for (var (index, item) in listWords.indexed) {
+        if (item.id == result.id) {
+          positionIndex = index;
+        }
+      }
       setState(() {
         isLoad = false;
       });
+      _scrollController.jumpTo(index: positionIndex);
+      // Scrollable.ensureVisible(positionKey)
     });
 
     if (result != null) {}
@@ -350,14 +325,16 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<List<Word>> updateListWords() async {
-    setState(() {
-      isLoad = true;
-    });
+    // setState(() {
+    isLoad = true;
+    // });
     // widget.talker.info("start get wordList");
+    listWords = await widget.db.getOrdersWordList();
+
     Future<List<Word>> fListWords =
         widget.db.getOrdersWordList(); //db.select(db.words).get();
     fListWords.then((value) async {
-      listWords = value;
+      // listWords = value;
       listAzWords = value.map((e) {
         return AzWords(e, e.name, e.name.trim().substring(0, 1).toUpperCase());
       }).toList();
@@ -365,7 +342,7 @@ class WordsListState extends State<WordsList> {
       SuspensionUtil.setShowSuspensionStatus(listAzWords);
 
       setState(() {
-        listWords = value;
+        // listWords = value;
         isLoad = false;
       });
       // widget.talker.info("end get wordList");
@@ -384,9 +361,17 @@ class WordsListState extends State<WordsList> {
   }
 
   Future<int> _delete(Word itemWord) async {
-    widget.db.deleteWord(itemWord).then((value) {
-      updateListWords();
+    widget.db.deleteWord(itemWord).then((value) async {
+      await updateListWords();
+      setState(() {});
     });
+    for (var (index, item) in listWords.indexed) {
+      if (item.id == itemWord) {
+        listWords.removeAt(index);
+        break;
+      }
+    }
+
     return 0;
   }
 
