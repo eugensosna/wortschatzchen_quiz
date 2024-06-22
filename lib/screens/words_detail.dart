@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:simplytranslate/simplytranslate.dart';
 import 'package:talker/talker.dart';
 import 'package:translator/translator.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/screens/web_view_controller_word.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
@@ -55,12 +58,58 @@ class WordsDetailState extends State<WordsDetail> {
   String currentWordSession = getDefaultSessionName();
   late Language baseLang;
 
-  Future<String> translateText(String inputText) async {
-    try {
-      final translated = await translator.translate(inputText,
-          from: inputLanguage, to: outputLanguage);
+  fillSimpleTranslations(String input, Word editWord) async {
+    // final lt = SimplyTranslator(EngineType.libre);
+    final st = SimplyTranslator(EngineType.google);
+    // final st = SimplyTranslator();
 
-      return translated.text;
+    /// find other instances under https://simple-web.org/projects/simplytranslate.html
+    ///change instance (defaut is simplytranslate.org)
+    st.setSimplyInstance = "simplytranslate.pussthecat.org";
+    var eipzTranslator = LeipzigTranslator(db: db);
+    eipzTranslator.updateLanguagesData();
+
+    /// get the list with instances
+    widget.talker.info(st.getSimplyInstances);
+
+    final translated = await st.translateSimply(input,
+        from: inputLanguage,
+        to: outputLanguage,
+        instanceMode: InstanceMode.Random);
+    widget.talker.info("msg");
+    descriptionController.text =
+        encodeToHumanText(translated.translations.text);
+    if (editWord.description.isEmpty) {
+      var toUpdate = editWord.copyWith(description: descriptionController.text);
+      await db.updateWord(toUpdate);
+      editWord = toUpdate;
+    }
+
+    List<String> stringMeans = [];
+    if (translated.translations.definitions.isNotEmpty) {
+      for (var item in translated.translations.definitions) {
+        await eipzTranslator.translate(item.definition);
+        stringMeans.add(item.definition);
+      }
+    }
+
+    await Provider.of<AppDataProvider>(context, listen: false)
+        .addMeansToBase(stringMeans, editWord);
+    widget.talker
+        .info("libre translator ${translated.translations.definitions}");
+    setBaseSettings(editWord);
+  }
+
+  Future<String> translateText(String inputText) async {
+    var translator = LeipzigTranslator(
+        db: db, inputLanguage: inputLanguage, outputLanguage: outputLanguage);
+
+    // result = translated.translations.text.toString();
+
+    try {
+      final translated = await translator.translate(inputText);
+
+      return translated;
     } catch (e) {
       widget.talker.error(" detail translateText $inputText", e);
     } finally {
@@ -284,7 +333,7 @@ class WordsDetailState extends State<WordsDetail> {
             //         ),
             //       )
             //     ],
-                
+
             //   ),
             // ),
             TextField(
@@ -317,6 +366,11 @@ class WordsDetailState extends State<WordsDetail> {
                       await _saveToExamples(result);
                     },
                     icon: const Icon(Icons.edit)),
+                ElevatedButton(
+                    onPressed: () {
+                      fillSimpleTranslations(titleController.text, editWord);
+                    },
+                    child: Text("SimpleData"))
               ],
             ),
           ],
@@ -704,9 +758,8 @@ class WordsDetailState extends State<WordsDetail> {
       //     .warning("start _addUpdateWord- updateDataDB $baseForm");
 
       // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
-      leipzigSynonyms.translateNeededWords().then((onValue) async {
-        await setBaseSettings(editWord);
-      });
+      leipzigSynonyms.translateNeededWords();
+      await setBaseSettings(editWord);
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }
@@ -771,11 +824,10 @@ class WordsDetailState extends State<WordsDetail> {
 
       // await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name, editWord);
       // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
-      leipzigSynonyms.translateNeededWords().then((onValue) async {
-        // await setBaseSettings();
-        await setBaseSettings(newWord);
-        setState(() {});
-      });
+      leipzigSynonyms.translateNeededWords();
+      // await setBaseSettings();
+      await setBaseSettings(newWord);
+      setState(() {});
     }
     return newWord;
   }
@@ -880,9 +932,10 @@ class WordsDetailState extends State<WordsDetail> {
         await db.update(db.means).replace(element);
       }
     }
-    if (result.isNotEmpty) {
+    if (result.isNotEmpty && editWord.mean != result[0].name) {
       var toUpdate = editWord.copyWith(mean: result[0].name);
       db.updateWord(toUpdate);
+      editWord = toUpdate;
     }
     // fillControllers(editWord);
     await setBaseSettings(editWord);

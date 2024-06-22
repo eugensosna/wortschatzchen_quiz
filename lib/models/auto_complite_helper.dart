@@ -1,14 +1,13 @@
 import 'dart:convert';
 
-import 'package:azlistview/azlistview.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 
-class AutoComplitHelper {
+class AutoCompliteHelper {
   final String name;
   final bool isIntern;
   final String uuid;
 
-  AutoComplitHelper(
+  AutoCompliteHelper(
       {required this.name, required this.isIntern, required this.uuid});
 }
 
@@ -61,7 +60,7 @@ class ReordableElement {
   }
 }
 
-class AzWords extends ISuspensionBean {
+class AzWords {
   Word word;
   String? tagIndex;
 
@@ -75,8 +74,8 @@ class AzWords extends ISuspensionBean {
     };
   }
 
-  @override
   String getSuspensionTag() => tagIndex!;
+
   @override
   String toString() => json.encode(this);
 }

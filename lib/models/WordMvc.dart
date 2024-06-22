@@ -1,4 +1,4 @@
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 
 class WordMvc {
   int id;

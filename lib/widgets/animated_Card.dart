@@ -8,7 +8,7 @@ import 'package:flutter/widgets.dart' as widgets;
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class AnimatedCard extends StatefulWidget {

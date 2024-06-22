@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 
 class ModalShowReordableView extends StatefulWidget {
   final List<ReordableElement> listToView;

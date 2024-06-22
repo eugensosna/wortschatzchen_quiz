@@ -1,10 +1,9 @@
-import 'package:azlistview/azlistview.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
@@ -168,24 +167,7 @@ class WordsListState extends State<WordsList> {
   }
 
   Widget getAzWordListView() {
-    return AzListView(
-      data: listAzWords,
-      itemCount: listAzWords.length,
-      itemBuilder: (BuildContext context, int index) {
-        Word wordItem = listAzWords[index].word;
-        return listItemWidget(wordItem);
-      },
-      physics: const BouncingScrollPhysics(),
-      indexBarData: SuspensionUtil.getTagIndexList(listAzWords),
-      indexBarMargin: const EdgeInsets.all(15),
-      indexBarItemHeight: 30,
-      indexBarWidth: 25,
-      indexBarOptions: IndexBarOptions(
-        needRebuild: true,
-        decoration: getIndexBarDecoration(Colors.grey[50]!),
-        downDecoration: getIndexBarDecoration(Colors.grey[200]!),
-      ),
-    );
+    return Container();
   }
 
   Decoration getIndexBarDecoration(Color color) {
@@ -339,8 +321,6 @@ class WordsListState extends State<WordsList> {
       listAzWords = value.map((e) {
         return AzWords(e, e.name, e.name.trim().substring(0, 1).toUpperCase());
       }).toList();
-      SuspensionUtil.sortListBySuspensionTag(listAzWords);
-      SuspensionUtil.setShowSuspensionStatus(listAzWords);
 
       setState(() {
         // listWords = value;

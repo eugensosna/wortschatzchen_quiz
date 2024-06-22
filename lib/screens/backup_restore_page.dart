@@ -7,6 +7,8 @@ import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 
 class BackupRestorePage extends StatefulWidget {
@@ -18,7 +20,7 @@ class BackupRestorePage extends StatefulWidget {
 
 class _BackupRestorePageState extends State<BackupRestorePage> {
   final _formKey = GlobalKey<FormState>();
-  late AppDatabase db;
+  late DbHelper db;
 
   @override
   void initState() {
@@ -42,6 +44,10 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       ),
       body: Column(
         children: [
+          SizedBox(
+            height: 15,
+            width: 40,
+          ),
           ElevatedButton(
             child: Text("Save"),
             onPressed: () {
@@ -52,6 +58,18 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             child: Text("Load"),
             onPressed: () {
               pickUpFile();
+            },
+          ),
+          Container(
+            child: SizedBox(
+              width: 50,
+              height: 60,
+            ),
+          ),
+          ElevatedButton(
+            child: Text("Fill data words"),
+            onPressed: () {
+              _fillWords();
             },
           ),
         ],
@@ -88,5 +106,22 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     await file.writeAsBytes(bytes);
 
     print("File saved at $path");
+  }
+
+  void _fillWords() async {
+    var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
+    var listWords = await db.getOrdersWordList();
+    for (var editWord in listWords) {
+      await db.deleteExamplesByWord(editWord);
+      await db.deleteMeansByWord(editWord);
+      await db.deleteSynonymsByWord(editWord);
+      var leipzigSynonyms = LeipzigWord(editWord.name, db, talker);
+      leipzigSynonyms.serviceMode = true;
+      var leipzigTempWord =
+          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
+    }
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Processing Data')));
   }
 }

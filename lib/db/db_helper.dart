@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 
 import 'db.dart';
 
@@ -146,6 +146,11 @@ class DbHelper extends AppDatabase {
     return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
   }
 
+  Future<translatedwords?> getTranslatedWordById(int id) {
+    return (select(translatedWords)..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
+  }
+
 
   Future<Word?> getWordByName(String name) async {
     return (select(words)..where((tbl) => tbl.name.equals(name)))
@@ -218,7 +223,7 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<translatedwords?> getTranslatedWord(
+  Future<List<translatedwords>> getTranslatedWord(
       String inputText, int baseLangID, int targetLangID) async {
     return (select(translatedWords)
           ..where((tbl) => Expression.and([
@@ -226,7 +231,7 @@ class DbHelper extends AppDatabase {
                 tbl.baseLang.equals(baseLangID),
                 tbl.targetLang.equals(targetLangID)
               ])))
-        .getSingleOrNull();
+        .get();
   }
 
   Future<Synonym?> getSynonymEntry(String inputText, Word basedWord) async {

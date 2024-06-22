@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
-import 'package:wortschatzchen_quiz/models/auto_complit_helper.dart';
+import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import 'package:wortschatzchen_quiz/widgets/animated_Card.dart';
@@ -27,7 +27,7 @@ class SessionWordListState extends State<SessionWordList> {
   String currentTypeSession = "";
   bool isLoad = false;
   List<Word> listWords = [];
-  List<AutoComplitHelper> autoComplitData = [];
+  List<AutoCompliteHelper> autoComplitData = [];
   List<SessionHeader> listSessions = [];
   String defaultSession = "";
   final TextEditingController sessionsController = TextEditingController();
@@ -188,7 +188,7 @@ class SessionWordListState extends State<SessionWordList> {
     return Autocomplete(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
-          return const Iterable<AutoComplitHelper>.empty();
+          return const Iterable<AutoCompliteHelper>.empty();
         } else {
           if (autoComplitData.isNotEmpty) {
             return autoComplitData;
