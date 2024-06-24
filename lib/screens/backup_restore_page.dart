@@ -51,13 +51,13 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
           ElevatedButton(
             child: Text("Save"),
             onPressed: () {
-              readAndSave();
+              save();
             },
           ),
           ElevatedButton(
             child: Text("Load"),
             onPressed: () {
-              pickUpFile();
+              load();
             },
           ),
           Container(
@@ -77,51 +77,70 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     );
   }
 
-  pickUpFile() async {
+  load() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       File file = File(result.files.single.path!);
       List<int> bytes = file.readAsBytesSync();
-      final fileDB = File(await db.getDataFilePath());
-      await fileDB.writeAsBytes(bytes);
+      final fileDB = await db.getDataFilePath();
+      await saveFileLocally(fileDB, bytes);
+      // await fileDB.writeAsBytes(bytes);
       SystemNavigator.pop();
     }
   }
 
-  readAndSave() async {
+  save() async {
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory == null) {
+      showMessage("need select directory to save ");
+      return;
+    }
+
     var dbpath = await db.getDataFilePath();
     List<int> bytes = File(dbpath).readAsBytesSync();
-    saveFileLocally("worts.sqlite", bytes).then((onValue) {
-      print("saved");
+
+    String path = ppath.join(selectedDirectory, "worts.sqlite");
+
+    saveFileLocally(path, bytes).then((onValue) {
+      showMessage("saved $path");
     });
   }
 
-  Future<void> saveFileLocally(String filename, List<int> bytes) async {
+  Future<void> saveFileLocally(String path, List<int> bytes) async {
     Directory? directory = await getDownloadsDirectory();
-
-    String path = ppath.join(directory!.path, filename);
 
     File file = File(path);
 
     await file.writeAsBytes(bytes);
 
-    print("File saved at $path");
+    showMessage("File saved at $path");
   }
 
   void _fillWords() async {
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     var listWords = await db.getOrdersWordList();
     for (var editWord in listWords) {
+      if (editWord.mean.isNotEmpty) {
+        continue;
+      }
       await db.deleteExamplesByWord(editWord);
       await db.deleteMeansByWord(editWord);
       await db.deleteSynonymsByWord(editWord);
       var leipzigSynonyms = LeipzigWord(editWord.name, db, talker);
       leipzigSynonyms.serviceMode = true;
-      var leipzigTempWord =
-          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
+      try {
+        var leipzigTempWord =
+            await leipzigSynonyms.getParseAllData(leipzigSynonyms, editWord);
+        talker.info(" parsed ${editWord.name}");
+      } catch (e) {
+        talker.error("error parse ${editWord.name}", e);
+      }
     }
+    showMessage("refill data");
+  }
 
+  showMessage(String message) async {
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Processing Data')));
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }

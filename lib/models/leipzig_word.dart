@@ -206,10 +206,35 @@ class LeipzigWord {
     return word;
   }
 
+  Future<LeipzigWord> getParseAllData(LeipzigWord wort, Word editWord) async {
+    talker.info("start then getLeipzigBaseFromInternet");
+    wort = await getLeipzigBaseFromInternet(wort);
+    wort = await wort.parseDataLeipzigWord(wort);
+    await wort.saveBaseDataDB(wort, db, editWord);
+    talker.info("end then getLeipzigBaseFromInternet");
+
+    talker.info("start getOpenthesaurusFromInternet");
+
+    wort = await wort.getOpenthesaurusFromInternet();
+    wort = await wort.parseOpenthesaurus(wort);
+    await wort.saveRelationsDataDB(wort, db, editWord);
+    talker.info("end getOpenthesaurusFromInternet");
+
+    talker.info("start then getLeipzigExamplesFromInternet");
+
+    wort = await wort.parseDataExamplesWord(wort, editWord);
+
+    await wort.saveRelationsDataDB(wort, db, editWord);
+    talker.info("end then getLeipzigExamplesFromInternet");
+
+    return wort;
+  }
+
+
   Future<LeipzigWord> getParseAllDataSpeed(
       LeipzigWord wort, Word editWord) async {
-    talker.info("start then getLeipzigBaseFromInternet");
-    wort.getLeipzigBaseFromInternet().then((onValue) async {
+    talker.info("start sync getLeipzigBaseFromInternet");
+    wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
       var wortL = await wort.parseDataLeipzigWord(onValue);
       await wortL.saveBaseDataDB(wortL, db, editWord);
           talker.info("end then getLeipzigBaseFromInternet");
@@ -315,7 +340,7 @@ class LeipzigWord {
     return this;
   }
 
-  Future<LeipzigWord> getLeipzigBaseFromInternet() async {
+  Future<LeipzigWord> getLeipzigBaseFromInternet(LeipzigWord wort) async {
     LeipzigWord result = LeipzigWord(name, db, talker);
     var dio = Dio();
 

@@ -119,7 +119,8 @@ class WordsListState extends State<WordsList> {
         onSelected: (AutocompleteDataHelper item) async {
           // widget.talker.debug("onSelected ${item.name}");
           stateAutocomplit = true;
-          debugPrint(item.name);
+          autoComplitData.clear();
+          // debugPrint(item.name);
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(item.name);
             if (wordItem != null) {

@@ -91,10 +91,10 @@ class WordsDetailState extends State<WordsDetail> {
         await eipzTranslator.translate(item.definition);
         stringMeans.add(item.definition);
       }
+      await Provider.of<AppDataProvider>(context, listen: false)
+          .addMeansToBase(stringMeans, editWord);
     }
 
-    await Provider.of<AppDataProvider>(context, listen: false)
-        .addMeansToBase(stringMeans, editWord);
     widget.talker
         .info("libre translator ${translated.translations.definitions}");
     setBaseSettings(editWord);
@@ -215,12 +215,16 @@ class WordsDetailState extends State<WordsDetail> {
         }
       }
     }
+
     listSessions = await _getListSessions();
     currentWordSession = await _getWordSession(editWord);
 
-    if (editWord.name.isNotEmpty && editWord.id > 0) {
-      fillControllers(editWord);
-      updateWordIfNeed(editWord);
+    if (editWord.name.isNotEmpty &&
+        editWord.id > 0 &&
+        editWord.description.isEmpty) {
+      // fillControllers(editWord);
+      await fillSimpleTranslations(editWord.name, editWord);
+      await updateWordIfNeed(editWord);
       //await addWord();
 
       listSynonyms = await db.getSynonymsByWord(editWord.id);
@@ -239,6 +243,7 @@ class WordsDetailState extends State<WordsDetail> {
       );
     } else {
       if (editWord.name.isNotEmpty && editWord.id < 0) {
+        fillControllers(editWord);
         descriptionController.text = await translateText(editWord.name);
         saveWord().then(
           (value) {
@@ -353,10 +358,15 @@ class WordsDetailState extends State<WordsDetail> {
               children: [
                 isLoading
                     ? const CircularProgressIndicator()
-                    : IconButton(
+                    : TextButton.icon(
                         onPressed: _fillData,
+                        label: Text("Fill long "),
                         icon: const Icon(Icons.downloading)),
-                IconButton(onPressed: saveWord, icon: const Icon(Icons.save)),
+                TextButton.icon(
+                  onPressed: saveWord,
+                  label: Text("Save"),
+                  icon: const Icon(Icons.save),
+                ),
                 IconButton(
                     onPressed: goToVerbForm, icon: const Icon(Icons.add_task)),
                 IconButton(
@@ -701,7 +711,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<Word> updateWordIfNeed(Word wordToUpdate) async {
     if (wordToUpdate.id <= 0) {
-      Error();
+      throw "its now existed Word , you shold save befor update ";
     } else {
       var isChanched = true;
 
@@ -709,39 +719,24 @@ class WordsDetailState extends State<WordsDetail> {
 
       if (isChanched) {
         await db.updateWord(toUpdate);
-        wordToUpdate = toUpdate.copyWith();
+        wordToUpdate = toUpdate;
       }
     }
     return wordToUpdate;
   }
 
   Future<Word> addWord() async {
-    if (editWord.id <= 0) {
-      var word = await addNewWord(titleController.text, editWord);
-      if (word != null) {
-        editWord = word.copyWith();
-      } else {
-        Error();
-      }
-    } else {
-      Word toUpdate = editWord.copyWith(
-          name: titleController.text,
-          description: descriptionController.text,
-          baseLang: baseLang.id == 0 ? editWord.baseLang : baseLang.id);
-
-      bool result = await db.updateWord(toUpdate);
-      if (result) {
-        editWord = toUpdate.copyWith();
-      }
-    }
+    var word = await addNewWord(titleController.text, editWord);
+    editWord = word!;
 
     descriptionController.text = editWord.description;
+    setBaseSettings(editWord);
     setState(() {});
     return editWord;
   }
 
   Future<Word?> _addUpdateWord() async {
-    editWord = await addWord();
+    editWord = await saveWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
     leipzigSynonyms.talker
         .warning("start _addUpdateWord- getFromInternet ${editWord.name}");
