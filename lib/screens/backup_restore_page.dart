@@ -119,8 +119,8 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   void _fillWords() async {
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     var listWords = await db.getOrdersWordList();
-    for (var editWord in listWords) {
-      if (editWord.mean.isNotEmpty) {
+    for (var (index, editWord) in listWords.indexed) {
+      if (editWord.mean.isNotEmpty || editWord.description.isEmpty) {
         continue;
       }
       await db.deleteExamplesByWord(editWord);
@@ -134,6 +134,9 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
         talker.info(" parsed ${editWord.name}");
       } catch (e) {
         talker.error("error parse ${editWord.name}", e);
+      }
+      if (index % 10 == 1) {
+        showMessage("$index from ${listWords.length}");
       }
     }
     showMessage("refill data");

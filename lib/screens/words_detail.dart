@@ -93,11 +93,13 @@ class WordsDetailState extends State<WordsDetail> {
       }
       await Provider.of<AppDataProvider>(context, listen: false)
           .addMeansToBase(stringMeans, editWord);
+      editWord = await db.getWordById(editWord.id) ?? editWord;
     }
 
     widget.talker
         .info("libre translator ${translated.translations.definitions}");
-    setBaseSettings(editWord);
+    await setBaseSettings(editWord);
+    setState(() {});
   }
 
   Future<String> translateText(String inputText) async {
@@ -191,7 +193,7 @@ class WordsDetailState extends State<WordsDetail> {
     }
   }
 
-  Future<String> setBaseSettings(Word editWord) async {
+  setBaseSettings(Word editWord, {bool falseRecursion = false}) async {
     if (editWord.id > 0) {
       var editWordUpdated = await db.getWordById(editWord.id);
       if (editWordUpdated != null) {
@@ -220,13 +222,8 @@ class WordsDetailState extends State<WordsDetail> {
     currentWordSession = await _getWordSession(editWord);
 
     if (editWord.name.isNotEmpty &&
-        editWord.id > 0 &&
-        editWord.description.isEmpty) {
-      // fillControllers(editWord);
-      await fillSimpleTranslations(editWord.name, editWord);
-      await updateWordIfNeed(editWord);
-      //await addWord();
-
+        editWord.id > 0) {
+      editWord = await db.getWordById(editWord.id) ?? editWord;
       listSynonyms = await db.getSynonymsByWord(editWord.id);
       listExamples = await db.getExamplesByWord(editWord.id);
       listMeans = await db.getMeansByWord(editWord.id);
@@ -236,29 +233,40 @@ class WordsDetailState extends State<WordsDetail> {
         article = data.article;
         baseWord = data.wordOfBase;
       }
-      Future.delayed(const Duration(seconds: 1)).then(
+      Future.delayed(const Duration(milliseconds: 200)).then(
         (value) {
           setState(() {});
         },
       );
+      
+
     } else {
-      if (editWord.name.isNotEmpty && editWord.id < 0) {
-        fillControllers(editWord);
-        descriptionController.text = await translateText(editWord.name);
-        saveWord().then(
-          (value) {
-            _fillData().then(
-              (value) {
-                fillControllers(editWord);
-                setState(() {});
-              },
-            );
-          },
-        );
+      if (editWord.name.isNotEmpty && editWord.id < 0 && !falseRecursion) {
+        // fillControllers(editWord);
+        if (editWord.description.isEmpty) {
+          descriptionController.text = await translateText(editWord.name);
+          saveWord().then(
+            (value) {
+              editWord = value;
+
+              fillSimpleTranslations(value.name, value).then(
+                (value) async {
+                  editWord = await db.getWordById(editWord.id) ?? editWord;
+                  await setBaseSettings(editWord, falseRecursion: true);
+                  fillControllers(editWord);
+
+                  setState(() {});
+                },
+              );
+            },
+          );
+        }
       }
     }
 
-    return "Ok";
+    fillControllers(editWord);
+
+    // return "Ok";
   }
 
   @override
@@ -364,7 +372,7 @@ class WordsDetailState extends State<WordsDetail> {
                         icon: const Icon(Icons.downloading)),
                 TextButton.icon(
                   onPressed: saveWord,
-                  label: Text("Save"),
+                  label: Text("S"),
                   icon: const Icon(Icons.save),
                 ),
                 IconButton(
@@ -380,7 +388,7 @@ class WordsDetailState extends State<WordsDetail> {
                     onPressed: () {
                       fillSimpleTranslations(titleController.text, editWord);
                     },
-                    child: Text("SimpleData"))
+                    child: Text("Simple"))
               ],
             ),
           ],
@@ -730,7 +738,7 @@ class WordsDetailState extends State<WordsDetail> {
     editWord = word!;
 
     descriptionController.text = editWord.description;
-    setBaseSettings(editWord);
+    setBaseSettings(editWord, falseRecursion: true);
     setState(() {});
     return editWord;
   }

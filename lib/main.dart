@@ -2,6 +2,7 @@ import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/backup_restore_page.dart';
 import 'package:wortschatzchen_quiz/screens/home_page.dart';
@@ -11,7 +12,7 @@ import 'package:wortschatzchen_quiz/utils/constaints.dart';
 late AppDatabase db;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var dataProviderTemp = AppDataProvider();
+  var dataProviderTemp = AppDataProvider(DbHelper());
   db = dataProviderTemp.db;
   final talker = dataProviderTemp.talker;
   // talker.info("init Talker ");

@@ -124,7 +124,20 @@ class WordsListState extends State<WordsList> {
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(item.name);
             if (wordItem != null) {
-              navigateToDetail(wordItem, "View");
+            
+              for (var (index, element) in listWords.indexed) {
+                if (element.name == item.name) {
+                  _scrollController.scrollTo(
+                      index: index,
+                      duration: const Duration(milliseconds: 200));
+                  break;
+                }
+              }
+              Future.delayed(const Duration(milliseconds: 500), () {
+                navigateToDetail(wordItem, "View");
+              });
+    
+            
             }
             // navigateToDetail(wordItem, "View ${wordItem.name}");
           } else {

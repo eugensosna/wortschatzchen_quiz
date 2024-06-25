@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 
 class ModalShowReordableView extends StatefulWidget {
   final List<ReordableElement> listToView;
@@ -11,6 +13,10 @@ class ModalShowReordableView extends StatefulWidget {
 }
 
 class _ModalShowReordableViewState extends State<ModalShowReordableView> {
+  TextEditingController descriptionController = TextEditingController();
+
+  TextEditingController translateController = TextEditingController();
+
   void moveToLastScreen(BuildContext context) {
     Navigator.pop(context, widget.listToView);
   }
@@ -28,7 +34,6 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
             }),
       ),
       body: ReorderableListView.builder(
-        
         itemCount: widget.listToView.length,
         itemBuilder: (context, index) {
           var item = widget.listToView.elementAt(index);
@@ -92,9 +97,6 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
   }
 
   void editItem(BuildContext context, ReordableElement edit) async {
-    TextEditingController descriptionController = TextEditingController();
-
-    TextEditingController translateController = TextEditingController();
     descriptionController.text = edit.name;
     translateController.text = edit.translate;
 
@@ -119,6 +121,9 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
                   },
                   decoration: const InputDecoration(hintText: "Description"),
                 ),
+                IconButton(
+                    onPressed: () => translate(context),
+                    icon: Icon(Icons.move_down)),
                 TextField(
                   decoration: const InputDecoration(hintText: "Translated"),
                   controller: translateController,
@@ -164,6 +169,13 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
     widget.listToView.removeAt(index);
     setState(() {});
   }
+
+  void translate(BuildContext context) async {
+    print("translate ");
+    translateController.text =
+        await Provider.of<AppDataProvider>(context, listen: false)
+            .translate(descriptionController.text);
+  }
 }
 
 class FormExample extends StatefulWidget {
@@ -183,34 +195,40 @@ class _FormExampleState extends State<FormExample> {
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsetsGeometry.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              /// The `TextField` widget in Flutter is used to create a text input field where users can
-              /// enter text. In the provided code snippet, the `TextField` widget is being used to
-              /// create an input field for the description of an element. The `controller` property is
-              /// used to control the text entered in the field, and the `onEditingComplete` callback is
-              /// triggered when the user finishes editing the text in the field.
-              TextField(
-                controller: descriptionController,
-                onEditingComplete: () {
-                  widget.editElement.name = descriptionController.text;
+      key: _formKey,
+      child: Padding(
+        padding: EdgeInsetsGeometry.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            /// The `TextField` widget in Flutter is used to create a text input field where users can
+            /// enter text. In the provided code snippet, the `TextField` widget is being used to
+            /// create an input field for the description of an element. The `controller` property is
+            /// used to control the text entered in the field, and the `onEditingComplete` callback is
+            /// triggered when the user finishes editing the text in the field.
+            TextField(
+              controller: descriptionController,
+              onEditingComplete: () {
+                widget.editElement.name = descriptionController.text;
+              },
+              decoration: const InputDecoration(hintText: "Description"),
+            ),
+            IconButton(
+                onPressed: () {
+                  print("translate ");
                 },
-                decoration: const InputDecoration(hintText: "Description"),
-              ),
-              TextField(
-                decoration: const InputDecoration(hintText: "Translated"),
-                controller: translateController,
-                onEditingComplete: () {
-                  widget.editElement.translate = translateController.text;
-                },
-              ),
-            ],
-          ),
-        ));
+                icon: Icon(Icons.move_down)),
+            TextField(
+              decoration: const InputDecoration(hintText: "Translated"),
+              controller: translateController,
+              onEditingComplete: () {
+                widget.editElement.translate = translateController.text;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

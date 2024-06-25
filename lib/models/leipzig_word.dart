@@ -733,8 +733,10 @@ class LeipzigTranslator {
     const int countMillisecondsForGoogle = 270;
 
     var timeStart = DateTime.now().millisecond;
-    Language? baseLangLocal = await db.getLangByShortName(inputLanguage);
-    Language? targetLanguageLocal = await db.getLangByShortName(outputLanguage);
+    Language? baseLangLocal =
+        baseLang ?? await db.getLangByShortName(inputLanguage);
+    Language? targetLanguageLocal =
+        targetLanguage ?? await db.getLangByShortName(outputLanguage);
     if (baseLangLocal != null &&
         targetLanguageLocal != null &&
         (baseLang == null || targetLanguage == null)) {
