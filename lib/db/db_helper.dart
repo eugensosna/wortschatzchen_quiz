@@ -143,14 +143,14 @@ class DbHelper extends AppDatabase {
   }
 
   Future<Language?> getLangById(int id) {
-    return (select(languages)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return (select(languages)..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
   }
 
   Future<translatedwords?> getTranslatedWordById(int id) {
     return (select(translatedWords)..where((tbl) => tbl.id.equals(id)))
         .getSingleOrNull();
   }
-
 
   Future<Word?> getWordByName(String name) async {
     return (select(words)..where((tbl) => tbl.name.equals(name)))
@@ -195,9 +195,11 @@ class DbHelper extends AppDatabase {
           ]))
         .get();
   }
-  Future <List<translatedwords>> getStringsToTranslate() async{
-    return (select(translatedWords)..
-    where((tbl)=> tbl.translatedName.equals(""))).get();
+
+  Future<List<translatedwords>> getStringsToTranslate() async {
+    return (select(translatedWords)
+          ..where((tbl) => tbl.translatedName.equals("")))
+        .get();
   }
 
   Future<List<Word>> getChildrenWordList(Word item) {
@@ -303,6 +305,9 @@ ORDER by words.name ; ''',
 
     return result;
   }
+
+  Stream<List<Session>> getGroupedSessionsByNameStream() =>
+      select(sessions).watch();
 }
 
 class SessionsGroupedByName {

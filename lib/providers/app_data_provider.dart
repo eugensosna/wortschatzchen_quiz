@@ -3,6 +3,7 @@ import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
+import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 
 class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;
@@ -12,21 +13,41 @@ class AppDataProvider extends ChangeNotifier {
   late LeipzigTranslator translator;
   List<SessionsGroupedByName> _sessions = [];
   List<SessionsGroupedByName> get sessionsByName => _sessions;
+  String currentSession = "";
+  List<Word> sessionByFilter = [];
 
   AppDataProvider(this._db) {
     translator = LeipzigTranslator(db: _db);
     translator.updateLanguagesData();
 
-
-    //watchers 
-    db.getGroupedSessionsByNameStream().listen((sessions){
-      _sessions = sessions;
+    //watchers
+    db.getGroupedSessionsByNameStream().listen((sessions) async {
+      _sessions = await db.getGroupedSessionsByName();
       notifyListeners();
-    })
+    });
   }
 
-  Future<String> translate(String input) async {
-    return await translator.translate(input);
+  void updateSessionByFilter({String current = ""}) async {
+    String filter = current.isEmpty ? currentSession : current;
+    sessionByFilter = await db.getWordsBySession(filter);
+    if (current.isNotEmpty) {
+      currentSession = current;
+    }
+    notifyListeners();
+  }
+
+  void updateSessions() async {
+    _sessions = await db.getGroupedSessionsByName();
+    notifyListeners();
+  }
+
+  void updateAll() async {
+    updateSessions();
+    updateSessionByFilter();
+  }
+
+  Future<String> translate(String input, {addtoBase = true}) async {
+    return await translator.translate(input, addtoBase: addtoBase);
   }
 
   addMeansToBase(List<String> means, Word editWord) async {
@@ -45,7 +66,17 @@ class AppDataProvider extends ChangeNotifier {
         .toList();
     means.removeWhere((e) => toSkip.contains(e));
 
-    for (var item in means) {
+    for (var (index, item) in means.indexed) {
+      if (index < 3) {
+        await translate(item);
+      } else {
+        await db.into(db.translatedWords).insert(
+            TranslatedWordsCompanion.insert(
+                baseLang: translator.baseLang!.id,
+                targetLang: translator.targetLanguage!.id,
+                name: item,
+                translatedName: ""));
+      }
       await db
           .into(db.means)
           .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
@@ -57,6 +88,27 @@ class AppDataProvider extends ChangeNotifier {
       editWord = toUpdate;
     }
 
-    ChangeNotifier();
+    updateAll();
+  }
+
+  void translateNeededWords() async {
+    talker.info("start translateNeededWords");
+    var listTranslatedWords = await db.getStringsToTranslate();
+    for (var item in listTranslatedWords) {
+      var updatedItem = await db.getTranslatedWordById(item.id);
+      if (updatedItem != null && updatedItem.translatedName.isEmpty) {
+        if (item.translatedName.isEmpty) {
+          try {
+            var translatedString = await translate(item.name, addtoBase: false);
+
+            var toWrite = item.copyWith(translatedName: translatedString);
+            db.update(db.translatedWords).replace(toWrite);
+          } catch (e) {
+            talker.error("translateNeededWords getby Google", e);
+          }
+          await Future.delayed(const Duration(seconds: 5));
+        }
+      }
+    }
   }
 }

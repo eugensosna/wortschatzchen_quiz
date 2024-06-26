@@ -1,10 +1,12 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import 'package:wortschatzchen_quiz/widgets/animated_Card.dart';
@@ -52,7 +54,8 @@ class SessionWordListState extends State<SessionWordList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
+      body: Consumer<AppDataProvider>(
+          builder: (context, AppDataProvider, child) => CustomScrollView(
               slivers: [
                 SliverAppBar(
                   centerTitle: true,
@@ -80,7 +83,7 @@ class SessionWordListState extends State<SessionWordList> {
                 SliverGrid.builder(
                   itemCount: listWords.length,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400, crossAxisSpacing: 5),
+                            maxCrossAxisExtent: 500, crossAxisSpacing: 5),
                   itemBuilder: (context, index) {
                     Word element = listWords.elementAt(index);
                     return AnimatedCard(
@@ -94,7 +97,8 @@ class SessionWordListState extends State<SessionWordList> {
                 ),
                 SliverList.builder(
                   itemBuilder: (context, index) {
-                    var itemWord = listWords.elementAt(index);
+                      var itemWord =
+                          AppDataProvider.sessionByFilter.elementAt(index);
                     return GestureDetector(
                       onDoubleTap: () {
                         navigateToDetail(itemWord, "View ${itemWord.name}");
@@ -110,10 +114,10 @@ class SessionWordListState extends State<SessionWordList> {
                       ),
                     );
                   },
-                  itemCount: listWords.length,
+                    itemCount: AppDataProvider.sessionByFilter.length,
                 )
               ],
-            ),
+              )),
       floatingActionButton: FloatingActionButton(
         onPressed: () => addWord(""),
         tooltip: "Add new",

@@ -1,6 +1,7 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -92,6 +93,16 @@ class _MyHomePageState extends State<MyHomePage> {
         routeNameHome: (context) => HomePage(talker: wtalker),
         routeBackupRestoreDataPage: (context) => BackupRestorePage(),
         routeDriftViewer: (context) => DriftDbViewer(db),
+        routeTalkerView: (context) => TalkerScreen(
+            talker: wtalker,
+            theme: const TalkerScreenTheme(
+              /// Your custom log colors
+              logColors: {
+                TalkerLogType.httpResponse: Color(0xFF26FF3C),
+                TalkerLogType.error: Colors.redAccent,
+                TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
+              },
+            ))
       },
     );
   }

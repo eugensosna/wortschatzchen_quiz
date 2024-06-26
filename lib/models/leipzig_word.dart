@@ -230,14 +230,13 @@ class LeipzigWord {
     return wort;
   }
 
-
   Future<LeipzigWord> getParseAllDataSpeed(
       LeipzigWord wort, Word editWord) async {
     talker.info("start sync getLeipzigBaseFromInternet");
     wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
       var wortL = await wort.parseDataLeipzigWord(onValue);
       await wortL.saveBaseDataDB(wortL, db, editWord);
-          talker.info("end then getLeipzigBaseFromInternet");
+      talker.info("end then getLeipzigBaseFromInternet");
     });
 
     talker.info("start getOpenthesaurusFromInternet");
@@ -246,8 +245,6 @@ class LeipzigWord {
     wort = await wort.parseOpenthesaurus(wort);
     await wort.saveRelationsDataDB(wort, db, editWord);
     talker.info("end getOpenthesaurusFromInternet");
-
-
 
     talker.info("start then getLeipzigExamplesFromInternet");
 
@@ -565,43 +562,64 @@ class LeipzigWord {
         // }
       }
     }
-    await saveExamplesDataDB(word, db, editWord);
 
-    if (word.synonyms.isNotEmpty) {
-      await db.deleteSynonymsByWord(editWord);
+    try {
+      await saveExamplesDataDB(word, db, editWord);
+    } catch (e) {
+      talker.error("saveExamplesDataDB", e);
     }
-    for (var item in word.synonyms) {
-      Word? elemWordSynonym = await db.getWordByName(item.name);
 
-      
+    try {
+      if (word.synonyms.isNotEmpty) {
+        List<String> listStrings = word.synonyms.map((e) => e.name).toList();
+        var listOfBase = await db.getSynonymsByWord(editWord.id);
+        // first filter list of Reordable element in list<Reordable> what in base it
+        // List<Reordable> convert to list<String> to check and remove from mens
+        // result means insert in the base
+        var toSkip = listOfBase
+            .where((e) => listStrings.contains(e.name))
+            .map((toElement) => toElement.name)
+            .toList();
+        listStrings.removeWhere((e) => toSkip.contains(e));
 
-      var translatedName = (elemWordSynonym != null)
-          ? elemWordSynonym.description
-          : await translator.translate(item.name);
+        for (var (index, item) in listStrings.indexed) {
+          var translatedName = "";
+          Word? elemWordSynonym = await db.getWordByName(item);
 
-      // elemWordSynonym == null ? "" : elemWordSynonym.description;
+          if (index < 3) {
+            translatedName = (elemWordSynonym != null)
+                ? elemWordSynonym.description
+                : await translator.translate(item);
 
-      // translator.addToBase(item.name, "");
+            // translatedName = await translator.translate(item);
+          } else {
+            await db.into(db.translatedWords).insert(
+                TranslatedWordsCompanion.insert(
+                    baseLang: translator.baseLang!.id,
+                    targetLang: translator.targetLanguage!.id,
+                    name: item,
+                    translatedName: ""));
+          }
+          await db.into(db.synonyms).insert(SynonymsCompanion.insert(
+              name: item,
+              baseWord: editWord.id,
+              synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym.id,
+              baseLang: editWord.baseLang,
+              translatedName: translatedName));
+        }
 
-      // translator.translate(item.name).then((onValue){
-      //   talker.log("translated string for ${item.name} is $onValue");
-      //   });
-
-      await db.into(db.synonyms).insert(SynonymsCompanion.insert(
-          name: item.name,
-          baseWord: editWord.id,
-          synonymWord: elemWordSynonym == null ? 0 : elemWordSynonym.id,
-          baseLang: editWord.baseLang,
-          translatedName: translatedName));
+        // await db.deleteSynonymsByWord(editWord);
+      }
+    } catch (e) {
+      talker.error("saveRelationsDataDB synonyms ", e);
     }
-    // translateNeededWords();
 
     return true;
   }
 
   Future<bool> saveBaseDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
-    talker.info("start updateDataDB $name");
+    talker.info("start saveBaseDataDB $name");
     translator = LeipzigTranslator(db: db);
     await translator.updateLanguagesData();
 
@@ -651,7 +669,9 @@ class LeipzigWord {
         // parseRawHtmlData(onValue.name, toUpdate);
       }
     }
-    await saveRelationsDataDB(word, db, editWord);
+    try {
+      await saveRelationsDataDB(word, db, editWord);
+    } catch (e) {}
     return true;
   }
 
@@ -747,7 +767,7 @@ class LeipzigTranslator {
     //   await Future.delayed(
     //       const Duration(milliseconds: countMillisecondsForGoogle));
     // }
-    
+
     try {
       final translated = await translator.translate(inputText,
           from: inputLanguage, to: outputLanguage);

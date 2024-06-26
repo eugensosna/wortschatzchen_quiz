@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
@@ -79,18 +81,19 @@ class SessionsDatesState extends State<SessionsDates> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
+    return Scaffold(body:
+        Consumer<AppDataProvider>(builder: (context, AppDataProvider, child) {
+      return CustomScrollView(
         slivers: [
           SliverGrid.builder(
-            itemCount: listSessions.length,
+            itemCount: AppDataProvider.sessionsByName.length,
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200,
                 mainAxisExtent: 200,
                 crossAxisSpacing: 3,
                 mainAxisSpacing: 3),
             itemBuilder: (context, index) {
-              var item = listSessions.elementAt(index);
+              var item = AppDataProvider.sessionsByName.elementAt(index);
               return Dismissible(
                 key: Key(item.typesession.toString()),
                 direction: DismissDirection.startToEnd,
@@ -111,30 +114,6 @@ class SessionsDatesState extends State<SessionsDates> {
                   });
                 },
                 child: GestureDetector(
-                  
-                  // onLongPress: () {
-                  //   showMenu(
-                  //       context: context,
-                  //       position: _getRelativeRect(widgetKey),
-                  //       items: <PopupMenuEntry>[
-                  //         PopupMenuItem(
-                  //             child: Row(
-                  //           children: [
-                  //             ElevatedButton(
-                  //               onPressed: () {
-                  //                 _showEditDialog(item.typesession);
-                  //               },
-                  //               child: const Text("Rename"),
-                  //             ),
-                  //             ElevatedButton(
-                  //                 onPressed: () {
-                  //                   showWordsBySession(item.typesession);
-                  //                 },
-                  //                 child: const Text("Open"))
-                  //           ],
-                  //         ))
-                  //       ]);
-                  //},
                   onDoubleTap: () {
                     _showEditDialog(item.typesession);
                   },
@@ -147,7 +126,7 @@ class SessionsDatesState extends State<SessionsDates> {
                         ? Colors.red.shade300
                         : Colors.amber.shade400,
                     child: Text(
-                      item.description,
+                      item.typesession,
                     ),
                   ),
                 ),
@@ -155,8 +134,8 @@ class SessionsDatesState extends State<SessionsDates> {
             },
           )
         ],
-      ),
-    );
+      );
+    }));
   }
 
   void _showEditDialog(oldName) async {
@@ -166,8 +145,10 @@ class SessionsDatesState extends State<SessionsDates> {
         context: context,
         builder: (context) {
           return AlertDialog(
+            content: Text("old name $oldName"),
             title: TextField(
               controller: nameController,
+              decoration: InputDecoration(labelText: oldName),
             ),
             actions: <Widget>[
               TextButton(
@@ -202,6 +183,7 @@ class SessionsDatesState extends State<SessionsDates> {
       var newSession = item.copyWith(typesession: newName);
       await widget.db.update(widget.db.sessions).replace(newSession);
     }
+    Provider.of<AppDataProvider>(context, listen: false).updateSessions();
     Navigator.of(contextLo).pop(true);
   }
 

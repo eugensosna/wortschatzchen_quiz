@@ -57,9 +57,15 @@ class WordsDetailState extends State<WordsDetail> {
   String baseWord = "";
   String currentWordSession = getDefaultSessionName();
   late Language baseLang;
+  double _progress = 0;
 
   fillSimpleTranslations(String input, Word editWord) async {
+    widget.talker.info("libre translator start  ${input}");
+
     // final lt = SimplyTranslator(EngineType.libre);
+    _progress = 0.1;
+    editWord = await saveWord();
+
     final st = SimplyTranslator(EngineType.google);
     // final st = SimplyTranslator();
 
@@ -68,38 +74,56 @@ class WordsDetailState extends State<WordsDetail> {
     st.setSimplyInstance = "simplytranslate.pussthecat.org";
     var eipzTranslator = LeipzigTranslator(db: db);
     eipzTranslator.updateLanguagesData();
+    _progress += 0.2;
+    setState(() {
+      _progress += 0.2;
+    });
+    List<String> stringMeans = [];
 
     /// get the list with instances
-    widget.talker.info(st.getSimplyInstances);
+    try {
+      final translated = await st.translateSimply(input,
+          from: inputLanguage,
+          to: outputLanguage,
+          instanceMode: InstanceMode.Random);
+      widget.talker.info("${translated.translations.text}");
+      descriptionController.text =
+          encodeToHumanText(translated.translations.text);
+      setState(() {
+        _progress = 0.7;
+      });
+      if (translated.translations.definitions.isNotEmpty) {
+        for (var item in translated.translations.definitions) {
+          stringMeans.add(encodeToHumanText(item.definition));
+        }
+      }
+    } catch (e) {
+      widget.talker.error(" fillSimpleTranslations ", e);
+    }
+    try {
+      await Provider.of<AppDataProvider>(context, listen: false)
+          .addMeansToBase(stringMeans, editWord);
+      editWord = await db.getWordById(editWord.id) ?? editWord;
+    } catch (e) {
+      widget.talker.error(" fillSimpleTranslations write means ", e);
+    }
 
-    final translated = await st.translateSimply(input,
-        from: inputLanguage,
-        to: outputLanguage,
-        instanceMode: InstanceMode.Random);
-    widget.talker.info("msg");
-    descriptionController.text =
-        encodeToHumanText(translated.translations.text);
+    setState(() {
+      _progress = 0.9;
+    });
     if (editWord.description.isEmpty) {
       var toUpdate = editWord.copyWith(description: descriptionController.text);
       await db.updateWord(toUpdate);
       editWord = toUpdate;
     }
 
-    List<String> stringMeans = [];
-    if (translated.translations.definitions.isNotEmpty) {
-      for (var item in translated.translations.definitions) {
-        await eipzTranslator.translate(item.definition);
-        stringMeans.add(item.definition);
-      }
-      await Provider.of<AppDataProvider>(context, listen: false)
-          .addMeansToBase(stringMeans, editWord);
-      editWord = await db.getWordById(editWord.id) ?? editWord;
-    }
-
-    widget.talker
-        .info("libre translator ${translated.translations.definitions}");
+    widget.talker.info("libre translator end ${input}");
     await setBaseSettings(editWord);
-    setState(() {});
+    setState(() {
+      isLoading = false;
+      _progress = 0.0;
+    });
+    Provider.of<AppDataProvider>(context, listen: false).translateNeededWords();
   }
 
   Future<String> translateText(String inputText) async {
@@ -221,8 +245,7 @@ class WordsDetailState extends State<WordsDetail> {
     listSessions = await _getListSessions();
     currentWordSession = await _getWordSession(editWord);
 
-    if (editWord.name.isNotEmpty &&
-        editWord.id > 0) {
+    if (editWord.name.isNotEmpty && editWord.id > 0) {
       editWord = await db.getWordById(editWord.id) ?? editWord;
       listSynonyms = await db.getSynonymsByWord(editWord.id);
       listExamples = await db.getExamplesByWord(editWord.id);
@@ -238,8 +261,6 @@ class WordsDetailState extends State<WordsDetail> {
           setState(() {});
         },
       );
-      
-
     } else {
       if (editWord.name.isNotEmpty && editWord.id < 0 && !falseRecursion) {
         // fillControllers(editWord);
@@ -272,129 +293,142 @@ class WordsDetailState extends State<WordsDetail> {
   @override
   Widget build(BuildContext context) {
     TextStyle? textStyle = Theme.of(context).textTheme.displaySmall;
+
     var textToAppBar = appBarText;
     if (editWord.baseForm.isNotEmpty) {
       textToAppBar = "$textToAppBar ${editWord.baseForm}";
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(textToAppBar),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () async {
-            moveToLastScreen();
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(9),
-              child: TextField(
-                  controller: titleController,
-                  style: textStyle,
-                  decoration: InputDecoration(
-                      label: const Text('Title'),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5)))),
-            ),
-            editWord.baseForm.isNotEmpty
-                ? InkWell(
-                    child: Text(
-                      "Base form :${editWord.baseForm}",
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                    onTap: () {
-                      viewWord(editWord.baseForm);
-                    },
-                  )
-                : Container(
-                    height: 2,
-                  ),
-            // 3 element
-            article.isNotEmpty ? Text(article) : Container(),
-            Padding(
-              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-              child: TextField(
-                controller: descriptionController,
-                style: textStyle,
-                decoration: InputDecoration(
-                    labelText: 'Description',
-                    labelStyle: textStyle,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5.0))),
-              ),
-            ),
-            TextField(
-              controller: meanController,
-              decoration: const InputDecoration(label: Text("Mean")),
-              onTap: () {
-                _showEditMeans(context, listMeans);
+    return PopScope(
+        canPop: true,
+        onPopInvoked: (_) async {
+          await saveWord();
+          // moveToLastScreen();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(textToAppBar),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async {
+                moveToLastScreen();
               },
             ),
-            // Center(
-            //   child: Row(
-            //     children: [
-            //       Text("data"),
-            //       Padding(
-            //         padding: const EdgeInsets.all(8.0),
-            //         child: TextFormField(
-            //           controller: meanController,
-            //         ),
-            //       )
-            //     ],
-
-            //   ),
-            // ),
-            TextField(
-              controller: importantController,
-              decoration: const InputDecoration(label: Text("Important")),
-              onChanged: (value) {
-                editWord = editWord.copyWith(important: value);
-              },
-            ),
-
-            buildWidgetSynonymsView(listSynonyms),
-
-            buildWidgetExamplesView(listExamples, maxDesc: 1),
-            DroupDownSessionsChange(),
-
-            Row(
-              children: [
-                isLoading
-                    ? const CircularProgressIndicator()
-                    : TextButton.icon(
-                        onPressed: _fillData,
-                        label: Text("Fill long "),
-                        icon: const Icon(Icons.downloading)),
-                TextButton.icon(
-                  onPressed: saveWord,
-                  label: Text("S"),
-                  icon: const Icon(Icons.save),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(8),
+            child: ListView(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(9),
+                  child: TextField(
+                      controller: titleController,
+                      style: textStyle,
+                      decoration: InputDecoration(
+                          label: const Text('Title'),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5)))),
                 ),
-                IconButton(
-                    onPressed: goToVerbForm, icon: const Icon(Icons.add_task)),
-                IconButton(
-                    onPressed: () async {
-                      var result =
-                          await _showOrEditReordable(context, listSynonyms);
-                      await _saveToExamples(result);
-                    },
-                    icon: const Icon(Icons.edit)),
-                ElevatedButton(
-                    onPressed: () {
-                      fillSimpleTranslations(titleController.text, editWord);
-                    },
-                    child: Text("Simple"))
+                editWord.baseForm.isNotEmpty
+                    ? InkWell(
+                        child: Text(
+                          "Base form :${editWord.baseForm}",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                        onTap: () {
+                          viewWord(editWord.baseForm);
+                        },
+                      )
+                    : Container(
+                        height: 2,
+                      ),
+                // 3 element
+                article.isNotEmpty ? Text(article) : Container(),
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  child: TextField(
+                    controller: descriptionController,
+                    style: textStyle,
+                    decoration: InputDecoration(
+                        labelText: 'Description',
+                        labelStyle: textStyle,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5.0))),
+                  ),
+                ),
+                TextField(
+                  controller: meanController,
+                  decoration: const InputDecoration(label: Text("Mean")),
+                  onTap: () {
+                    _showEditMeans(context, listMeans);
+                  },
+                ),
+                TextField(
+                  controller: importantController,
+                  decoration: const InputDecoration(label: Text("Important")),
+                  onChanged: (value) {
+                    editWord = editWord.copyWith(important: value);
+                  },
+                ),
+
+                buildWidgetSynonymsView(listSynonyms),
+
+                buildWidgetExamplesView(listExamples, maxDesc: 1),
+                DroupDownSessionsChange(),
+
+                Row(
+                  children: [
+                    isLoading
+                        ? CircularProgressIndicator(
+                            value: _progress,
+                          )
+                        : TextButton(
+                            onPressed: _fillData,
+                            child: Text("Fill"),
+                          ),
+                    // icon: const Icon(Icons.downloading)),
+                    TextButton.icon(
+                      onPressed: saveWord,
+                      label: Text("S"),
+                      icon: const Icon(Icons.save),
+                    ),
+                    IconButton(
+                        onPressed: goToVerbForm,
+                        icon: const Icon(Icons.add_task)),
+                    IconButton(
+                        onPressed: () async {
+                          var result =
+                              await _showOrEditReordable(context, listSynonyms);
+                          await _saveToExamples(result);
+                        },
+                        icon: const Icon(Icons.edit)),
+                    ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          fillSimpleTranslations(
+                              titleController.text, editWord);
+                        },
+                        child: Text("Simp")),
+                    isLoading
+                        ? CircularProgressIndicator(
+                            value: _progress,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.blue),
+                          )
+                        : Container(),
+                  ],
+                ),
+                isLoading
+                    ? LinearProgressIndicator(
+                        value: _progress,
+                      )
+                    : Container(),
               ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   DropdownButtonFormField<String> DroupDownSessionsChange() {
@@ -426,16 +460,19 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<Word> saveWord() async {
+    Word result;
     editWord = editWord.copyWith(
         name: titleController.text,
         description: descriptionController.text,
         mean: meanController.text,
         important: importantController.text);
     if (editWord.id > 0) {
-      return await updateWordIfNeed(editWord);
+      result = await updateWordIfNeed(editWord);
     } else {
-      return await addWord();
+      result = await addWord();
     }
+    Provider.of<AppDataProvider>(context, listen: false).updateAll();
+    return result;
   }
 
   Widget _addListTitleSynonym(
@@ -589,9 +626,9 @@ class WordsDetailState extends State<WordsDetail> {
 
           db.getSynonymsByWord(editWord.id).then((value) {
             listSynonyms = value;
-            setState(() {
-              isLoading = false;
-            });
+            // setState(() {
+            //   isLoading = false;
+            // });
             db.getExamplesByWord(editWord.id).then((onValue) {
               listExamples = onValue;
               setState(() {
@@ -658,9 +695,9 @@ class WordsDetailState extends State<WordsDetail> {
           // }
           db.getSynonymsByWord(editWord.id).then((value) {
             listSynonyms = value;
-            setState(() {
-              isLoading = false;
-            });
+            // setState(() {
+            //   isLoading = false;
+            // });
             db.getExamplesByWord(editWord.id).then((onValue) {
               listExamples = onValue;
               setState(() {
@@ -685,10 +722,19 @@ class WordsDetailState extends State<WordsDetail> {
 
     _addUpdateWord().then((value) {
       widget.talker.info("_fillData End");
-      setState(() {
-        isLoading = false;
-      });
+      if (value != null) {
+        setBaseSettings(value);
+        setState(() {
+          editWord = value;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
     });
+
     db.getLeipzigDataByWord(editWord).then((value) {
       if (value != null) {
         setState(() {

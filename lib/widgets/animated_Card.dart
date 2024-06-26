@@ -136,7 +136,7 @@ class _AnimatedCardState extends State<AnimatedCard>
     return Container(
         color: Colors.blue,
         child: widgets.Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Center(
