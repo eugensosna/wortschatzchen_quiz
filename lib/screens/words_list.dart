@@ -19,6 +19,7 @@ class WordsList extends StatefulWidget {
 
 class WordsListState extends State<WordsList> {
   int count = 2;
+  String currentSearch = "";
   bool stateAutocomplit = false;
   bool isLoad = false;
   List<AutocompleteDataHelper> autoComplitData = [];
@@ -87,34 +88,16 @@ class WordsListState extends State<WordsList> {
       child: Autocomplete<AutocompleteDataHelper>(
         optionsBuilder: (textEditingValue) async {
           final textToTest = textEditingValue.text.trim();
+          List<AutocompleteDataHelper> autoComplitDataLoc = [];
+
           if (textToTest.isEmpty || textToTest.length <= 1) {
-            return const Iterable<AutocompleteDataHelper>.empty();
+            return autoComplitDataLoc;
           }
 
-          var leipzig = LeipzigWord(textToTest, widget.db, widget.talker);
-          var autoComplitDataLoc =
-              await leipzig.getAutocompleteLocal(textToTest);
+          fillAutocompliteDelayed(textToTest);
+          return autoComplitData;
 
-          var autoComplitDataExt = await leipzig.getAutocomplete(textToTest);
-          var autoComplitDataVerb =
-              await leipzig.getAutocompleteVerbForm(textToTest);
-
-          autoComplitDataLoc.addAll(autoComplitDataExt);
-          autoComplitDataLoc.addAll(autoComplitDataVerb);
-          if (autoComplitDataLoc.isEmpty) {
-            autoComplitDataLoc = autoComplitData;
-            autoComplitDataLoc.insert(
-                0,
-                AutocompleteDataHelper(
-                    name: textToTest, isIntern: false, uuid: ""));
-          } else {
-            autoComplitData = autoComplitDataLoc;
-            autoComplitDataLoc.insert(
-                0,
-                AutocompleteDataHelper(
-                    name: textToTest, isIntern: false, uuid: ""));
-          }
-          return autoComplitDataLoc;
+          
         },
         onSelected: (AutocompleteDataHelper item) async {
           // widget.talker.debug("onSelected ${item.name}");
@@ -123,8 +106,10 @@ class WordsListState extends State<WordsList> {
           // debugPrint(item.name);
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(item.name);
+
+            autocompleteController.clear();
+
             if (wordItem != null) {
-            
               for (var (index, element) in listWords.indexed) {
                 if (element.name == item.name) {
                   _scrollController.scrollTo(
@@ -134,10 +119,8 @@ class WordsListState extends State<WordsList> {
                 }
               }
               Future.delayed(const Duration(milliseconds: 500), () {
-                navigateToDetail(wordItem, "View");
+                // navigateToDetail(wordItem, "View");
               });
-    
-            
             }
             // navigateToDetail(wordItem, "View ${wordItem.name}");
           } else {
@@ -166,6 +149,7 @@ class WordsListState extends State<WordsList> {
             // textEditingController.value = AutocompleteDataHelper(
             //     name: "", isIntern: false, uuid: "") as TextEditingValue;
           }
+          if (textEditingController.text.contains("+ ")) {}
           return TextFormField(
             autofocus: true,
             focusNode: focusNode,
@@ -182,6 +166,43 @@ class WordsListState extends State<WordsList> {
 
   Widget getAzWordListView() {
     return Container();
+  }
+
+  void fillAutocompliteDelayed(String textToSearch) {
+    if (currentSearch == textToSearch) {
+    } else {
+      if (textToSearch.isEmpty) {
+        autoComplitData.clear();
+      } else {
+        Future.delayed(Duration(seconds: 1), () async {
+          currentSearch = textToSearch;
+          if (currentSearch.isEmpty) {
+            autoComplitData.clear();
+            return;
+          }
+
+          var leipzig = LeipzigWord(currentSearch, widget.db, widget.talker);
+          var autoComplitDataLoc =
+              await leipzig.getAutocompleteLocal(currentSearch);
+
+          var autoComplitDataExt = await leipzig.getAutocomplete(currentSearch);
+          var autoComplitDataVerb =
+              await leipzig.getAutocompleteVerbForm(currentSearch);
+
+          autoComplitDataLoc.addAll(autoComplitDataExt);
+          autoComplitDataLoc.addAll(autoComplitDataVerb);
+          autoComplitData = autoComplitDataLoc.toList();
+          var element = autoComplitData
+              .firstWhere((element) => element.name == currentSearch);
+          if (element == null) {
+            autoComplitData.insert(
+                0,
+                AutocompleteDataHelper(
+                    name: currentSearch, isIntern: false, uuid: "uuid"));
+          }
+        });
+      }
+    }
   }
 
   Decoration getIndexBarDecoration(Color color) {

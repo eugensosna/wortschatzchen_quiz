@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/utils/constaints.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -28,6 +30,15 @@ class MainDrawer extends StatelessWidget {
             },
             leading: const Icon(Icons.backup),
             title: const Text("DBViewer"),
+          ),
+          ListTile(
+            onTap: () {
+              var talker =
+                  Provider.of<AppDataProvider>(context, listen: false).talker;
+              Navigator.pop(context);
+              Navigator.pushNamed(context, routeTalkerView);
+            },
+            title: Text("Talker"),
           )
         ],
       ),

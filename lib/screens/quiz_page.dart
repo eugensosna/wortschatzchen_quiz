@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/Questions.dart';
+import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
+import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/deck_view.dart';
 
 class QuizPage extends StatefulWidget {
   final DbHelper db;
@@ -16,6 +19,8 @@ class QuizPage extends StatefulWidget {
 class QuizPageState extends State<QuizPage> {
   List<Question> _questions = [];
   final pageController = PageController();
+  final List<Deck> decks = MockDecks.fetchDecks();
+
 
   @override
   void initState() {
@@ -33,7 +38,27 @@ class QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            // backgroundColor: Colors.black,
+            bottom: TabBar(
+              tabs: <Widget>[
+                Tab(text: "Decks"),
+                Tab(
+                  text: "New Deck",
+                )
+              ],
+            ),
+            title: Text("Quiz Cards"),
+          ),
+          body: TabBarView(children: <Widget>[
+            DeckView(decks),
+            Container(),
+          ]),
+        ));
+    /*return Material(
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -60,6 +85,6 @@ class QuizPageState extends State<QuizPage> {
               
             ]),
       ),
-    );
+    );*/
   }
 }

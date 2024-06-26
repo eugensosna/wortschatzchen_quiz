@@ -231,26 +231,30 @@ class LeipzigWord {
   }
 
   Future<LeipzigWord> getParseAllDataSpeed(
-      LeipzigWord wort, Word editWord) async {
+      LeipzigWord wort, Word editWord, Function _onProgress) async {
     talker.info("start sync getLeipzigBaseFromInternet");
     wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
+      
       var wortL = await wort.parseDataLeipzigWord(onValue);
       await wortL.saveBaseDataDB(wortL, db, editWord);
       talker.info("end then getLeipzigBaseFromInternet");
+      _onProgress(0.5);
     });
 
     talker.info("start getOpenthesaurusFromInternet");
-
+_onProgress(0.7);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
+    _onProgress(0.8);
     await wort.saveRelationsDataDB(wort, db, editWord);
     talker.info("end getOpenthesaurusFromInternet");
 
     talker.info("start then getLeipzigExamplesFromInternet");
-
+_onProgress(0.8);
     wort.getLeipzigExamplesFromInternet().then((onValue) {
       onValue.parseDataExamplesWord(onValue, editWord).then((onValue) async {
         await onValue.saveRelationsDataDB(onValue, db, editWord);
+        _onProgress(0.95);
         talker.info("end then getLeipzigExamplesFromInternet");
       });
     });

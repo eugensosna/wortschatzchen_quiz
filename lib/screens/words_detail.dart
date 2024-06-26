@@ -715,6 +715,7 @@ class WordsDetailState extends State<WordsDetail> {
     widget.talker.info("_fillData STart");
     setState(() {
       isLoading = true;
+      _progress = 0.1;
     });
     if (descriptionController.text.isEmpty) {
       descriptionController.text = await translateText(titleController.text);
@@ -797,7 +798,8 @@ class WordsDetailState extends State<WordsDetail> {
 
     try {
       var leipzigTempWord =
-          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
+          await leipzigSynonyms.getParseAllDataSpeed(
+          leipzigSynonyms, editWord, _progressbar);
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
           .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
@@ -851,6 +853,12 @@ class WordsDetailState extends State<WordsDetail> {
     navigateToDetail(synonymWord, "View synonym ");
   }
 
+  _progressbar(double progress) async {
+    setState(() {
+      _progress = progress;
+    });
+  }
+
   Future<Word?> addNewWordWithAllData(String name, Word basedWord) async {
     var newWord = await addNewWord(name, basedWord);
     if (newWord != null) {
@@ -863,7 +871,8 @@ class WordsDetailState extends State<WordsDetail> {
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
 
       leipzigSynonyms =
-          await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord);
+          await leipzigSynonyms.getParseAllDataSpeed(
+          leipzigSynonyms, editWord, _progressbar);
       // await leipzigSynonyms
       //     .getOpenthesaurusFromInternet()
       //     .then((onValue) async {
