@@ -313,19 +313,78 @@ ORDER by words.name ; ''',
 
   Future<List<Deck>> getQuestions() async {
     List<Deck> result = [];
-    var quizGroupLoc = await (select(quizGroup)..where()).get();
+    var quizGroupLoc = await (select(quizGroup)
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: (tbl.name)),
+            // ((tbl) => OrderingTerm(expression: tbl.id))
+          ]))
+        .get();
     for (var itemGroup in quizGroupLoc) {
       var questions = await (select(question)
-            ..where((tbl) => tbl.refQuizGroup.equals(itemGroup.id)))
+            ..where((tbl) => tbl.refQuizGroup.equals(itemGroup.id))
+            ..orderBy([
+              (tbl) => OrderingTerm(expression: (tbl.id)),
+              // ((tbl) => OrderingTerm(expression: tbl.id))
+            ]))
           .get();
       List<QuizCard> cards = [];
       for (var itemQuestenion in questions) {
         cards.add(QuizCard(
-            question: itemQuestenion.name, answer: itemQuestenion.answer));
+            question: itemQuestenion.name,
+            answer: itemQuestenion.answer,
+            example: itemQuestenion.example,
+            id: itemQuestenion.id));
       }
-      result.add(Deck(deckTitle: itemGroup.name, cards: cards));
+      result
+          .add(Deck(deckTitle: itemGroup.name, cards: cards, id: itemGroup.id));
     }
     return result;
+  }
+
+  Future<QuestionData?> addQuestion(
+      String name, String answer, String example, int refQuizGroup) async {
+    var id = await into(question).insert(QuestionCompanion.insert(
+        name: name,
+        answer: answer,
+        example: example,
+        refQuizGroup: refQuizGroup));
+    var result = await (select(question)..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
+    return result;
+  }
+
+  Future<Deck?> getQuestionById(int id) async {
+    Deck result;
+    var quizGroupLoc = await (select(quizGroup)
+          ..where((tbl) => tbl.id.equals(id))
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: (tbl.name)),
+            // ((tbl) => OrderingTerm(expression: tbl.id))
+          ]))
+        .getSingleOrNull();
+    if (quizGroupLoc != null) {
+      var questions = await (select(question)
+            ..where((tbl) => tbl.refQuizGroup.equals(quizGroupLoc.id))
+            ..orderBy([
+              (tbl) => OrderingTerm(expression: (tbl.id)),
+              // ((tbl) => OrderingTerm(expression: tbl.id))
+            ]))
+          .get();
+      List<QuizCard> cards = [];
+      for (var itemQuestenion in questions) {
+        cards.add(QuizCard(
+            question: itemQuestenion.name,
+            answer: itemQuestenion.answer,
+            example: itemQuestenion.example,
+            id: itemQuestenion.id));
+      }
+      result =
+          Deck(id: quizGroupLoc.id, deckTitle: quizGroupLoc.name, cards: cards);
+
+      return result;
+    } else {
+      return null;
+    }
   }
 }
 

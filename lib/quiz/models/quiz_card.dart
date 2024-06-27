@@ -1,5 +1,12 @@
 class QuizCard {
+  final int id;
   final String question;
   final String answer;
-  QuizCard({required this.question, required this.answer});
+  final String example;
+  QuizCard({
+    required this.question,
+    required this.answer,
+    required this.id,
+    required this.example,
+  });
 }

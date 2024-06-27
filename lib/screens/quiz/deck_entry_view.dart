@@ -15,8 +15,8 @@ class DeckEntryView extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
-            List<Deck> decks = MockDecks.fetchDecks();
-            Navigator.pop(context, decks);
+            // List<Deck> decks = MockDecks.fetchDecks();
+            Navigator.pop(context);
           },
         ),
         // backgroundColor: Colors.black,

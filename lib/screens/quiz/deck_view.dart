@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/deck_entry_view.dart';
 
@@ -14,14 +16,19 @@ class DeckView extends StatefulWidget {
 class _DeckViewState extends State<DeckView> {
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: _itemBuilder,
-      itemCount: widget.decks.length,
-    );
+    return Consumer<AppDataProvider>(
+        builder: (context, AppDataProvider, child) {
+      return ListView.builder(
+        itemBuilder: (context, index) {
+          return _itemBuilder(context, index, AppDataProvider.decks);
+        },
+        itemCount: AppDataProvider.decks.length,
+      );
+    });
   }
 
-  Widget? _itemBuilder(BuildContext context, int index) {
-    Deck currentDeck = widget.decks[index];
+  Widget? _itemBuilder(BuildContext context, int index, List<Deck> decks) {
+    Deck currentDeck = decks[index];
     String deckCardCount = currentDeck.cards.length != null
         ? "${currentDeck.cards.length} cards"
         : "0 cards";
@@ -56,8 +63,6 @@ class _DeckViewState extends State<DeckView> {
 
 _navigateToSelectedDeckEntryScreen(
     BuildContext context, Deck currentDeck) async {
-  var decks = await Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => DeckEntryView(currentDeck)));
+  var decks = await Navigator.push(context,
+      MaterialPageRoute(builder: (context) => DeckEntryView(currentDeck)));
 }

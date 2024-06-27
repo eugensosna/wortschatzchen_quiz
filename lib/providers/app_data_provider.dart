@@ -4,6 +4,7 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 
 class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;
@@ -97,6 +98,42 @@ class AppDataProvider extends ChangeNotifier {
     }
 
     updateAll();
+  }
+
+  Future<Deck> addQuizGroup(String name) async {
+    var newId = await db
+        .into(db.quizGroup)
+        .insert(QuizGroupCompanion.insert(name: name));
+    updateDecks();
+
+    // var resultDB
+    var result = _decks.firstWhere(
+      (element) => element.deckTitle == name,
+      orElse: () => Deck(deckTitle: name, cards: [], id: -99),
+    );
+    // result ??= ;
+    notifyListeners();
+    return result;
+  }
+
+  Future<Deck> addQuizQuestion(String question, String answer, Deck deck,
+      {String example = ""}) async {
+    var deckDB = await (db.select(db.quizGroup)
+          ..where((tbl) => tbl.name.equals(deck.deckTitle)))
+        .getSingleOrNull();
+    if (deckDB != null) {
+      var newId = await db.into(db.question).insert(QuestionCompanion.insert(
+          name: question,
+          answer: answer,
+          example: example,
+          refQuizGroup: deckDB.id));
+      deck.cards.add(
+          QuizCard(answer: answer, question: question, example: "", id: newId));
+    }
+
+    updateDecks();
+
+    return deck;
   }
 
   void translateNeededWords() async {

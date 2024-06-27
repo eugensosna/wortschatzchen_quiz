@@ -32,6 +32,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
   AnimationController? slideOutController;
   UserAnswer? userAnswer;
   bool isShowingAnswer = false;
+  bool needTranslate = false;
 
   @override
   void initState() {
@@ -71,7 +72,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             widget.onSlideOutComplete(
                 // TODO: slideDirection
                 );
-                    });
+          });
         }
       });
 
@@ -128,23 +129,20 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              height: screenSize.height / 2.0,
-              alignment: Alignment.center,
-              child: 
-                  Text(
-                    isShowingAnswer ? card.answer : card.question,
-                    style: const TextStyle(
-                      fontSize: 30.0,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                    softWrap: true,
-                  )
-
-              ),
-            ),
+                height: screenSize.height / 2.0,
+                alignment: Alignment.center,
+                child: Text(
+                  isShowingAnswer ? card.answer : card.question,
+                  style: const TextStyle(
+                    fontSize: 30.0,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                )),
           ),
         ),
+      ),
     );
   }
 
@@ -154,16 +152,15 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
     final cardTopLeft = (cardContext?.findRenderObject() as RenderBox)
         .localToGlobal(const Offset(0.0, 0.0));
     final dragStartY =
-        (cardContext!.size!.height * (Random().nextDouble())) +
-            cardTopLeft.dy;
+        (cardContext!.size!.height * (Random().nextDouble())) + cardTopLeft.dy;
     return Offset(cardContext.size!.width / 2 + cardTopLeft.dx, dragStartY);
   }
 
   void swipeRight() {
     double screenWidth = MediaQuery.of(context).size.width;
     dragStart = chooseRandomPosition();
-    slideOutTween = Tween(
-        begin: const Offset(0.0, 0.0), end: Offset(2 * screenWidth, 0.0));
+    slideOutTween =
+        Tween(begin: const Offset(0.0, 0.0), end: Offset(2 * screenWidth, 0.0));
     slideOutController?.forward(from: 0.0);
   }
 
@@ -230,8 +227,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
     }
   }
 
-  Offset? _rotationOrigin(dragBounds) =>
-      dragStart ?? const Offset(0.0, 0.0);
+  Offset? _rotationOrigin(dragBounds) => dragStart ?? const Offset(0.0, 0.0);
 
   void onAnswerChange() {
     if (widget.isDraggable) {

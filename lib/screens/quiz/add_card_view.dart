@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 
@@ -78,15 +80,19 @@ class _AddCardViewState extends State<AddCardView> {
     );
   }
 
-  Widget _submitButton(Deck deck) {
+  Widget _submitButton(Deck currenDeck) {
     return ElevatedButton(
       // color: Colors.black,
-      onPressed: () {
-        MockDecks.addCard(
-            questionTextController.text, answerTextController.text, deck);
+      onPressed: () async {
+        var deck = await Provider.of<AppDataProvider>(context, listen: false)
+            .addQuizQuestion(questionTextController.text,
+                answerTextController.text, currenDeck);
+
+        // MockDecks.addCard(
+        //     questionTextController.text, answerTextController.text, deck);
         questionTextController.text = "";
         answerTextController.text = "";
-        Navigator.pop(context);
+        Navigator.pop(context, deck);
       },
       // textColor: Colors.white,
       // padding: EdgeInsets.fromLTRB(40.0, 15.0, 40.0, 15.0),

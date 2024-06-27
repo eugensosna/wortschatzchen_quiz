@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/deck_entry_view.dart';
@@ -67,11 +69,13 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
           fontSize: 20.0,
         ),
       ),
-      onPressed: () {
-        MockDecks.addDeck(textController.text);
+      onPressed: () async {
+        var deck = await Provider.of<AppDataProvider>(context, listen: false)
+            .addQuizGroup(textController.text);
+        // MockDecks.addDeck(textController.text);
         textController.text = "";
-        List<Deck> decks = MockDecks.fetchDecks();
-        Deck deck = decks.elementAt(decks.length - 1);
+        // List<Deck> decks = MockDecks.fetchDecks();
+        // Deck deck = decks.elementAt(decks.length - 1);
         Navigator.push(
             context,
             MaterialPageRoute(
