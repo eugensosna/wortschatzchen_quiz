@@ -40,7 +40,9 @@ class Words extends Table {
 class TranslatedWords extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  @ReferenceName("baselangRefs")
   IntColumn get baseLang => integer().references(Languages, #id)();
+  @ReferenceName("targetlangRefs")
   IntColumn get targetLang => integer().references(Languages, #id)();
 
   TextColumn get name => text()();
@@ -50,9 +52,10 @@ class TranslatedWords extends Table {
 class Synonyms extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  @ReferenceName("synonym_base_word_ref")
   IntColumn get baseWord => integer().references(Words, #id)();
+  @ReferenceName("synonym_word_ref")
   IntColumn get synonymWord => integer().references(Words, #id)();
-
   TextColumn get name => text()();
   IntColumn get baseLang => integer().references(Languages, #id)();
   TextColumn get translatedName => text()();
@@ -65,8 +68,8 @@ class LeipzigDataFromIntranet extends Table {
 
   TextColumn get url => text()();
   TextColumn get html => text()();
-  TextColumn get htmlOpen => text()();
-  TextColumn get htmlExamples => text()();
+  TextColumn get htmlOpen => text().nullable()();
+  TextColumn get htmlExamples => text().nullable()();
 
   TextColumn get article => text()();
   // ignore: non_constant_identifier_names
@@ -91,6 +94,21 @@ class Examples extends Table {
   IntColumn get exampleOrder => integer().clientDefault(() => 100)();
 }
 
+class QuizGroup extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  TextColumn get name => text()();
+}
+
+class Question extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  TextColumn get name => text()();
+  TextColumn get answer => text()();
+  TextColumn get example => text()();
+  IntColumn get refQuizGroup => integer().references(QuizGroup, #id)();
+}
+
 @TableIndex(name: "type_session", columns: {#typesession})
 class Sessions extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -108,6 +126,8 @@ class Sessions extends Table {
   Means,
   Sessions,
   Examples,
+  QuizGroup,
+  Question
 ])
 class AppDatabase extends _$AppDatabase {
   String pathToFile = "";
@@ -125,7 +145,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 18;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -134,31 +154,26 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: (m, from, to) async {
         // talker.info("start migrate");
+        if (to == 18) {
+          await m.createTable(quizGroup);
+          // await m.createTable(question);
+          await m.createTable(question);
+          await m.addColumn(
+              leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
+          await m.addColumn(
+              leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
+        }
+
         await transaction(() async {
           await customStatement('PRAGMA foreign_keys = OFF');
-          if (from < 9) {
-            await customStatement('ALTER TABLE words  ADD immportant TEXT;');
-            await customStatement("""update words set immportant=' ';""");
-          } else {
-            if (from < 11) {
-              await customStatement(
-                  'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
-              await customStatement("""update means set meansorder=0;""");
-            } else {
-              if (from < 12) {
-                await customStatement('''
-                  CREATE TABLE "examples" (
-                    "id"	INTEGER NOT NULL,
-                    "uuid"	TEXT NOT NULL,
-                    "base_word"	INTEGER NOT NULL,
-                    "name"	TEXT NOT NULL,
-                    "exampleOrder"	INTEGER,
-                    "goaltext" TEXT ,
-                    PRIMARY KEY("id" AUTOINCREMENT),
-                    FOREIGN KEY("base_word") REFERENCES "words"("id")
-                  ); ''');
-              }
-            }
+          
+          if (to == 18) {
+            await m.createTable(quizGroup);
+            await m.createTable(question);
+            await m.addColumn(
+                leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
+            await m.addColumn(
+                leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
           }
           if (from <= 14) {
             await customStatement(
@@ -168,6 +183,8 @@ class AppDatabase extends _$AppDatabase {
 //            await customStatement(
 //                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
           }
+
+          
 
           // put your migration logic here
           //await customStatement('PRAGMA foreign_keys = ON');
@@ -211,7 +228,6 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     // put the database file, called db.sqlite here, into the documents folder
     // for your app.
-    
 
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'worts.sqlite'));

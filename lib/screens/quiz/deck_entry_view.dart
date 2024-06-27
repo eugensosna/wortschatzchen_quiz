@@ -4,9 +4,9 @@ import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/add_card_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 
-class DockEntryView extends StatelessWidget {
+class DeckEntryView extends StatelessWidget {
   final Deck deck;
-  const DockEntryView({super.key, required this.deck});
+  const DeckEntryView(this.deck, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +98,8 @@ class DockEntryView extends StatelessWidget {
                     ),
                   ),
                 ),
+                ElevatedButton(
+                    onPressed: () {}, child: const Text("Fill by sessions"))
               ],
             ),
           ),

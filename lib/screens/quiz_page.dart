@@ -4,6 +4,7 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/Questions.dart';
 import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/add_quiz_group.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/deck_view.dart';
 
 class QuizPage extends StatefulWidget {
@@ -55,7 +56,7 @@ class QuizPageState extends State<QuizPage> {
           ),
           body: TabBarView(children: <Widget>[
             DeckView(decks),
-            Container(),
+            const AddQuizGroup(),
           ]),
         ));
     /*return Material(

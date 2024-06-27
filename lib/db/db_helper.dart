@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
+import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 
 import 'db.dart';
 
@@ -308,6 +310,23 @@ ORDER by words.name ; ''',
 
   Stream<List<Session>> getGroupedSessionsByNameStream() =>
       select(sessions).watch();
+
+  Future<List<Deck>> getQuestions() async {
+    List<Deck> result = [];
+    var quizGroupLoc = await (select(quizGroup)..where()).get();
+    for (var itemGroup in quizGroupLoc) {
+      var questions = await (select(question)
+            ..where((tbl) => tbl.refQuizGroup.equals(itemGroup.id)))
+          .get();
+      List<QuizCard> cards = [];
+      for (var itemQuestenion in questions) {
+        cards.add(QuizCard(
+            question: itemQuestenion.name, answer: itemQuestenion.answer));
+      }
+      result.add(Deck(deckTitle: itemGroup.name, cards: cards));
+    }
+    return result;
+  }
 }
 
 class SessionsGroupedByName {

@@ -708,7 +708,8 @@ onProgress(0.8);
               html: rawHTML,
               article: article,
               KindOfWort: kindOfWort,
-              wordOfBase: baseWord));
+            wordOfBase: baseWord,
+          ));
     }
 
     talker.info("end  updateDateDB $name");

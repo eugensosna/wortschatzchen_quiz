@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
-import 'package:wortschatzchen_quiz/screens/quiz/dock_entry_view.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/deck_entry_view.dart';
 
 class DeckView extends StatefulWidget {
   final List<Deck> decks;
@@ -59,5 +59,5 @@ _navigateToSelectedDeckEntryScreen(
   var decks = await Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => DockEntryView(deck: currentDeck)));
+          builder: (context) => DeckEntryView(currentDeck)));
 }

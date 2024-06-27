@@ -1441,6 +1441,18 @@ class $LeipzigDataFromIntranetTable extends LeipzigDataFromIntranet
   late final GeneratedColumn<String> html = GeneratedColumn<String>(
       'html', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _htmlOpenMeta =
+      const VerificationMeta('htmlOpen');
+  @override
+  late final GeneratedColumn<String> htmlOpen = GeneratedColumn<String>(
+      'html_open', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _htmlExamplesMeta =
+      const VerificationMeta('htmlExamples');
+  @override
+  late final GeneratedColumn<String> htmlExamples = GeneratedColumn<String>(
+      'html_examples', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _articleMeta =
       const VerificationMeta('article');
   @override
@@ -1460,8 +1472,18 @@ class $LeipzigDataFromIntranetTable extends LeipzigDataFromIntranet
       'word_of_base', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, uuid, baseWord, url, html, article, KindOfWort, wordOfBase];
+  List<GeneratedColumn> get $columns => [
+        id,
+        uuid,
+        baseWord,
+        url,
+        html,
+        htmlOpen,
+        htmlExamples,
+        article,
+        KindOfWort,
+        wordOfBase
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1497,6 +1519,16 @@ class $LeipzigDataFromIntranetTable extends LeipzigDataFromIntranet
           _htmlMeta, html.isAcceptableOrUnknown(data['html']!, _htmlMeta));
     } else if (isInserting) {
       context.missing(_htmlMeta);
+    }
+    if (data.containsKey('html_open')) {
+      context.handle(_htmlOpenMeta,
+          htmlOpen.isAcceptableOrUnknown(data['html_open']!, _htmlOpenMeta));
+    }
+    if (data.containsKey('html_examples')) {
+      context.handle(
+          _htmlExamplesMeta,
+          htmlExamples.isAcceptableOrUnknown(
+              data['html_examples']!, _htmlExamplesMeta));
     }
     if (data.containsKey('article')) {
       context.handle(_articleMeta,
@@ -1540,6 +1572,10 @@ class $LeipzigDataFromIntranetTable extends LeipzigDataFromIntranet
           .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
       html: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}html'])!,
+      htmlOpen: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}html_open']),
+      htmlExamples: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}html_examples']),
       article: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}article'])!,
       KindOfWort: attachedDatabase.typeMapping
@@ -1562,6 +1598,8 @@ class LeipzigDataFromIntranetData extends DataClass
   final int baseWord;
   final String url;
   final String html;
+  final String? htmlOpen;
+  final String? htmlExamples;
   final String article;
   final String KindOfWort;
   final String wordOfBase;
@@ -1571,6 +1609,8 @@ class LeipzigDataFromIntranetData extends DataClass
       required this.baseWord,
       required this.url,
       required this.html,
+      this.htmlOpen,
+      this.htmlExamples,
       required this.article,
       required this.KindOfWort,
       required this.wordOfBase});
@@ -1582,6 +1622,12 @@ class LeipzigDataFromIntranetData extends DataClass
     map['base_word'] = Variable<int>(baseWord);
     map['url'] = Variable<String>(url);
     map['html'] = Variable<String>(html);
+    if (!nullToAbsent || htmlOpen != null) {
+      map['html_open'] = Variable<String>(htmlOpen);
+    }
+    if (!nullToAbsent || htmlExamples != null) {
+      map['html_examples'] = Variable<String>(htmlExamples);
+    }
     map['article'] = Variable<String>(article);
     map['kind_of_wort'] = Variable<String>(KindOfWort);
     map['word_of_base'] = Variable<String>(wordOfBase);
@@ -1595,6 +1641,12 @@ class LeipzigDataFromIntranetData extends DataClass
       baseWord: Value(baseWord),
       url: Value(url),
       html: Value(html),
+      htmlOpen: htmlOpen == null && nullToAbsent
+          ? const Value.absent()
+          : Value(htmlOpen),
+      htmlExamples: htmlExamples == null && nullToAbsent
+          ? const Value.absent()
+          : Value(htmlExamples),
       article: Value(article),
       KindOfWort: Value(KindOfWort),
       wordOfBase: Value(wordOfBase),
@@ -1610,6 +1662,8 @@ class LeipzigDataFromIntranetData extends DataClass
       baseWord: serializer.fromJson<int>(json['baseWord']),
       url: serializer.fromJson<String>(json['url']),
       html: serializer.fromJson<String>(json['html']),
+      htmlOpen: serializer.fromJson<String?>(json['htmlOpen']),
+      htmlExamples: serializer.fromJson<String?>(json['htmlExamples']),
       article: serializer.fromJson<String>(json['article']),
       KindOfWort: serializer.fromJson<String>(json['KindOfWort']),
       wordOfBase: serializer.fromJson<String>(json['wordOfBase']),
@@ -1624,6 +1678,8 @@ class LeipzigDataFromIntranetData extends DataClass
       'baseWord': serializer.toJson<int>(baseWord),
       'url': serializer.toJson<String>(url),
       'html': serializer.toJson<String>(html),
+      'htmlOpen': serializer.toJson<String?>(htmlOpen),
+      'htmlExamples': serializer.toJson<String?>(htmlExamples),
       'article': serializer.toJson<String>(article),
       'KindOfWort': serializer.toJson<String>(KindOfWort),
       'wordOfBase': serializer.toJson<String>(wordOfBase),
@@ -1636,6 +1692,8 @@ class LeipzigDataFromIntranetData extends DataClass
           int? baseWord,
           String? url,
           String? html,
+          Value<String?> htmlOpen = const Value.absent(),
+          Value<String?> htmlExamples = const Value.absent(),
           String? article,
           String? KindOfWort,
           String? wordOfBase}) =>
@@ -1645,6 +1703,9 @@ class LeipzigDataFromIntranetData extends DataClass
         baseWord: baseWord ?? this.baseWord,
         url: url ?? this.url,
         html: html ?? this.html,
+        htmlOpen: htmlOpen.present ? htmlOpen.value : this.htmlOpen,
+        htmlExamples:
+            htmlExamples.present ? htmlExamples.value : this.htmlExamples,
         article: article ?? this.article,
         KindOfWort: KindOfWort ?? this.KindOfWort,
         wordOfBase: wordOfBase ?? this.wordOfBase,
@@ -1657,6 +1718,8 @@ class LeipzigDataFromIntranetData extends DataClass
           ..write('baseWord: $baseWord, ')
           ..write('url: $url, ')
           ..write('html: $html, ')
+          ..write('htmlOpen: $htmlOpen, ')
+          ..write('htmlExamples: $htmlExamples, ')
           ..write('article: $article, ')
           ..write('KindOfWort: $KindOfWort, ')
           ..write('wordOfBase: $wordOfBase')
@@ -1665,8 +1728,8 @@ class LeipzigDataFromIntranetData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, uuid, baseWord, url, html, article, KindOfWort, wordOfBase);
+  int get hashCode => Object.hash(id, uuid, baseWord, url, html, htmlOpen,
+      htmlExamples, article, KindOfWort, wordOfBase);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1676,6 +1739,8 @@ class LeipzigDataFromIntranetData extends DataClass
           other.baseWord == this.baseWord &&
           other.url == this.url &&
           other.html == this.html &&
+          other.htmlOpen == this.htmlOpen &&
+          other.htmlExamples == this.htmlExamples &&
           other.article == this.article &&
           other.KindOfWort == this.KindOfWort &&
           other.wordOfBase == this.wordOfBase);
@@ -1688,6 +1753,8 @@ class LeipzigDataFromIntranetCompanion
   final Value<int> baseWord;
   final Value<String> url;
   final Value<String> html;
+  final Value<String?> htmlOpen;
+  final Value<String?> htmlExamples;
   final Value<String> article;
   final Value<String> KindOfWort;
   final Value<String> wordOfBase;
@@ -1697,6 +1764,8 @@ class LeipzigDataFromIntranetCompanion
     this.baseWord = const Value.absent(),
     this.url = const Value.absent(),
     this.html = const Value.absent(),
+    this.htmlOpen = const Value.absent(),
+    this.htmlExamples = const Value.absent(),
     this.article = const Value.absent(),
     this.KindOfWort = const Value.absent(),
     this.wordOfBase = const Value.absent(),
@@ -1707,6 +1776,8 @@ class LeipzigDataFromIntranetCompanion
     required int baseWord,
     required String url,
     required String html,
+    this.htmlOpen = const Value.absent(),
+    this.htmlExamples = const Value.absent(),
     required String article,
     required String KindOfWort,
     required String wordOfBase,
@@ -1722,6 +1793,8 @@ class LeipzigDataFromIntranetCompanion
     Expression<int>? baseWord,
     Expression<String>? url,
     Expression<String>? html,
+    Expression<String>? htmlOpen,
+    Expression<String>? htmlExamples,
     Expression<String>? article,
     Expression<String>? KindOfWort,
     Expression<String>? wordOfBase,
@@ -1732,6 +1805,8 @@ class LeipzigDataFromIntranetCompanion
       if (baseWord != null) 'base_word': baseWord,
       if (url != null) 'url': url,
       if (html != null) 'html': html,
+      if (htmlOpen != null) 'html_open': htmlOpen,
+      if (htmlExamples != null) 'html_examples': htmlExamples,
       if (article != null) 'article': article,
       if (KindOfWort != null) 'kind_of_wort': KindOfWort,
       if (wordOfBase != null) 'word_of_base': wordOfBase,
@@ -1744,6 +1819,8 @@ class LeipzigDataFromIntranetCompanion
       Value<int>? baseWord,
       Value<String>? url,
       Value<String>? html,
+      Value<String?>? htmlOpen,
+      Value<String?>? htmlExamples,
       Value<String>? article,
       Value<String>? KindOfWort,
       Value<String>? wordOfBase}) {
@@ -1753,6 +1830,8 @@ class LeipzigDataFromIntranetCompanion
       baseWord: baseWord ?? this.baseWord,
       url: url ?? this.url,
       html: html ?? this.html,
+      htmlOpen: htmlOpen ?? this.htmlOpen,
+      htmlExamples: htmlExamples ?? this.htmlExamples,
       article: article ?? this.article,
       KindOfWort: KindOfWort ?? this.KindOfWort,
       wordOfBase: wordOfBase ?? this.wordOfBase,
@@ -1777,6 +1856,12 @@ class LeipzigDataFromIntranetCompanion
     if (html.present) {
       map['html'] = Variable<String>(html.value);
     }
+    if (htmlOpen.present) {
+      map['html_open'] = Variable<String>(htmlOpen.value);
+    }
+    if (htmlExamples.present) {
+      map['html_examples'] = Variable<String>(htmlExamples.value);
+    }
     if (article.present) {
       map['article'] = Variable<String>(article.value);
     }
@@ -1797,6 +1882,8 @@ class LeipzigDataFromIntranetCompanion
           ..write('baseWord: $baseWord, ')
           ..write('url: $url, ')
           ..write('html: $html, ')
+          ..write('htmlOpen: $htmlOpen, ')
+          ..write('htmlExamples: $htmlExamples, ')
           ..write('article: $article, ')
           ..write('KindOfWort: $KindOfWort, ')
           ..write('wordOfBase: $wordOfBase')
@@ -2669,8 +2756,542 @@ class ExamplesCompanion extends UpdateCompanion<Example> {
   }
 }
 
+class $QuizGroupTable extends QuizGroup
+    with TableInfo<$QuizGroupTable, QuizGroupData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QuizGroupTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, uuid, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'quiz_group';
+  @override
+  VerificationContext validateIntegrity(Insertable<QuizGroupData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  QuizGroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QuizGroupData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
+  }
+
+  @override
+  $QuizGroupTable createAlias(String alias) {
+    return $QuizGroupTable(attachedDatabase, alias);
+  }
+}
+
+class QuizGroupData extends DataClass implements Insertable<QuizGroupData> {
+  final int id;
+  final String uuid;
+  final String name;
+  const QuizGroupData(
+      {required this.id, required this.uuid, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  QuizGroupCompanion toCompanion(bool nullToAbsent) {
+    return QuizGroupCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      name: Value(name),
+    );
+  }
+
+  factory QuizGroupData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QuizGroupData(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  QuizGroupData copyWith({int? id, String? uuid, String? name}) =>
+      QuizGroupData(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        name: name ?? this.name,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('QuizGroupData(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, uuid, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QuizGroupData &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.name == this.name);
+}
+
+class QuizGroupCompanion extends UpdateCompanion<QuizGroupData> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<String> name;
+  const QuizGroupCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  QuizGroupCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<QuizGroupData> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (name != null) 'name': name,
+    });
+  }
+
+  QuizGroupCompanion copyWith(
+      {Value<int>? id, Value<String>? uuid, Value<String>? name}) {
+    return QuizGroupCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuizGroupCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $QuestionTable extends Question
+    with TableInfo<$QuestionTable, QuestionData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QuestionTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _answerMeta = const VerificationMeta('answer');
+  @override
+  late final GeneratedColumn<String> answer = GeneratedColumn<String>(
+      'answer', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _exampleMeta =
+      const VerificationMeta('example');
+  @override
+  late final GeneratedColumn<String> example = GeneratedColumn<String>(
+      'example', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _refQuizGroupMeta =
+      const VerificationMeta('refQuizGroup');
+  @override
+  late final GeneratedColumn<int> refQuizGroup = GeneratedColumn<int>(
+      'ref_quiz_group', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES quiz_group (id)'));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, uuid, name, answer, example, refQuizGroup];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'question';
+  @override
+  VerificationContext validateIntegrity(Insertable<QuestionData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('answer')) {
+      context.handle(_answerMeta,
+          answer.isAcceptableOrUnknown(data['answer']!, _answerMeta));
+    } else if (isInserting) {
+      context.missing(_answerMeta);
+    }
+    if (data.containsKey('example')) {
+      context.handle(_exampleMeta,
+          example.isAcceptableOrUnknown(data['example']!, _exampleMeta));
+    } else if (isInserting) {
+      context.missing(_exampleMeta);
+    }
+    if (data.containsKey('ref_quiz_group')) {
+      context.handle(
+          _refQuizGroupMeta,
+          refQuizGroup.isAcceptableOrUnknown(
+              data['ref_quiz_group']!, _refQuizGroupMeta));
+    } else if (isInserting) {
+      context.missing(_refQuizGroupMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  QuestionData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QuestionData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      answer: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}answer'])!,
+      example: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}example'])!,
+      refQuizGroup: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ref_quiz_group'])!,
+    );
+  }
+
+  @override
+  $QuestionTable createAlias(String alias) {
+    return $QuestionTable(attachedDatabase, alias);
+  }
+}
+
+class QuestionData extends DataClass implements Insertable<QuestionData> {
+  final int id;
+  final String uuid;
+  final String name;
+  final String answer;
+  final String example;
+  final int refQuizGroup;
+  const QuestionData(
+      {required this.id,
+      required this.uuid,
+      required this.name,
+      required this.answer,
+      required this.example,
+      required this.refQuizGroup});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['name'] = Variable<String>(name);
+    map['answer'] = Variable<String>(answer);
+    map['example'] = Variable<String>(example);
+    map['ref_quiz_group'] = Variable<int>(refQuizGroup);
+    return map;
+  }
+
+  QuestionCompanion toCompanion(bool nullToAbsent) {
+    return QuestionCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      name: Value(name),
+      answer: Value(answer),
+      example: Value(example),
+      refQuizGroup: Value(refQuizGroup),
+    );
+  }
+
+  factory QuestionData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QuestionData(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      name: serializer.fromJson<String>(json['name']),
+      answer: serializer.fromJson<String>(json['answer']),
+      example: serializer.fromJson<String>(json['example']),
+      refQuizGroup: serializer.fromJson<int>(json['refQuizGroup']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'name': serializer.toJson<String>(name),
+      'answer': serializer.toJson<String>(answer),
+      'example': serializer.toJson<String>(example),
+      'refQuizGroup': serializer.toJson<int>(refQuizGroup),
+    };
+  }
+
+  QuestionData copyWith(
+          {int? id,
+          String? uuid,
+          String? name,
+          String? answer,
+          String? example,
+          int? refQuizGroup}) =>
+      QuestionData(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        name: name ?? this.name,
+        answer: answer ?? this.answer,
+        example: example ?? this.example,
+        refQuizGroup: refQuizGroup ?? this.refQuizGroup,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('QuestionData(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('answer: $answer, ')
+          ..write('example: $example, ')
+          ..write('refQuizGroup: $refQuizGroup')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, uuid, name, answer, example, refQuizGroup);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QuestionData &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.name == this.name &&
+          other.answer == this.answer &&
+          other.example == this.example &&
+          other.refQuizGroup == this.refQuizGroup);
+}
+
+class QuestionCompanion extends UpdateCompanion<QuestionData> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<String> name;
+  final Value<String> answer;
+  final Value<String> example;
+  final Value<int> refQuizGroup;
+  const QuestionCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.name = const Value.absent(),
+    this.answer = const Value.absent(),
+    this.example = const Value.absent(),
+    this.refQuizGroup = const Value.absent(),
+  });
+  QuestionCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required String name,
+    required String answer,
+    required String example,
+    required int refQuizGroup,
+  })  : name = Value(name),
+        answer = Value(answer),
+        example = Value(example),
+        refQuizGroup = Value(refQuizGroup);
+  static Insertable<QuestionData> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<String>? name,
+    Expression<String>? answer,
+    Expression<String>? example,
+    Expression<int>? refQuizGroup,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (name != null) 'name': name,
+      if (answer != null) 'answer': answer,
+      if (example != null) 'example': example,
+      if (refQuizGroup != null) 'ref_quiz_group': refQuizGroup,
+    });
+  }
+
+  QuestionCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? uuid,
+      Value<String>? name,
+      Value<String>? answer,
+      Value<String>? example,
+      Value<int>? refQuizGroup}) {
+    return QuestionCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+      answer: answer ?? this.answer,
+      example: example ?? this.example,
+      refQuizGroup: refQuizGroup ?? this.refQuizGroup,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (answer.present) {
+      map['answer'] = Variable<String>(answer.value);
+    }
+    if (example.present) {
+      map['example'] = Variable<String>(example.value);
+    }
+    if (refQuizGroup.present) {
+      map['ref_quiz_group'] = Variable<int>(refQuizGroup.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuestionCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('answer: $answer, ')
+          ..write('example: $example, ')
+          ..write('refQuizGroup: $refQuizGroup')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
+  _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
   late final $LanguagesTable languages = $LanguagesTable(this);
   late final $WordsTable words = $WordsTable(this);
   late final $SynonymsTable synonyms = $SynonymsTable(this);
@@ -2681,6 +3302,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MeansTable means = $MeansTable(this);
   late final $SessionsTable sessions = $SessionsTable(this);
   late final $ExamplesTable examples = $ExamplesTable(this);
+  late final $QuizGroupTable quizGroup = $QuizGroupTable(this);
+  late final $QuestionTable question = $QuestionTable(this);
   late final Index typeSession = Index(
       'type_session', 'CREATE INDEX type_session ON sessions (typesession)');
   @override
@@ -2696,6 +3319,1853 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         means,
         sessions,
         examples,
+        quizGroup,
+        question,
         typeSession
       ];
+}
+
+typedef $$LanguagesTableInsertCompanionBuilder = LanguagesCompanion Function({
+  Value<int> id,
+  required String name,
+  required String shortName,
+  Value<String> uuid,
+});
+typedef $$LanguagesTableUpdateCompanionBuilder = LanguagesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> shortName,
+  Value<String> uuid,
+});
+
+class $$LanguagesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LanguagesTable,
+    Language,
+    $$LanguagesTableFilterComposer,
+    $$LanguagesTableOrderingComposer,
+    $$LanguagesTableProcessedTableManager,
+    $$LanguagesTableInsertCompanionBuilder,
+    $$LanguagesTableUpdateCompanionBuilder> {
+  $$LanguagesTableTableManager(_$AppDatabase db, $LanguagesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$LanguagesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$LanguagesTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$LanguagesTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> shortName = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+          }) =>
+              LanguagesCompanion(
+            id: id,
+            name: name,
+            shortName: shortName,
+            uuid: uuid,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            required String shortName,
+            Value<String> uuid = const Value.absent(),
+          }) =>
+              LanguagesCompanion.insert(
+            id: id,
+            name: name,
+            shortName: shortName,
+            uuid: uuid,
+          ),
+        ));
+}
+
+class $$LanguagesTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $LanguagesTable,
+    Language,
+    $$LanguagesTableFilterComposer,
+    $$LanguagesTableOrderingComposer,
+    $$LanguagesTableProcessedTableManager,
+    $$LanguagesTableInsertCompanionBuilder,
+    $$LanguagesTableUpdateCompanionBuilder> {
+  $$LanguagesTableProcessedTableManager(super.$state);
+}
+
+class $$LanguagesTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $LanguagesTable> {
+  $$LanguagesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get shortName => $state.composableBuilder(
+      column: $state.table.shortName,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ComposableFilter wordsRefs(
+      ComposableFilter Function($$WordsTableFilterComposer f) f) {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.baseLang,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter synonymsRefs(
+      ComposableFilter Function($$SynonymsTableFilterComposer f) f) {
+    final $$SynonymsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.synonyms,
+        getReferencedColumn: (t) => t.baseLang,
+        builder: (joinBuilder, parentComposers) =>
+            $$SynonymsTableFilterComposer(ComposerState(
+                $state.db, $state.db.synonyms, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter baselangRefs(
+      ComposableFilter Function($$TranslatedWordsTableFilterComposer f) f) {
+    final $$TranslatedWordsTableFilterComposer composer =
+        $state.composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $state.db.translatedWords,
+            getReferencedColumn: (t) => t.baseLang,
+            builder: (joinBuilder, parentComposers) =>
+                $$TranslatedWordsTableFilterComposer(ComposerState($state.db,
+                    $state.db.translatedWords, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter targetlangRefs(
+      ComposableFilter Function($$TranslatedWordsTableFilterComposer f) f) {
+    final $$TranslatedWordsTableFilterComposer composer =
+        $state.composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $state.db.translatedWords,
+            getReferencedColumn: (t) => t.targetLang,
+            builder: (joinBuilder, parentComposers) =>
+                $$TranslatedWordsTableFilterComposer(ComposerState($state.db,
+                    $state.db.translatedWords, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+}
+
+class $$LanguagesTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $LanguagesTable> {
+  $$LanguagesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get shortName => $state.composableBuilder(
+      column: $state.table.shortName,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+typedef $$WordsTableInsertCompanionBuilder = WordsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required String name,
+  required String important,
+  required String description,
+  required String mean,
+  required String baseForm,
+  required int baseLang,
+  required int rootWordID,
+});
+typedef $$WordsTableUpdateCompanionBuilder = WordsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<String> name,
+  Value<String> important,
+  Value<String> description,
+  Value<String> mean,
+  Value<String> baseForm,
+  Value<int> baseLang,
+  Value<int> rootWordID,
+});
+
+class $$WordsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WordsTable,
+    Word,
+    $$WordsTableFilterComposer,
+    $$WordsTableOrderingComposer,
+    $$WordsTableProcessedTableManager,
+    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder> {
+  $$WordsTableTableManager(_$AppDatabase db, $WordsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$WordsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$WordsTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $$WordsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> important = const Value.absent(),
+            Value<String> description = const Value.absent(),
+            Value<String> mean = const Value.absent(),
+            Value<String> baseForm = const Value.absent(),
+            Value<int> baseLang = const Value.absent(),
+            Value<int> rootWordID = const Value.absent(),
+          }) =>
+              WordsCompanion(
+            id: id,
+            uuid: uuid,
+            name: name,
+            important: important,
+            description: description,
+            mean: mean,
+            baseForm: baseForm,
+            baseLang: baseLang,
+            rootWordID: rootWordID,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required String name,
+            required String important,
+            required String description,
+            required String mean,
+            required String baseForm,
+            required int baseLang,
+            required int rootWordID,
+          }) =>
+              WordsCompanion.insert(
+            id: id,
+            uuid: uuid,
+            name: name,
+            important: important,
+            description: description,
+            mean: mean,
+            baseForm: baseForm,
+            baseLang: baseLang,
+            rootWordID: rootWordID,
+          ),
+        ));
+}
+
+class $$WordsTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $WordsTable,
+    Word,
+    $$WordsTableFilterComposer,
+    $$WordsTableOrderingComposer,
+    $$WordsTableProcessedTableManager,
+    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder> {
+  $$WordsTableProcessedTableManager(super.$state);
+}
+
+class $$WordsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $WordsTable> {
+  $$WordsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get important => $state.composableBuilder(
+      column: $state.table.important,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get mean => $state.composableBuilder(
+      column: $state.table.mean,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get baseForm => $state.composableBuilder(
+      column: $state.table.baseForm,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get rootWordID => $state.composableBuilder(
+      column: $state.table.rootWordID,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$LanguagesTableFilterComposer get baseLang {
+    final $$LanguagesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableFilterComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  ComposableFilter synonym_base_word_ref(
+      ComposableFilter Function($$SynonymsTableFilterComposer f) f) {
+    final $$SynonymsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.synonyms,
+        getReferencedColumn: (t) => t.baseWord,
+        builder: (joinBuilder, parentComposers) =>
+            $$SynonymsTableFilterComposer(ComposerState(
+                $state.db, $state.db.synonyms, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter synonym_word_ref(
+      ComposableFilter Function($$SynonymsTableFilterComposer f) f) {
+    final $$SynonymsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.synonyms,
+        getReferencedColumn: (t) => t.synonymWord,
+        builder: (joinBuilder, parentComposers) =>
+            $$SynonymsTableFilterComposer(ComposerState(
+                $state.db, $state.db.synonyms, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter leipzigDataFromIntranetRefs(
+      ComposableFilter Function($$LeipzigDataFromIntranetTableFilterComposer f)
+          f) {
+    final $$LeipzigDataFromIntranetTableFilterComposer composer =
+        $state.composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $state.db.leipzigDataFromIntranet,
+            getReferencedColumn: (t) => t.baseWord,
+            builder: (joinBuilder, parentComposers) =>
+                $$LeipzigDataFromIntranetTableFilterComposer(ComposerState(
+                    $state.db,
+                    $state.db.leipzigDataFromIntranet,
+                    joinBuilder,
+                    parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter meansRefs(
+      ComposableFilter Function($$MeansTableFilterComposer f) f) {
+    final $$MeansTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.means,
+        getReferencedColumn: (t) => t.baseWord,
+        builder: (joinBuilder, parentComposers) => $$MeansTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.means, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter sessionsRefs(
+      ComposableFilter Function($$SessionsTableFilterComposer f) f) {
+    final $$SessionsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.sessions,
+        getReferencedColumn: (t) => t.baseWord,
+        builder: (joinBuilder, parentComposers) =>
+            $$SessionsTableFilterComposer(ComposerState(
+                $state.db, $state.db.sessions, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+
+  ComposableFilter examplesRefs(
+      ComposableFilter Function($$ExamplesTableFilterComposer f) f) {
+    final $$ExamplesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.examples,
+        getReferencedColumn: (t) => t.baseWord,
+        builder: (joinBuilder, parentComposers) =>
+            $$ExamplesTableFilterComposer(ComposerState(
+                $state.db, $state.db.examples, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+}
+
+class $$WordsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $WordsTable> {
+  $$WordsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get important => $state.composableBuilder(
+      column: $state.table.important,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get mean => $state.composableBuilder(
+      column: $state.table.mean,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get baseForm => $state.composableBuilder(
+      column: $state.table.baseForm,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get rootWordID => $state.composableBuilder(
+      column: $state.table.rootWordID,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$LanguagesTableOrderingComposer get baseLang {
+    final $$LanguagesTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableOrderingComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$SynonymsTableInsertCompanionBuilder = SynonymsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseWord,
+  required int synonymWord,
+  required String name,
+  required int baseLang,
+  required String translatedName,
+});
+typedef $$SynonymsTableUpdateCompanionBuilder = SynonymsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseWord,
+  Value<int> synonymWord,
+  Value<String> name,
+  Value<int> baseLang,
+  Value<String> translatedName,
+});
+
+class $$SynonymsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SynonymsTable,
+    Synonym,
+    $$SynonymsTableFilterComposer,
+    $$SynonymsTableOrderingComposer,
+    $$SynonymsTableProcessedTableManager,
+    $$SynonymsTableInsertCompanionBuilder,
+    $$SynonymsTableUpdateCompanionBuilder> {
+  $$SynonymsTableTableManager(_$AppDatabase db, $SynonymsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$SynonymsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$SynonymsTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$SynonymsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseWord = const Value.absent(),
+            Value<int> synonymWord = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<int> baseLang = const Value.absent(),
+            Value<String> translatedName = const Value.absent(),
+          }) =>
+              SynonymsCompanion(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            synonymWord: synonymWord,
+            name: name,
+            baseLang: baseLang,
+            translatedName: translatedName,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseWord,
+            required int synonymWord,
+            required String name,
+            required int baseLang,
+            required String translatedName,
+          }) =>
+              SynonymsCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            synonymWord: synonymWord,
+            name: name,
+            baseLang: baseLang,
+            translatedName: translatedName,
+          ),
+        ));
+}
+
+class $$SynonymsTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $SynonymsTable,
+    Synonym,
+    $$SynonymsTableFilterComposer,
+    $$SynonymsTableOrderingComposer,
+    $$SynonymsTableProcessedTableManager,
+    $$SynonymsTableInsertCompanionBuilder,
+    $$SynonymsTableUpdateCompanionBuilder> {
+  $$SynonymsTableProcessedTableManager(super.$state);
+}
+
+class $$SynonymsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $SynonymsTable> {
+  $$SynonymsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get translatedName => $state.composableBuilder(
+      column: $state.table.translatedName,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$WordsTableFilterComposer get baseWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$WordsTableFilterComposer get synonymWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.synonymWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$LanguagesTableFilterComposer get baseLang {
+    final $$LanguagesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableFilterComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$SynonymsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $SynonymsTable> {
+  $$SynonymsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get translatedName => $state.composableBuilder(
+      column: $state.table.translatedName,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$WordsTableOrderingComposer get baseWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$WordsTableOrderingComposer get synonymWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.synonymWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$LanguagesTableOrderingComposer get baseLang {
+    final $$LanguagesTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableOrderingComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$TranslatedWordsTableInsertCompanionBuilder = TranslatedWordsCompanion
+    Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseLang,
+  required int targetLang,
+  required String name,
+  required String translatedName,
+});
+typedef $$TranslatedWordsTableUpdateCompanionBuilder = TranslatedWordsCompanion
+    Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseLang,
+  Value<int> targetLang,
+  Value<String> name,
+  Value<String> translatedName,
+});
+
+class $$TranslatedWordsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TranslatedWordsTable,
+    translatedwords,
+    $$TranslatedWordsTableFilterComposer,
+    $$TranslatedWordsTableOrderingComposer,
+    $$TranslatedWordsTableProcessedTableManager,
+    $$TranslatedWordsTableInsertCompanionBuilder,
+    $$TranslatedWordsTableUpdateCompanionBuilder> {
+  $$TranslatedWordsTableTableManager(
+      _$AppDatabase db, $TranslatedWordsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TranslatedWordsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TranslatedWordsTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$TranslatedWordsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseLang = const Value.absent(),
+            Value<int> targetLang = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> translatedName = const Value.absent(),
+          }) =>
+              TranslatedWordsCompanion(
+            id: id,
+            uuid: uuid,
+            baseLang: baseLang,
+            targetLang: targetLang,
+            name: name,
+            translatedName: translatedName,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseLang,
+            required int targetLang,
+            required String name,
+            required String translatedName,
+          }) =>
+              TranslatedWordsCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseLang: baseLang,
+            targetLang: targetLang,
+            name: name,
+            translatedName: translatedName,
+          ),
+        ));
+}
+
+class $$TranslatedWordsTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $TranslatedWordsTable,
+    translatedwords,
+    $$TranslatedWordsTableFilterComposer,
+    $$TranslatedWordsTableOrderingComposer,
+    $$TranslatedWordsTableProcessedTableManager,
+    $$TranslatedWordsTableInsertCompanionBuilder,
+    $$TranslatedWordsTableUpdateCompanionBuilder> {
+  $$TranslatedWordsTableProcessedTableManager(super.$state);
+}
+
+class $$TranslatedWordsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $TranslatedWordsTable> {
+  $$TranslatedWordsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get translatedName => $state.composableBuilder(
+      column: $state.table.translatedName,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$LanguagesTableFilterComposer get baseLang {
+    final $$LanguagesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableFilterComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$LanguagesTableFilterComposer get targetLang {
+    final $$LanguagesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.targetLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableFilterComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$TranslatedWordsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $TranslatedWordsTable> {
+  $$TranslatedWordsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get translatedName => $state.composableBuilder(
+      column: $state.table.translatedName,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$LanguagesTableOrderingComposer get baseLang {
+    final $$LanguagesTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableOrderingComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$LanguagesTableOrderingComposer get targetLang {
+    final $$LanguagesTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.targetLang,
+        referencedTable: $state.db.languages,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$LanguagesTableOrderingComposer(ComposerState(
+                $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$LeipzigDataFromIntranetTableInsertCompanionBuilder
+    = LeipzigDataFromIntranetCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseWord,
+  required String url,
+  required String html,
+  Value<String?> htmlOpen,
+  Value<String?> htmlExamples,
+  required String article,
+  required String KindOfWort,
+  required String wordOfBase,
+});
+typedef $$LeipzigDataFromIntranetTableUpdateCompanionBuilder
+    = LeipzigDataFromIntranetCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseWord,
+  Value<String> url,
+  Value<String> html,
+  Value<String?> htmlOpen,
+  Value<String?> htmlExamples,
+  Value<String> article,
+  Value<String> KindOfWort,
+  Value<String> wordOfBase,
+});
+
+class $$LeipzigDataFromIntranetTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LeipzigDataFromIntranetTable,
+    LeipzigDataFromIntranetData,
+    $$LeipzigDataFromIntranetTableFilterComposer,
+    $$LeipzigDataFromIntranetTableOrderingComposer,
+    $$LeipzigDataFromIntranetTableProcessedTableManager,
+    $$LeipzigDataFromIntranetTableInsertCompanionBuilder,
+    $$LeipzigDataFromIntranetTableUpdateCompanionBuilder> {
+  $$LeipzigDataFromIntranetTableTableManager(
+      _$AppDatabase db, $LeipzigDataFromIntranetTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$LeipzigDataFromIntranetTableFilterComposer(
+              ComposerState(db, table)),
+          orderingComposer: $$LeipzigDataFromIntranetTableOrderingComposer(
+              ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$LeipzigDataFromIntranetTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseWord = const Value.absent(),
+            Value<String> url = const Value.absent(),
+            Value<String> html = const Value.absent(),
+            Value<String?> htmlOpen = const Value.absent(),
+            Value<String?> htmlExamples = const Value.absent(),
+            Value<String> article = const Value.absent(),
+            Value<String> KindOfWort = const Value.absent(),
+            Value<String> wordOfBase = const Value.absent(),
+          }) =>
+              LeipzigDataFromIntranetCompanion(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            url: url,
+            html: html,
+            htmlOpen: htmlOpen,
+            htmlExamples: htmlExamples,
+            article: article,
+            KindOfWort: KindOfWort,
+            wordOfBase: wordOfBase,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseWord,
+            required String url,
+            required String html,
+            Value<String?> htmlOpen = const Value.absent(),
+            Value<String?> htmlExamples = const Value.absent(),
+            required String article,
+            required String KindOfWort,
+            required String wordOfBase,
+          }) =>
+              LeipzigDataFromIntranetCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            url: url,
+            html: html,
+            htmlOpen: htmlOpen,
+            htmlExamples: htmlExamples,
+            article: article,
+            KindOfWort: KindOfWort,
+            wordOfBase: wordOfBase,
+          ),
+        ));
+}
+
+class $$LeipzigDataFromIntranetTableProcessedTableManager
+    extends ProcessedTableManager<
+        _$AppDatabase,
+        $LeipzigDataFromIntranetTable,
+        LeipzigDataFromIntranetData,
+        $$LeipzigDataFromIntranetTableFilterComposer,
+        $$LeipzigDataFromIntranetTableOrderingComposer,
+        $$LeipzigDataFromIntranetTableProcessedTableManager,
+        $$LeipzigDataFromIntranetTableInsertCompanionBuilder,
+        $$LeipzigDataFromIntranetTableUpdateCompanionBuilder> {
+  $$LeipzigDataFromIntranetTableProcessedTableManager(super.$state);
+}
+
+class $$LeipzigDataFromIntranetTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $LeipzigDataFromIntranetTable> {
+  $$LeipzigDataFromIntranetTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get url => $state.composableBuilder(
+      column: $state.table.url,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get html => $state.composableBuilder(
+      column: $state.table.html,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get htmlOpen => $state.composableBuilder(
+      column: $state.table.htmlOpen,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get htmlExamples => $state.composableBuilder(
+      column: $state.table.htmlExamples,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get article => $state.composableBuilder(
+      column: $state.table.article,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get KindOfWort => $state.composableBuilder(
+      column: $state.table.KindOfWort,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get wordOfBase => $state.composableBuilder(
+      column: $state.table.wordOfBase,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$WordsTableFilterComposer get baseWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$LeipzigDataFromIntranetTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $LeipzigDataFromIntranetTable> {
+  $$LeipzigDataFromIntranetTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get url => $state.composableBuilder(
+      column: $state.table.url,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get html => $state.composableBuilder(
+      column: $state.table.html,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get htmlOpen => $state.composableBuilder(
+      column: $state.table.htmlOpen,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get htmlExamples => $state.composableBuilder(
+      column: $state.table.htmlExamples,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get article => $state.composableBuilder(
+      column: $state.table.article,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get KindOfWort => $state.composableBuilder(
+      column: $state.table.KindOfWort,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get wordOfBase => $state.composableBuilder(
+      column: $state.table.wordOfBase,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$WordsTableOrderingComposer get baseWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$MeansTableInsertCompanionBuilder = MeansCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseWord,
+  required String name,
+  Value<int> meansOrder,
+});
+typedef $$MeansTableUpdateCompanionBuilder = MeansCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseWord,
+  Value<String> name,
+  Value<int> meansOrder,
+});
+
+class $$MeansTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $MeansTable,
+    Mean,
+    $$MeansTableFilterComposer,
+    $$MeansTableOrderingComposer,
+    $$MeansTableProcessedTableManager,
+    $$MeansTableInsertCompanionBuilder,
+    $$MeansTableUpdateCompanionBuilder> {
+  $$MeansTableTableManager(_$AppDatabase db, $MeansTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$MeansTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$MeansTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $$MeansTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseWord = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<int> meansOrder = const Value.absent(),
+          }) =>
+              MeansCompanion(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            name: name,
+            meansOrder: meansOrder,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseWord,
+            required String name,
+            Value<int> meansOrder = const Value.absent(),
+          }) =>
+              MeansCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            name: name,
+            meansOrder: meansOrder,
+          ),
+        ));
+}
+
+class $$MeansTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $MeansTable,
+    Mean,
+    $$MeansTableFilterComposer,
+    $$MeansTableOrderingComposer,
+    $$MeansTableProcessedTableManager,
+    $$MeansTableInsertCompanionBuilder,
+    $$MeansTableUpdateCompanionBuilder> {
+  $$MeansTableProcessedTableManager(super.$state);
+}
+
+class $$MeansTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $MeansTable> {
+  $$MeansTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get meansOrder => $state.composableBuilder(
+      column: $state.table.meansOrder,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$WordsTableFilterComposer get baseWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$MeansTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $MeansTable> {
+  $$MeansTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get meansOrder => $state.composableBuilder(
+      column: $state.table.meansOrder,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$WordsTableOrderingComposer get baseWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$SessionsTableInsertCompanionBuilder = SessionsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseWord,
+  required String typesession,
+});
+typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseWord,
+  Value<String> typesession,
+});
+
+class $$SessionsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SessionsTable,
+    Session,
+    $$SessionsTableFilterComposer,
+    $$SessionsTableOrderingComposer,
+    $$SessionsTableProcessedTableManager,
+    $$SessionsTableInsertCompanionBuilder,
+    $$SessionsTableUpdateCompanionBuilder> {
+  $$SessionsTableTableManager(_$AppDatabase db, $SessionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$SessionsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$SessionsTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$SessionsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseWord = const Value.absent(),
+            Value<String> typesession = const Value.absent(),
+          }) =>
+              SessionsCompanion(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            typesession: typesession,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseWord,
+            required String typesession,
+          }) =>
+              SessionsCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            typesession: typesession,
+          ),
+        ));
+}
+
+class $$SessionsTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $SessionsTable,
+    Session,
+    $$SessionsTableFilterComposer,
+    $$SessionsTableOrderingComposer,
+    $$SessionsTableProcessedTableManager,
+    $$SessionsTableInsertCompanionBuilder,
+    $$SessionsTableUpdateCompanionBuilder> {
+  $$SessionsTableProcessedTableManager(super.$state);
+}
+
+class $$SessionsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $SessionsTable> {
+  $$SessionsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get typesession => $state.composableBuilder(
+      column: $state.table.typesession,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$WordsTableFilterComposer get baseWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$SessionsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $SessionsTable> {
+  $$SessionsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get typesession => $state.composableBuilder(
+      column: $state.table.typesession,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$WordsTableOrderingComposer get baseWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$ExamplesTableInsertCompanionBuilder = ExamplesCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required int baseWord,
+  required String name,
+  Value<String> goaltext,
+  Value<int> exampleOrder,
+});
+typedef $$ExamplesTableUpdateCompanionBuilder = ExamplesCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<int> baseWord,
+  Value<String> name,
+  Value<String> goaltext,
+  Value<int> exampleOrder,
+});
+
+class $$ExamplesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ExamplesTable,
+    Example,
+    $$ExamplesTableFilterComposer,
+    $$ExamplesTableOrderingComposer,
+    $$ExamplesTableProcessedTableManager,
+    $$ExamplesTableInsertCompanionBuilder,
+    $$ExamplesTableUpdateCompanionBuilder> {
+  $$ExamplesTableTableManager(_$AppDatabase db, $ExamplesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ExamplesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ExamplesTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$ExamplesTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int> baseWord = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> goaltext = const Value.absent(),
+            Value<int> exampleOrder = const Value.absent(),
+          }) =>
+              ExamplesCompanion(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            name: name,
+            goaltext: goaltext,
+            exampleOrder: exampleOrder,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required int baseWord,
+            required String name,
+            Value<String> goaltext = const Value.absent(),
+            Value<int> exampleOrder = const Value.absent(),
+          }) =>
+              ExamplesCompanion.insert(
+            id: id,
+            uuid: uuid,
+            baseWord: baseWord,
+            name: name,
+            goaltext: goaltext,
+            exampleOrder: exampleOrder,
+          ),
+        ));
+}
+
+class $$ExamplesTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $ExamplesTable,
+    Example,
+    $$ExamplesTableFilterComposer,
+    $$ExamplesTableOrderingComposer,
+    $$ExamplesTableProcessedTableManager,
+    $$ExamplesTableInsertCompanionBuilder,
+    $$ExamplesTableUpdateCompanionBuilder> {
+  $$ExamplesTableProcessedTableManager(super.$state);
+}
+
+class $$ExamplesTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $ExamplesTable> {
+  $$ExamplesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get goaltext => $state.composableBuilder(
+      column: $state.table.goaltext,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get exampleOrder => $state.composableBuilder(
+      column: $state.table.exampleOrder,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$WordsTableFilterComposer get baseWord {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$ExamplesTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $ExamplesTable> {
+  $$ExamplesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get goaltext => $state.composableBuilder(
+      column: $state.table.goaltext,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get exampleOrder => $state.composableBuilder(
+      column: $state.table.exampleOrder,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$WordsTableOrderingComposer get baseWord {
+    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.baseWord,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+typedef $$QuizGroupTableInsertCompanionBuilder = QuizGroupCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required String name,
+});
+typedef $$QuizGroupTableUpdateCompanionBuilder = QuizGroupCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<String> name,
+});
+
+class $$QuizGroupTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $QuizGroupTable,
+    QuizGroupData,
+    $$QuizGroupTableFilterComposer,
+    $$QuizGroupTableOrderingComposer,
+    $$QuizGroupTableProcessedTableManager,
+    $$QuizGroupTableInsertCompanionBuilder,
+    $$QuizGroupTableUpdateCompanionBuilder> {
+  $$QuizGroupTableTableManager(_$AppDatabase db, $QuizGroupTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$QuizGroupTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$QuizGroupTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$QuizGroupTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) =>
+              QuizGroupCompanion(
+            id: id,
+            uuid: uuid,
+            name: name,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required String name,
+          }) =>
+              QuizGroupCompanion.insert(
+            id: id,
+            uuid: uuid,
+            name: name,
+          ),
+        ));
+}
+
+class $$QuizGroupTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $QuizGroupTable,
+    QuizGroupData,
+    $$QuizGroupTableFilterComposer,
+    $$QuizGroupTableOrderingComposer,
+    $$QuizGroupTableProcessedTableManager,
+    $$QuizGroupTableInsertCompanionBuilder,
+    $$QuizGroupTableUpdateCompanionBuilder> {
+  $$QuizGroupTableProcessedTableManager(super.$state);
+}
+
+class $$QuizGroupTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $QuizGroupTable> {
+  $$QuizGroupTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ComposableFilter questionRefs(
+      ComposableFilter Function($$QuestionTableFilterComposer f) f) {
+    final $$QuestionTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.question,
+        getReferencedColumn: (t) => t.refQuizGroup,
+        builder: (joinBuilder, parentComposers) =>
+            $$QuestionTableFilterComposer(ComposerState(
+                $state.db, $state.db.question, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+}
+
+class $$QuizGroupTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $QuizGroupTable> {
+  $$QuizGroupTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+typedef $$QuestionTableInsertCompanionBuilder = QuestionCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  required String name,
+  required String answer,
+  required String example,
+  required int refQuizGroup,
+});
+typedef $$QuestionTableUpdateCompanionBuilder = QuestionCompanion Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<String> name,
+  Value<String> answer,
+  Value<String> example,
+  Value<int> refQuizGroup,
+});
+
+class $$QuestionTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $QuestionTable,
+    QuestionData,
+    $$QuestionTableFilterComposer,
+    $$QuestionTableOrderingComposer,
+    $$QuestionTableProcessedTableManager,
+    $$QuestionTableInsertCompanionBuilder,
+    $$QuestionTableUpdateCompanionBuilder> {
+  $$QuestionTableTableManager(_$AppDatabase db, $QuestionTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$QuestionTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$QuestionTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$QuestionTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> answer = const Value.absent(),
+            Value<String> example = const Value.absent(),
+            Value<int> refQuizGroup = const Value.absent(),
+          }) =>
+              QuestionCompanion(
+            id: id,
+            uuid: uuid,
+            name: name,
+            answer: answer,
+            example: example,
+            refQuizGroup: refQuizGroup,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required String name,
+            required String answer,
+            required String example,
+            required int refQuizGroup,
+          }) =>
+              QuestionCompanion.insert(
+            id: id,
+            uuid: uuid,
+            name: name,
+            answer: answer,
+            example: example,
+            refQuizGroup: refQuizGroup,
+          ),
+        ));
+}
+
+class $$QuestionTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $QuestionTable,
+    QuestionData,
+    $$QuestionTableFilterComposer,
+    $$QuestionTableOrderingComposer,
+    $$QuestionTableProcessedTableManager,
+    $$QuestionTableInsertCompanionBuilder,
+    $$QuestionTableUpdateCompanionBuilder> {
+  $$QuestionTableProcessedTableManager(super.$state);
+}
+
+class $$QuestionTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $QuestionTable> {
+  $$QuestionTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get answer => $state.composableBuilder(
+      column: $state.table.answer,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get example => $state.composableBuilder(
+      column: $state.table.example,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$QuizGroupTableFilterComposer get refQuizGroup {
+    final $$QuizGroupTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.refQuizGroup,
+        referencedTable: $state.db.quizGroup,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$QuizGroupTableFilterComposer(ComposerState(
+                $state.db, $state.db.quizGroup, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class $$QuestionTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $QuestionTable> {
+  $$QuestionTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get answer => $state.composableBuilder(
+      column: $state.table.answer,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get example => $state.composableBuilder(
+      column: $state.table.example,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$QuizGroupTableOrderingComposer get refQuizGroup {
+    final $$QuizGroupTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.refQuizGroup,
+        referencedTable: $state.db.quizGroup,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$QuizGroupTableOrderingComposer(ComposerState(
+                $state.db, $state.db.quizGroup, joinBuilder, parentComposers)));
+    return composer;
+  }
+}
+
+class _$AppDatabaseManager {
+  final _$AppDatabase _db;
+  _$AppDatabaseManager(this._db);
+  $$LanguagesTableTableManager get languages =>
+      $$LanguagesTableTableManager(_db, _db.languages);
+  $$WordsTableTableManager get words =>
+      $$WordsTableTableManager(_db, _db.words);
+  $$SynonymsTableTableManager get synonyms =>
+      $$SynonymsTableTableManager(_db, _db.synonyms);
+  $$TranslatedWordsTableTableManager get translatedWords =>
+      $$TranslatedWordsTableTableManager(_db, _db.translatedWords);
+  $$LeipzigDataFromIntranetTableTableManager get leipzigDataFromIntranet =>
+      $$LeipzigDataFromIntranetTableTableManager(
+          _db, _db.leipzigDataFromIntranet);
+  $$MeansTableTableManager get means =>
+      $$MeansTableTableManager(_db, _db.means);
+  $$SessionsTableTableManager get sessions =>
+      $$SessionsTableTableManager(_db, _db.sessions);
+  $$ExamplesTableTableManager get examples =>
+      $$ExamplesTableTableManager(_db, _db.examples);
+  $$QuizGroupTableTableManager get quizGroup =>
+      $$QuizGroupTableTableManager(_db, _db.quizGroup);
+  $$QuestionTableTableManager get question =>
+      $$QuestionTableTableManager(_db, _db.question);
 }

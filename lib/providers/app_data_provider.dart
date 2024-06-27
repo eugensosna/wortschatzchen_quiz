@@ -3,6 +3,7 @@ import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
+import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 
 class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;
@@ -14,6 +15,9 @@ class AppDataProvider extends ChangeNotifier {
   List<SessionsGroupedByName> get sessionsByName => _sessions;
   String currentSession = "";
   List<Word> sessionByFilter = [];
+  List<Deck> _decks = [];
+
+  List<Deck> get decks => _decks;
 
   AppDataProvider(this._db) {
     translator = LeipzigTranslator(db: _db);
@@ -40,9 +44,14 @@ class AppDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateDecks() async {
+    _decks = await db.getQuestions();
+  }
+
   void updateAll() async {
     updateSessions();
     updateSessionByFilter();
+    updateDecks();
   }
 
   Future<String> translate(String input, {addtoBase = true}) async {
