@@ -20,6 +20,8 @@ class WordsList extends StatefulWidget {
 class WordsListState extends State<WordsList> {
   int count = 2;
   String currentSearch = "";
+  String unviewUnicode = "	";
+  Map<String, dynamic> searchCache = {};
   bool stateAutocomplit = false;
   bool isLoad = false;
   List<AutocompleteDataHelper> autoComplitData = [];
@@ -30,7 +32,7 @@ class WordsListState extends State<WordsList> {
   List<Word> listWords = [];
   List<AzWords> listAzWords = [];
   List<Word> orderedListWords = [];
-  ItemScrollController _scrollController = ItemScrollController();
+  final ItemScrollController _scrollController = ItemScrollController();
 
   @override
   void initState() {
@@ -45,7 +47,21 @@ class WordsListState extends State<WordsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Words')),
+      appBar: AppBar(
+        title: const Text('Words'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                searchCache.clear();
+                stateAutocomplit = true;
+                autoComplitData.clear();
+
+                setState(() {});
+              },
+              hoverColor: Colors.amber,
+              icon: const Icon(Icons.refresh))
+        ],
+      ),
       body: isLoad
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -91,18 +107,19 @@ class WordsListState extends State<WordsList> {
           List<AutocompleteDataHelper> autoComplitDataLoc = [];
 
           if (textToTest.isEmpty || textToTest.length <= 1) {
+            autoComplitData.clear();
+            searchCache.clear();
             return autoComplitDataLoc;
           }
 
           fillAutocompliteDelayed(textToTest);
           return autoComplitData;
-
-          
         },
         onSelected: (AutocompleteDataHelper item) async {
           // widget.talker.debug("onSelected ${item.name}");
           stateAutocomplit = true;
           autoComplitData.clear();
+          searchCache.clear();
           // debugPrint(item.name);
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(item.name);
@@ -114,12 +131,12 @@ class WordsListState extends State<WordsList> {
                 if (element.name == item.name) {
                   _scrollController.scrollTo(
                       index: index,
-                      duration: const Duration(milliseconds: 200));
+                      duration: const Duration(milliseconds: 100));
                   break;
                 }
               }
               Future.delayed(const Duration(milliseconds: 500), () {
-                // navigateToDetail(wordItem, "View");
+                navigateToDetail(wordItem, "View");
               });
             }
             // navigateToDetail(wordItem, "View ${wordItem.name}");
@@ -149,7 +166,12 @@ class WordsListState extends State<WordsList> {
             // textEditingController.value = AutocompleteDataHelper(
             //     name: "", isIntern: false, uuid: "") as TextEditingValue;
           }
-          if (textEditingController.text.contains("+ ")) {}
+          if (textEditingController.text.contains(unviewUnicode)) {
+            widget.talker.verbose("""
+fieldViewBuilder contains + ${textEditingController.text}""");
+            textEditingController.text = "";
+            autoComplitData.clear();
+          }
           return TextFormField(
             autofocus: true,
             focusNode: focusNode,
@@ -157,7 +179,9 @@ class WordsListState extends State<WordsList> {
             onFieldSubmitted: (value) {
               onFieldSubmitted();
             },
-            decoration: const InputDecoration(hoverColor: Colors.black38),
+            decoration: const InputDecoration(
+              hoverColor: Colors.black38,
+            ),
           );
         },
       ),
@@ -169,37 +193,56 @@ class WordsListState extends State<WordsList> {
   }
 
   void fillAutocompliteDelayed(String textToSearch) {
+    if (searchCache.containsKey(textToSearch)) {
+      return;
+    }
     if (currentSearch == textToSearch) {
     } else {
       if (textToSearch.isEmpty) {
         autoComplitData.clear();
       } else {
-        Future.delayed(Duration(seconds: 1), () async {
-          currentSearch = textToSearch;
+        widget.talker.verbose(
+            "delay fillAutocompliteDelayed $textToSearch current $currentSearch");
+        currentSearch = textToSearch;
+
+        Future.delayed(const Duration(seconds: 1), () async {
+          widget.talker.verbose(
+              "start fillAutocompliteDelayed $textToSearch current $currentSearch");
+
+          autoComplitData = [];
           if (currentSearch.isEmpty) {
             autoComplitData.clear();
             return;
           }
+          if (searchCache.containsKey(currentSearch)) {
+            autoComplitData = searchCache[currentSearch];
+            widget.talker.verbose(
+                "fillAutocompliteDelayed  found $textToSearch in cache ${autoComplitData.length}");
+            return;
+          }
+          var toSearch = currentSearch;
 
-          var leipzig = LeipzigWord(currentSearch, widget.db, widget.talker);
-          var autoComplitDataLoc =
-              await leipzig.getAutocompleteLocal(currentSearch);
+          if (toSearch.startsWith("+ ")) {
+            toSearch = toSearch.replaceFirst("+ ", "");
+          }
 
-          var autoComplitDataExt = await leipzig.getAutocomplete(currentSearch);
+          var leipzig = LeipzigWord(toSearch, widget.db, widget.talker);
+          var autoComplitDataLoc = await leipzig.getAutocompleteLocal(toSearch);
+
+          var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
           var autoComplitDataVerb =
-              await leipzig.getAutocompleteVerbForm(currentSearch);
+              await leipzig.getAutocompleteVerbForm(toSearch);
 
           autoComplitDataLoc.addAll(autoComplitDataExt);
           autoComplitDataLoc.addAll(autoComplitDataVerb);
           autoComplitData = autoComplitDataLoc.toList();
-          var element = autoComplitData
-              .firstWhere((element) => element.name == currentSearch);
-          if (element == null) {
-            autoComplitData.insert(
-                0,
-                AutocompleteDataHelper(
-                    name: currentSearch, isIntern: false, uuid: "uuid"));
-          }
+          var element =
+              autoComplitData.firstWhere((element) => element.name == toSearch);
+          searchCache[toSearch] = autoComplitData;
+          autoComplitData
+              .map((element) => searchCache[element.name] = autoComplitData);
+          widget.talker.verbose(
+              "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitData.length}");
         });
       }
     }
@@ -306,6 +349,8 @@ class WordsListState extends State<WordsList> {
       return WordsDetail(wordToEdit, title, widget.db, talker: widget.talker);
     }));
     autocompleteController.clear();
+    searchCache.clear();
+    stateAutocomplit = true;
     updateListWords().then((onValue) {
       var positionIndex = 0;
       listWords = onValue;
@@ -321,8 +366,6 @@ class WordsListState extends State<WordsList> {
       _scrollController.jumpTo(index: positionIndex);
       // Scrollable.ensureVisible(positionKey)
     });
-
-    if (result != null) {}
   }
 
   Future<List<Word>> getRecursiveWordTree(

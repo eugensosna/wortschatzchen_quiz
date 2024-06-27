@@ -60,7 +60,7 @@ class WordsDetailState extends State<WordsDetail> {
   double _progress = 0;
 
   fillSimpleTranslations(String input, Word editWord) async {
-    widget.talker.info("libre translator start  ${input}");
+    widget.talker.info("libre translator start  $input");
 
     // final lt = SimplyTranslator(EngineType.libre);
     _progress = 0.1;
@@ -86,7 +86,7 @@ class WordsDetailState extends State<WordsDetail> {
           from: inputLanguage,
           to: outputLanguage,
           instanceMode: InstanceMode.Random);
-      widget.talker.info("${translated.translations.text}");
+      widget.talker.info(translated.translations.text);
       descriptionController.text =
           encodeToHumanText(translated.translations.text);
       setState(() {
@@ -117,7 +117,7 @@ class WordsDetailState extends State<WordsDetail> {
       editWord = toUpdate;
     }
 
-    widget.talker.info("libre translator end ${input}");
+    widget.talker.info("libre translator end $input");
     await setBaseSettings(editWord);
     setState(() {
       isLoading = false;
@@ -308,12 +308,11 @@ class WordsDetailState extends State<WordsDetail> {
         child: Scaffold(
           appBar: AppBar(
             title: Text(textToAppBar),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () async {
-                moveToLastScreen();
-              },
-            ),
+            leading: buttonBack(),
+            actions: [
+              buttonBack() ?? Container(),
+            ],
+            
           ),
           body: Padding(
             padding: const EdgeInsets.all(8),
@@ -333,7 +332,7 @@ class WordsDetailState extends State<WordsDetail> {
                     ? InkWell(
                         child: Text(
                           "Base form :${editWord.baseForm}",
-                          style: TextStyle(color: Colors.blue),
+                          style: const TextStyle(color: Colors.blue),
                         ),
                         onTap: () {
                           viewWord(editWord.baseForm);
@@ -384,12 +383,12 @@ class WordsDetailState extends State<WordsDetail> {
                           )
                         : TextButton(
                             onPressed: _fillData,
-                            child: Text("Fill"),
+                            child: const Text("Fill"),
                           ),
                     // icon: const Icon(Icons.downloading)),
                     TextButton.icon(
                       onPressed: saveWord,
-                      label: Text("S"),
+                      label: const Text("S"),
                       icon: const Icon(Icons.save),
                     ),
                     IconButton(
@@ -410,12 +409,13 @@ class WordsDetailState extends State<WordsDetail> {
                           fillSimpleTranslations(
                               titleController.text, editWord);
                         },
-                        child: Text("Simp")),
+                        child: const Text("Simp")),
                     isLoading
                         ? CircularProgressIndicator(
                             value: _progress,
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.blue),
+                                const AlwaysStoppedAnimation<Color>(
+                                Colors.blue),
                           )
                         : Container(),
                   ],
@@ -431,6 +431,13 @@ class WordsDetailState extends State<WordsDetail> {
         ));
   }
 
+  Widget? buttonBack() {
+    return IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () async {
+          moveToLastScreen();
+        });
+  }
   DropdownButtonFormField<String> DroupDownSessionsChange() {
     return DropdownButtonFormField(
         value: currentWordSession,
@@ -803,6 +810,9 @@ class WordsDetailState extends State<WordsDetail> {
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
           .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
+    } on Exception catch (e) {
+      widget.talker.error("get data from Internet ${editWord.name}", e);
+    }
 
       // var baseForm = leipzigSynonyms.baseWord;
       // leipzigSynonyms.talker
@@ -811,9 +821,7 @@ class WordsDetailState extends State<WordsDetail> {
       // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
       leipzigSynonyms.translateNeededWords();
       await setBaseSettings(editWord);
-    } on Exception catch (e) {
-      widget.talker.error("get data from Internet ${editWord.name}", e);
-    }
+    
     listSynonyms = await db.getSynonymsByWord(editWord.id);
     listExamples = await db.getExamplesByWord(editWord.id);
     editWord = (await db.getWordById(editWord.id))!;

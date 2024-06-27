@@ -23,7 +23,7 @@ class ActiveQuizCard extends StatefulWidget {
 class _ActiveQuizCardState extends State<ActiveQuizCard>
     with TickerProviderStateMixin {
   GlobalKey cardKey = GlobalKey(debugLabel: 'card_key');
-  Offset? cardOffset = Offset(0.0, 0.0);
+  Offset? cardOffset = const Offset(0.0, 0.0);
   Offset? dragStart;
   Offset? dragPosition;
   Offset? slideCardBack;
@@ -38,7 +38,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
     super.initState();
     slideCardBackController = AnimationController(
       // vsync: this,
-      duration: Duration(milliseconds: 1000), vsync: this,
+      duration: const Duration(milliseconds: 1000), vsync: this,
     )
       ..addListener(() => setState(() {
             cardOffset = Offset.lerp(slideCardBack, const Offset(0.0, 0.0),
@@ -56,7 +56,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
 
     slideOutController = AnimationController(
       // vsync: this,
-      duration: Duration(milliseconds: 500), vsync: this,
+      duration: const Duration(milliseconds: 500), vsync: this,
     )
       ..addListener(() => setState(() {
             cardOffset = slideOutTween?.evaluate(slideOutController!);
@@ -68,12 +68,10 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             dragPosition = null;
             slideOutTween = null;
 
-            if (widget.onSlideOutComplete != null) {
-              widget.onSlideOutComplete(
-                  // TODO: slideDirection
-                  );
-            }
-          });
+            widget.onSlideOutComplete(
+                // TODO: slideDirection
+                );
+                    });
         }
       });
 
@@ -118,7 +116,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         child: Card(
           key: cardKey,
           color: isShowingAnswer ? Colors.pink : Colors.deepPurple[800],
-          shape: OutlineInputBorder(
+          shape: const OutlineInputBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(20.0),
               ),
@@ -134,8 +132,8 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
               alignment: Alignment.center,
               child: 
                   Text(
-                    isShowingAnswer ? "${card.answer}" : "${card.question}",
-                    style: TextStyle(
+                    isShowingAnswer ? card.answer : card.question,
+                    style: const TextStyle(
                       fontSize: 30.0,
                       color: Colors.white,
                     ),
@@ -227,12 +225,13 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
       return (pi / 8) *
           (cardOffset!.dx / screenWidth) *
           rotationCornerMultiplier;
-    } else
+    } else {
       return 0.0;
+    }
   }
 
   Offset? _rotationOrigin(dragBounds) =>
-      dragStart != null ? dragStart : const Offset(0.0, 0.0);
+      dragStart ?? const Offset(0.0, 0.0);
 
   void onAnswerChange() {
     if (widget.isDraggable) {

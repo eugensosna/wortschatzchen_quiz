@@ -123,7 +123,7 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
                 ),
                 IconButton(
                     onPressed: () => translate(context),
-                    icon: Icon(Icons.move_down)),
+                    icon: const Icon(Icons.move_down)),
                 TextField(
                   decoration: const InputDecoration(hintText: "Translated"),
                   controller: translateController,
@@ -218,7 +218,7 @@ class _FormExampleState extends State<FormExample> {
                 onPressed: () {
                   print("translate ");
                 },
-                icon: Icon(Icons.move_down)),
+                icon: const Icon(Icons.move_down)),
             TextField(
               decoration: const InputDecoration(hintText: "Translated"),
               controller: translateController,

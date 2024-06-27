@@ -3,7 +3,6 @@ import 'package:talker/talker.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
-import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 
 class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;

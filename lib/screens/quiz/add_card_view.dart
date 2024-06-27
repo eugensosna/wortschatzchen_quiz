@@ -11,8 +11,8 @@ class AddCardView extends StatefulWidget {
 }
 
 class _AddCardViewState extends State<AddCardView> {
-  final questionTextController = new TextEditingController();
-  final answerTextController = new TextEditingController();
+  final questionTextController = TextEditingController();
+  final answerTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class _AddCardViewState extends State<AddCardView> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: new Column(
+              child: Column(
                 children: <Widget>[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(15.0, 50.0, 15.0, 25.0),

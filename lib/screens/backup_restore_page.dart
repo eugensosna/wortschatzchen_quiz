@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -40,34 +39,34 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Backup, Restore"),
+        title: const Text("Backup, Restore"),
       ),
       body: Column(
         children: [
-          SizedBox(
+          const SizedBox(
             height: 15,
             width: 40,
           ),
           ElevatedButton(
-            child: Text("Save"),
+            child: const Text("Save"),
             onPressed: () {
               save();
             },
           ),
           ElevatedButton(
-            child: Text("Load"),
+            child: const Text("Load"),
             onPressed: () {
               load();
             },
           ),
           Container(
-            child: SizedBox(
+            child: const SizedBox(
               width: 50,
               height: 60,
             ),
           ),
           ElevatedButton(
-            child: Text("Fill data words"),
+            child: const Text("Fill data words"),
             onPressed: () {
               _fillWords();
             },

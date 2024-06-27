@@ -1,4 +1,4 @@
 String routeNameHome = "home";
-String routeBackupRestoreDataPage = "backuprestore";
+String routeBackupRestoreDataPage = "backupOrRestore";
 String routeDriftViewer = "driftViewDataBase";
 String routeTalkerView = "talkerView";

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
-import 'package:wortschatzchen_quiz/screens/quiz/activ_quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/add_card_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 
@@ -14,7 +13,7 @@ class DockEntryView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
             List<Deck> decks = MockDecks.fetchDecks();
             Navigator.pop(context, decks);
@@ -30,7 +29,7 @@ class DockEntryView extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Text(
-                  "${deck.deckTitle}",
+                  deck.deckTitle,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.black,

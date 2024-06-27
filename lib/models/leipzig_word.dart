@@ -56,7 +56,7 @@ class LeipzigWord {
       }
     }
 
-    talker.info("end translateNeededWords", this.talker);
+    talker.info("end translateNeededWords", talker);
     // return "ok";
   }
 
@@ -231,30 +231,30 @@ class LeipzigWord {
   }
 
   Future<LeipzigWord> getParseAllDataSpeed(
-      LeipzigWord wort, Word editWord, Function _onProgress) async {
+      LeipzigWord wort, Word editWord, Function onProgress) async {
     talker.info("start sync getLeipzigBaseFromInternet");
     wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
       
       var wortL = await wort.parseDataLeipzigWord(onValue);
       await wortL.saveBaseDataDB(wortL, db, editWord);
       talker.info("end then getLeipzigBaseFromInternet");
-      _onProgress(0.5);
+      onProgress(0.5);
     });
 
     talker.info("start getOpenthesaurusFromInternet");
-_onProgress(0.7);
+onProgress(0.7);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
-    _onProgress(0.8);
+    onProgress(0.8);
     await wort.saveRelationsDataDB(wort, db, editWord);
     talker.info("end getOpenthesaurusFromInternet");
 
     talker.info("start then getLeipzigExamplesFromInternet");
-_onProgress(0.8);
+onProgress(0.8);
     wort.getLeipzigExamplesFromInternet().then((onValue) {
       onValue.parseDataExamplesWord(onValue, editWord).then((onValue) async {
         await onValue.saveRelationsDataDB(onValue, db, editWord);
-        _onProgress(0.95);
+        onProgress(0.95);
         talker.info("end then getLeipzigExamplesFromInternet");
       });
     });
@@ -383,7 +383,7 @@ _onProgress(0.8);
 
     try {
       var responseOpen = await getOpenthesaurus(name, dio);
-      this.rawHTMLOpen = responseOpen;
+      rawHTMLOpen = responseOpen;
     } catch (e) {
       talker.error("getFromInternet Openthesaurus data $name", e);
     }
@@ -660,15 +660,15 @@ _onProgress(0.8);
       if (baseFormWord != null) {
         var leipzigRecursWord = LeipzigWord(wordToUpdate.baseForm, db, talker);
         leipzigRecursWord.applyRecursionBaseForm = false;
-        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord!.id);
+        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord.id);
         db.updateWord(toUpdate);
         talker.info(
-            "start parseRawHtmlData for BaseForm ${baseFormWord.name} from ${name}");
+            "start parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
         leipzigRecursWord
             .parseRawHtmlData(baseFormWord.name, baseFormWord)
             .then((onValue) {
           talker.info(
-              "end parseRawHtmlData for BaseForm ${baseFormWord!.name} from ${name}");
+              "end parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         });
         // parseRawHtmlData(onValue.name, toUpdate);
       }
@@ -742,9 +742,9 @@ class LeipzigTranslator {
     } else {
       int id = await db.into(db.translatedWords).insert(
           TranslatedWordsCompanion.insert(
-              baseLang: baseLang == null ? baseLangLocal!.id : baseLang!.id,
+              baseLang: baseLang == null ? baseLangLocal.id : baseLang!.id,
               targetLang: targetLanguage == null
-                  ? targetLanguageLocal!.id
+                  ? targetLanguageLocal.id
                   : targetLanguage!.id,
               name: input,
               translatedName: outputText));
@@ -848,12 +848,14 @@ class AutocompleteDataHelper {
   String name;
   final bool isIntern;
   final String uuid;
+  String unviewUnicode = "	";
+
 
   AutocompleteDataHelper(
       {required this.name, required this.isIntern, required this.uuid});
 
   @override
   String toString() {
-    return isIntern ? " $name" : "+ $name";
+    return isIntern ? " $name $unviewUnicode" : "+ $name $unviewUnicode";
   }
 }

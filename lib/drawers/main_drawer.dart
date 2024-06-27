@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
-import 'package:wortschatzchen_quiz/utils/constaints.dart';
+import 'package:wortschatzchen_quiz/utils/constants.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -33,12 +31,10 @@ class MainDrawer extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
-              var talker =
-                  Provider.of<AppDataProvider>(context, listen: false).talker;
               Navigator.pop(context);
               Navigator.pushNamed(context, routeTalkerView);
             },
-            title: Text("Talker"),
+            title: const Text("Talker"),
           )
         ],
       ),

@@ -43,7 +43,7 @@ class QuizPageState extends State<QuizPage> {
         child: Scaffold(
           appBar: AppBar(
             // backgroundColor: Colors.black,
-            bottom: TabBar(
+            bottom: const TabBar(
               tabs: <Widget>[
                 Tab(text: "Decks"),
                 Tab(
@@ -51,7 +51,7 @@ class QuizPageState extends State<QuizPage> {
                 )
               ],
             ),
-            title: Text("Quiz Cards"),
+            title: const Text("Quiz Cards"),
           ),
           body: TabBarView(children: <Widget>[
             DeckView(decks),

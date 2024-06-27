@@ -49,10 +49,10 @@ class MockDecks {
 
   static void addCard(String question, String answer, Deck deck) {
     QuizCard newCard = QuizCard(question: question, answer: answer);
-    decks.forEach((currentDeck) {
+    for (var currentDeck in decks) {
       if (currentDeck.hashCode == deck.hashCode) {
         currentDeck.cards.add(newCard);
       }
-    });
+    }
   }
 }

@@ -7,8 +7,7 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/backup_restore_page.dart';
 import 'package:wortschatzchen_quiz/screens/home_page.dart';
-import 'package:talker/talker.dart';
-import 'package:wortschatzchen_quiz/utils/constaints.dart';
+import 'package:wortschatzchen_quiz/utils/constants.dart';
 
 late AppDatabase db;
 void main() async {
@@ -91,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
       initialRoute: routeNameHome,
       routes: {
         routeNameHome: (context) => HomePage(talker: wtalker),
-        routeBackupRestoreDataPage: (context) => BackupRestorePage(),
+        routeBackupRestoreDataPage: (context) => const BackupRestorePage(),
         routeDriftViewer: (context) => DriftDbViewer(db),
         routeTalkerView: (context) => TalkerScreen(
             talker: wtalker,

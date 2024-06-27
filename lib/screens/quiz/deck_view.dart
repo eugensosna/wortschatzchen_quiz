@@ -5,7 +5,7 @@ import 'package:wortschatzchen_quiz/screens/quiz/dock_entry_view.dart';
 class DeckView extends StatefulWidget {
   final List<Deck> decks;
 
-  DeckView(this.decks, {super.key});
+  const DeckView(this.decks, {super.key});
 
   @override
   State<DeckView> createState() => _DeckViewState();
