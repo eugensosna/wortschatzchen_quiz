@@ -68,6 +68,7 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const MainDrawer(),
+      
       appBar: AppBar(
         title: Text(routeNameHome),
       ),

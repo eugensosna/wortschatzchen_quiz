@@ -131,12 +131,16 @@ class Sessions extends Table {
 ])
 class AppDatabase extends _$AppDatabase {
   String pathToFile = "";
-  AppDatabase() : super(_openConnection());
+  AppDatabase({this.pathToFile = ""}) : super(_openConnection(pathToFile));
   Talker talker = Talker();
 
   Future<String> getDataFilePath() async {
+    if (pathToFile.isNotEmpty) {
+      return pathToFile;
+    }
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'worts.sqlite'));
+    pathToFile = file.path;
     return file.path;
   }
 
@@ -166,7 +170,7 @@ class AppDatabase extends _$AppDatabase {
 
         await transaction(() async {
           await customStatement('PRAGMA foreign_keys = OFF');
-          
+
           if (to == 18) {
             await m.createTable(quizGroup);
             await m.createTable(question);
@@ -183,8 +187,6 @@ class AppDatabase extends _$AppDatabase {
 //            await customStatement(
 //                'ALTER TABLE examples RENAME COLUMN exampleOrder TO example_order;');
           }
-
-          
 
           // put your migration logic here
           //await customStatement('PRAGMA foreign_keys = ON');
@@ -224,13 +226,16 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection(String pathToFile) {
   return LazyDatabase(() async {
     // put the database file, called db.sqlite here, into the documents folder
     // for your app.
 
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'worts.sqlite'));
+    
+    final file = File(pathToFile.isNotEmpty
+        ? pathToFile
+        : p.join(dbFolder.path, 'worts.sqlite'));
 
     // Also work around limitations on old Android versions
     if (Platform.isAndroid) {

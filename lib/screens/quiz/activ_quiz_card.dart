@@ -116,7 +116,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         onTap: _flipCard,
         child: Card(
           key: cardKey,
-          color: isShowingAnswer ? Colors.pink : Colors.deepPurple[800],
+          color: isShowingAnswer ? Colors.pinkAccent : Colors.deepPurple[800],
           shape: const OutlineInputBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(20.0),

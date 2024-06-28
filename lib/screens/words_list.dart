@@ -180,8 +180,8 @@ fieldViewBuilder contains + ${textEditingController.text}""");
               onFieldSubmitted();
             },
             decoration: const InputDecoration(
-              hoverColor: Colors.black38,
-            ),
+                // hoverColor: Colors.black38,
+                ),
           );
         },
       ),
@@ -205,7 +205,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             "delay fillAutocompliteDelayed $textToSearch current $currentSearch");
         currentSearch = textToSearch;
 
-        Future.delayed(const Duration(seconds: 1), () async {
+        Future.delayed(const Duration(microseconds: 500), () async {
           widget.talker.verbose(
               "start fillAutocompliteDelayed $textToSearch current $currentSearch");
 
@@ -391,6 +391,9 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     // });
     // widget.talker.info("start get wordList");
     listWords = await widget.db.getOrdersWordList();
+    listWords.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
 
     Future<List<Word>> fListWords =
         widget.db.getOrdersWordList(); //db.select(db.words).get();

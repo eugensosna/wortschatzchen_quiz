@@ -27,7 +27,8 @@ class QuizPageState extends State<QuizPage> {
   @override
   void initState() {
     super.initState();
-    decks = Provider.of<AppDataProvider>(context, listen: false).decks;
+    Provider.of<AppDataProvider>(context, listen: false).updateDecks();
+    if (decks.isEmpty) {}
     _questions = sample_data
         .map(
           (question) => Question(
@@ -56,11 +57,13 @@ class QuizPageState extends State<QuizPage> {
             ),
             title: const Text("Quiz Cards"),
           ),
-          body: TabBarView(children: <Widget>[
+            body: Consumer<AppDataProvider>(
+              builder: (context, value, child) => TabBarView(children: <Widget>[
             DeckView(decks),
             const AddQuizGroup(),
           ]),
-        ));
+            )));
+          
     /*return Material(
       child: SizedBox(
         width: MediaQuery.of(context).size.width,

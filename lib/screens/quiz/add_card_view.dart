@@ -24,7 +24,7 @@ class _AddCardViewState extends State<AddCardView> {
         appBar: AppBar(
           automaticallyImplyLeading: true,
           title: const Text("Add Card"),
-          backgroundColor: Colors.black,
+          // backgroundColor: Colors.black,
         ),
         body: ListView(
           children: <Widget>[

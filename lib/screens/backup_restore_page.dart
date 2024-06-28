@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -69,6 +70,12 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             child: const Text("Fill data words"),
             onPressed: () {
               _fillWords();
+            },
+          ),
+          ElevatedButton(
+            child: const Text("Export words to json "),
+            onPressed: () {
+              exportToJson();
             },
           ),
         ],
@@ -144,5 +151,26 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   showMessage(String message) async {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void exportToJson() async {
+    Map<String, dynamic> resultExport = {};
+    var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      var dbToImport = DbHelper(pathToFile: file.path);
+      var lwords = await dbToImport.getOrdersWordList();
+      for (var item in lwords) {
+        await db.into(db.words).insert(WordsCompanion.insert(
+            name: item.name,
+            important: item.important,
+            description: item.description,
+            mean: item.mean,
+            baseForm: item.baseForm,
+            baseLang: item.baseLang,
+            rootWordID: item.rootWordID));
+      }
+    }
   }
 }

@@ -12,6 +12,9 @@ class SynonymsEntry {
 }
 
 class DbHelper extends AppDatabase {
+  String pathToFile = "";
+  DbHelper({this.pathToFile = ""}) : super();
+
   Future<Language?> getLangByShortName(String name) async {
     return (select(languages)..where((tbl) => tbl.shortName.equals(name)))
         .getSingleOrNull();

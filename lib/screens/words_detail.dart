@@ -100,10 +100,14 @@ class WordsDetailState extends State<WordsDetail> {
     } catch (e) {
       widget.talker.error(" fillSimpleTranslations ", e);
     }
+
     try {
+      if (stringMeans.isNotEmpty) {
       await Provider.of<AppDataProvider>(context, listen: false)
-          .addMeansToBase(stringMeans, editWord);
+            .addMeansToBase(stringMeans, editWord);
+      }
       editWord = await db.getWordById(editWord.id) ?? editWord;
+
     } catch (e) {
       widget.talker.error(" fillSimpleTranslations write means ", e);
     }
@@ -111,7 +115,7 @@ class WordsDetailState extends State<WordsDetail> {
     setState(() {
       _progress = 0.9;
     });
-    if (editWord.description.isEmpty) {
+    if (descriptionController.text.isNotEmpty) {
       var toUpdate = editWord.copyWith(description: descriptionController.text);
       await db.updateWord(toUpdate);
       editWord = toUpdate;

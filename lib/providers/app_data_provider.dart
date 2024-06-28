@@ -31,13 +31,15 @@ class AppDataProvider extends ChangeNotifier {
     });
   }
 
-  void updateSessionByFilter({String current = ""}) async {
+  Future<List<Word>> updateSessionByFilter({String current = ""}) async {
     String filter = current.isEmpty ? currentSession : current;
     sessionByFilter = await db.getWordsBySession(filter);
     if (current.isNotEmpty) {
       currentSession = current;
     }
+
     notifyListeners();
+    return sessionByFilter;
   }
 
   void updateSessions() async {
@@ -45,8 +47,10 @@ class AppDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateDecks() async {
+  Future<List<Deck>> updateDecks() async {
     _decks = await db.getQuestions();
+    notifyListeners();
+    return decks;
   }
 
   void updateAll() async {

@@ -44,6 +44,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var wtalker = talker;
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      showSemanticsDebugger: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -81,6 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
     final wtalker = widget.talker;
     final db = Provider.of<AppDataProvider>(context, listen: false).db;
     return MaterialApp(
+      debugShowMaterialGrid: false,
+      showSemanticsDebugger: false,
       title: "Wortschatzchen",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
