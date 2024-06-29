@@ -101,10 +101,7 @@ class WordsDetailState extends State<WordsDetail> {
       widget.talker.info(translated.translations.text);
       descriptionController.text =
           encodeToHumanText(translated.translations.text);
-      setState(() {
-        semantic = "end Internet";
-        _progress = 0.5;
-      });
+      
       widget.talker.verbose("libre end Internet $input");
 
       if (translated.translations.definitions.isNotEmpty) {

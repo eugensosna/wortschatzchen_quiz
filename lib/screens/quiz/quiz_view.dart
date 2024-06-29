@@ -190,9 +190,13 @@ class _QuizViewState extends State<QuizView> {
       default:
         addition = 0;
     }
+    activeCardIndex = activeCardIndex + addition;
+    if (activeCardIndex > widget.deck.cards.length) {
+      activeCardIndex = widget.deck.cards.length;
+    }
 
     setState(() {
-      activeCardIndex = activeCardIndex + addition;
+      activeCardIndex = activeCardIndex;
     });
   }
 }

@@ -177,6 +177,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             autoComplitData.clear();
           }
           return TextFormField(
+            // keyboardAppearance: ,
             // autofocus: true,
             focusNode: focusNode,
             controller: textEditingController,
@@ -308,25 +309,28 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     );
   }
 
-  ListTile listWordView(Word itemWord) {
-    return ListTile(
-      isThreeLine: true,
-      leading: CircleAvatar(
-        backgroundColor: getKeyboardColor(itemWord),
-        child: const Icon(Icons.keyboard_arrow_right),
-      ),
-      title: Text(
-        itemWord.baseForm.isNotEmpty
-            ? "${itemWord.baseForm}, ${itemWord.name}"
-            : itemWord.name,
-        //style: const TextStyle(fontSize: 6),
-      ),
-      subtitle: Text("${itemWord.description} ${itemWord.mean}"),
-      onTap: () {
-        navigateToDetail(itemWord, "View");
+  Focus listWordView(Word itemWord) {
+    return Focus(
+      child: ListTile(
+        autofocus: true,
+        isThreeLine: true,
+        leading: CircleAvatar(
+          backgroundColor: getKeyboardColor(itemWord),
+          child: const Icon(Icons.keyboard_arrow_right),
+        ),
+        title: Text(
+          itemWord.baseForm.isNotEmpty
+              ? "${itemWord.baseForm}, ${itemWord.name}"
+              : itemWord.name,
+          //style: const TextStyle(fontSize: 6),
+        ),
+        subtitle: Text("${itemWord.description} ${itemWord.mean}"),
+        onTap: () {
+          navigateToDetail(itemWord, "View");
 
-        debugPrint("lit Tap");
-      },
+          debugPrint("lit Tap");
+        },
+      ),
     );
   }
 
