@@ -101,7 +101,7 @@ class WordsDetailState extends State<WordsDetail> {
       widget.talker.info(translated.translations.text);
       descriptionController.text =
           encodeToHumanText(translated.translations.text);
-      
+
       widget.talker.verbose("libre end Internet $input");
 
       if (translated.translations.definitions.isNotEmpty) {
@@ -109,7 +109,6 @@ class WordsDetailState extends State<WordsDetail> {
           stringMeans.add(encodeToHumanText(item.definition));
         }
       }
-
     } catch (e) {
       widget.talker.error(" fillSimpleTranslations ", e);
     }
@@ -130,7 +129,6 @@ class WordsDetailState extends State<WordsDetail> {
     }
     widget.talker.verbose(" fillSimpleTranslations write means ");
 
-
     setState(() {
       _progress = 0.9;
     });
@@ -148,9 +146,8 @@ class WordsDetailState extends State<WordsDetail> {
     });
     widget.talker.verbose("libre translator setbasesettinngs");
 
-    
     Provider.of<AppDataProvider>(context, listen: false).translateNeededWords();
-     setState(() {
+    setState(() {
       isLoadFast = false;
       _progress = 0;
     });
@@ -168,12 +165,11 @@ class WordsDetailState extends State<WordsDetail> {
       return translated;
     } catch (e) {
       widget.talker.error(" detail translateText $inputText", e);
-    } 
-
-     
-      // ignore: control_flow_in_finally
-      return "";
     }
+
+    // ignore: control_flow_in_finally
+    return "";
+  }
 
   Future<String> _getWordSession(Word wordItem) async {
     String result = getDefaultSessionName();
@@ -353,6 +349,13 @@ class WordsDetailState extends State<WordsDetail> {
                   child: TextField(
                       controller: titleController,
                       style: textStyle,
+                      onEditingComplete: () {
+                        if (editWord.name.isEmpty &&
+                            titleController.text.isNotEmpty) {
+                          fillSimpleTranslations(
+                              titleController.text, editWord);
+                        }
+                      },
                       decoration: InputDecoration(
                           label: const Text('Title'),
                           border: OutlineInputBorder(
@@ -951,8 +954,11 @@ class WordsDetailState extends State<WordsDetail> {
     }
   }
 
-  _saveToExamples(List<ReordableElement> elements) async {
+  _saveToExamples(List<ReordableElement>? elements) async {
     Example? elemExamples;
+    if (elements == null) {
+      return;
+    }
     //await db.deleteExamplesByWord(editWord);
     for (var (index, item) in elements.indexed) {
       if (item.id <= 0) {
@@ -979,7 +985,7 @@ class WordsDetailState extends State<WordsDetail> {
     setState(() {});
   }
 
-  Future<List<ReordableElement>> _showOrEditReordable(
+  Future<List<ReordableElement>>? _showOrEditReordable(
       BuildContext context, List<ReordableElement> elements) async {
     // var dbmeans = await db.getSynonymsByWord(editWord.id);
     // List<ReordableElement> orders = [];
@@ -987,7 +993,7 @@ class WordsDetailState extends State<WordsDetail> {
     //   orders.add(ReordableElement(
     //       id: 0, name: item.name, translate: item.translatedName, order: 0));
     // }
-    final List<ReordableElement> result =
+    var result =
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return ModalShowReordableView(listToView: elements);
     }));
@@ -1002,6 +1008,8 @@ class WordsDetailState extends State<WordsDetail> {
       BuildContext context, List<ReordableElement> listElements) async {
     Mean? element;
     var result = await _showOrEditReordable(context, listMeans);
+    result ??= listElements;
+    if (result == null) {}
     //await db.deleteMeansByWord(editWord);
     for (var (index, item) in result.indexed) {
       if (item.id <= 0) {

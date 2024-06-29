@@ -13,6 +13,8 @@ class ModalShowReordableView extends StatefulWidget {
 }
 
 class _ModalShowReordableViewState extends State<ModalShowReordableView> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   TextEditingController descriptionController = TextEditingController();
 
   TextEditingController translateController = TextEditingController();
@@ -22,9 +24,18 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
   }
 
   @override
+  void dispose() {
+    translateController.dispose();
+    descriptionController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     //listToView.length;
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: const Text("Reorder"),
         leading: IconButton(
@@ -140,7 +151,8 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
                 ),
                 child: const Text('Disable'),
                 onPressed: () {
-                  Navigator.of(context).pop(false);
+                  Navigator.of(_scaffoldKey.currentContext ?? context)
+                      .pop(false);
                 },
               ),
               TextButton(
