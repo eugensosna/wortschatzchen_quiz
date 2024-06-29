@@ -171,7 +171,7 @@ class DeckEntryView extends StatelessWidget {
       String answer = getValueByFieldName(answerField, item).toString();
       if (question.isNotEmpty && answer.isNotEmpty) {
         deck = await Provider.of<AppDataProvider>(context, listen: false)
-            .addQuizQuestion(question, answer, deck);
+            .addQuizQuestion(question, answer, deck, wordID: item.id);
       }
     }
   }

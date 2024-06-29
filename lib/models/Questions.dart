@@ -9,6 +9,14 @@ class Question {
       required this.question,
       required this.answer,
       required this.options});
+
+  static Question fromJson(Map<String, dynamic> json) {
+    return Question(
+        id: json["id"],
+        question: json["question"],
+        answer: json["answer"],
+        options: json["options"]);
+  }
 }
 
 const List sample_data = [

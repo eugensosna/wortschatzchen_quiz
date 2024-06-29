@@ -12,11 +12,15 @@ class SynonymsEntry {
 }
 
 class DbHelper extends AppDatabase {
+  @override
   String pathToFile = "";
-  DbHelper({this.pathToFile = ""}) : super();
+
+  DbHelper({this.pathToFile = ""}) : super(pathToFile: pathToFile);
 
   Future<Language?> getLangByShortName(String name) async {
-    return (select(languages)..where((tbl) => tbl.shortName.equals(name)))
+    return (select(languages)
+          ..where((tbl) => tbl.shortName.equals(name))
+          ..limit(1))
         .getSingleOrNull();
   }
 
@@ -116,49 +120,61 @@ class DbHelper extends AppDatabase {
   Future<Mean?> getMeanByNameAndWord(String name, int wordId) async {
     return (select(means)
           ..where((tbl) => Expression.and(
-              [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
+              [tbl.name.equals(name), tbl.baseWord.equals(wordId)]))
+          ..limit(1))
         .getSingleOrNull();
   }
 
   Future<Example?> getExampleByNameAndWord(String name, int wordId) async {
     return (select(examples)
           ..where((tbl) => Expression.and(
-              [tbl.name.equals(name), tbl.baseWord.equals(wordId)])))
+              [tbl.name.equals(name), tbl.baseWord.equals(wordId)]))
+          ..limit(1))
         .getSingleOrNull();
   }
 
   Future<Example?> getExampleByIdOrUuid(int id, {String uuid = ""}) async {
-    var selectRowBy =
-        (select(examples)..where((tbl) => Expression.and([tbl.id.equals(id)])));
+    var selectRowBy = (select(examples)
+      ..where((tbl) => Expression.and([tbl.id.equals(id)]))
+      ..limit(1));
     if (uuid.isNotEmpty) {
       selectRowBy = (select(examples)
-        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)])));
+        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)]))
+        ..limit(1));
     }
     return selectRowBy.getSingleOrNull();
   }
 
   Future<Mean?> getMeanByIdOrUuid(int id, {String uuid = ""}) async {
-    var selectRowBy =
-        (select(means)..where((tbl) => Expression.and([tbl.id.equals(id)])));
+    var selectRowBy = (select(means)
+      ..where((tbl) => Expression.and([tbl.id.equals(id)]))
+      ..limit(1));
     if (uuid.isNotEmpty) {
       selectRowBy = (select(means)
-        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)])));
+        ..where((tbl) => Expression.and([tbl.uuid.equals(uuid)]))
+        ..limit(1));
     }
     return selectRowBy.getSingleOrNull();
   }
 
   Future<Language?> getLangById(int id) {
-    return (select(languages)..where((tbl) => tbl.id.equals(id)))
+    return (select(languages)
+          ..where((tbl) => tbl.id.equals(id))
+          ..limit(1))
         .getSingleOrNull();
   }
 
   Future<translatedwords?> getTranslatedWordById(int id) {
-    return (select(translatedWords)..where((tbl) => tbl.id.equals(id)))
+    return (select(translatedWords)
+          ..where((tbl) => tbl.id.equals(id))
+          ..limit(1))
         .getSingleOrNull();
   }
 
   Future<Word?> getWordByName(String name) async {
-    return (select(words)..where((tbl) => tbl.name.equals(name)))
+    return (select(words)
+          ..where((tbl) => tbl.name.equals(name))
+          ..limit(1))
         .getSingleOrNull();
   }
 
@@ -167,11 +183,27 @@ class DbHelper extends AppDatabase {
   }
 
   Future<Word?> getWordById(int id) async {
-    return (select(words)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return (select(words)
+          ..where((tbl) => tbl.id.equals(id))
+          ..limit(1))
+        .getSingleOrNull();
   }
 
-  Future deleteWord(Word item) async {
-    return (delete(words)..where((tbl) => tbl.id.equals(item.id))).go();
+  Future<int> deleteWord(Word item) async {
+    await (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id))).go();
+    await (delete(examples)..where((tbl) => tbl.baseWord.equals(item.id))).go();
+    await (delete(leipzigDataFromIntranet)
+          ..where((tbl) => tbl.baseWord.equals(item.id)))
+        .go();
+    await (delete(leipzigDataFromIntranet)
+          ..where((tbl) => tbl.baseWord.equals(item.id)))
+        .go();
+    await (delete(means)..where((tbl) => tbl.baseWord.equals(item.id))).go();
+
+    await customStatement('PRAGMA foreign_keys = OFF');
+
+    (delete(words)..where((tbl) => tbl.id.equals(item.id))).go();
+    return 0;
   }
 
   Future deleteSession(Session item) async {
@@ -331,12 +363,12 @@ ORDER by words.name ; ''',
             ]))
           .get();
       List<QuizCard> cards = [];
-      for (var itemQuestenion in questions) {
+      for (var itemQuestion in questions) {
         cards.add(QuizCard(
-            question: itemQuestenion.name,
-            answer: itemQuestenion.answer,
-            example: itemQuestenion.example,
-            id: itemQuestenion.id));
+            question: itemQuestion.name,
+            answer: itemQuestion.answer,
+            example: itemQuestion.example,
+            id: itemQuestion.id));
       }
       result
           .add(Deck(deckTitle: itemGroup.name, cards: cards, id: itemGroup.id));
@@ -345,7 +377,8 @@ ORDER by words.name ; ''',
   }
 
   Future<QuestionData?> addQuestion(
-      String name, String answer, String example, int refQuizGroup) async {
+      String name, String answer, String example, int refQuizGroup,
+      {int refWord = 0}) async {
     var id = await into(question).insert(QuestionCompanion.insert(
         name: name,
         answer: answer,
@@ -353,10 +386,16 @@ ORDER by words.name ; ''',
         refQuizGroup: refQuizGroup));
     var result = await (select(question)..where((tbl) => tbl.id.equals(id)))
         .getSingleOrNull();
+    if (refWord > 0) {
+      var toUpdate = result?.copyWith(refWord: refWord);
+      update(question).replace(toUpdate!);
+      result = toUpdate;
+    }
     return result;
   }
 
-  Future<Deck?> getQuestionById(int id) async {
+  Future<Deck?> getQuestionById(
+      int id, int baseLangID, int targetLangID) async {
     Deck result;
     var quizGroupLoc = await (select(quizGroup)
           ..where((tbl) => tbl.id.equals(id))
@@ -374,12 +413,24 @@ ORDER by words.name ; ''',
             ]))
           .get();
       List<QuizCard> cards = [];
-      for (var itemQuestenion in questions) {
+      for (var itemQuestion in questions) {
+        var questionTranslate = await getTranslateString(
+            itemQuestion.name, baseLangID, targetLangID);
+        var answerTranslate = await getTranslateString(
+            itemQuestion.answer, baseLangID, targetLangID);
+        var exampleTranslate = await getTranslateString(
+            itemQuestion.example, baseLangID, targetLangID);
+        var word = await getWordById(itemQuestion.refWord);
+
         cards.add(QuizCard(
-            question: itemQuestenion.name,
-            answer: itemQuestenion.answer,
-            example: itemQuestenion.example,
-            id: itemQuestenion.id));
+            question: itemQuestion.name,
+            answer: itemQuestion.answer,
+            example: itemQuestion.example,
+            id: itemQuestion.id,
+            translatedAnswer: answerTranslate,
+            translatedQuestions: questionTranslate,
+            translatedExample: exampleTranslate,
+            word: word));
       }
       result =
           Deck(id: quizGroupLoc.id, deckTitle: quizGroupLoc.name, cards: cards);
@@ -388,6 +439,28 @@ ORDER by words.name ; ''',
     } else {
       return null;
     }
+  }
+
+  Future<String> getTranslateString(
+      String input, int baseLangID, int targetLangID) async {
+    String result = "";
+    if (input.isEmpty) {
+      return result;
+    }
+    var listTranslated =
+        await getTranslatedWord(input, baseLangID, targetLangID);
+    for (var item in listTranslated) {
+      if (item.translatedName.isNotEmpty) {
+        result = item.translatedName;
+        break;
+      }
+    }
+    var word = await getWordByName(input);
+    if (word != null) {
+      result = word.description;
+    }
+
+    return result;
   }
 }
 

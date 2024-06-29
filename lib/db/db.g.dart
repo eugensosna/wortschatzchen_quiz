@@ -2206,10 +2206,7 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   @override
   late final GeneratedColumn<int> baseWord = GeneratedColumn<int>(
       'base_word', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES words (id)'));
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _typesessionMeta =
       const VerificationMeta('typesession');
   @override
@@ -3000,6 +2997,14 @@ class $QuestionTable extends Question
   late final GeneratedColumn<String> example = GeneratedColumn<String>(
       'example', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _refWordMeta =
+      const VerificationMeta('refWord');
+  @override
+  late final GeneratedColumn<int> refWord = GeneratedColumn<int>(
+      'ref_word', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      clientDefault: () => 0);
   static const VerificationMeta _refQuizGroupMeta =
       const VerificationMeta('refQuizGroup');
   @override
@@ -3011,7 +3016,7 @@ class $QuestionTable extends Question
           GeneratedColumn.constraintIsAlways('REFERENCES quiz_group (id)'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, uuid, name, answer, example, refQuizGroup];
+      [id, uuid, name, answer, example, refWord, refQuizGroup];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3047,6 +3052,10 @@ class $QuestionTable extends Question
     } else if (isInserting) {
       context.missing(_exampleMeta);
     }
+    if (data.containsKey('ref_word')) {
+      context.handle(_refWordMeta,
+          refWord.isAcceptableOrUnknown(data['ref_word']!, _refWordMeta));
+    }
     if (data.containsKey('ref_quiz_group')) {
       context.handle(
           _refQuizGroupMeta,
@@ -3074,6 +3083,8 @@ class $QuestionTable extends Question
           .read(DriftSqlType.string, data['${effectivePrefix}answer'])!,
       example: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}example'])!,
+      refWord: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ref_word'])!,
       refQuizGroup: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}ref_quiz_group'])!,
     );
@@ -3091,6 +3102,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
   final String name;
   final String answer;
   final String example;
+  final int refWord;
   final int refQuizGroup;
   const QuestionData(
       {required this.id,
@@ -3098,6 +3110,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       required this.name,
       required this.answer,
       required this.example,
+      required this.refWord,
       required this.refQuizGroup});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3107,6 +3120,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
     map['name'] = Variable<String>(name);
     map['answer'] = Variable<String>(answer);
     map['example'] = Variable<String>(example);
+    map['ref_word'] = Variable<int>(refWord);
     map['ref_quiz_group'] = Variable<int>(refQuizGroup);
     return map;
   }
@@ -3118,6 +3132,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       name: Value(name),
       answer: Value(answer),
       example: Value(example),
+      refWord: Value(refWord),
       refQuizGroup: Value(refQuizGroup),
     );
   }
@@ -3131,6 +3146,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       name: serializer.fromJson<String>(json['name']),
       answer: serializer.fromJson<String>(json['answer']),
       example: serializer.fromJson<String>(json['example']),
+      refWord: serializer.fromJson<int>(json['refWord']),
       refQuizGroup: serializer.fromJson<int>(json['refQuizGroup']),
     );
   }
@@ -3143,6 +3159,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       'name': serializer.toJson<String>(name),
       'answer': serializer.toJson<String>(answer),
       'example': serializer.toJson<String>(example),
+      'refWord': serializer.toJson<int>(refWord),
       'refQuizGroup': serializer.toJson<int>(refQuizGroup),
     };
   }
@@ -3153,6 +3170,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           String? name,
           String? answer,
           String? example,
+          int? refWord,
           int? refQuizGroup}) =>
       QuestionData(
         id: id ?? this.id,
@@ -3160,6 +3178,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
         name: name ?? this.name,
         answer: answer ?? this.answer,
         example: example ?? this.example,
+        refWord: refWord ?? this.refWord,
         refQuizGroup: refQuizGroup ?? this.refQuizGroup,
       );
   @override
@@ -3170,6 +3189,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           ..write('name: $name, ')
           ..write('answer: $answer, ')
           ..write('example: $example, ')
+          ..write('refWord: $refWord, ')
           ..write('refQuizGroup: $refQuizGroup')
           ..write(')'))
         .toString();
@@ -3177,7 +3197,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, uuid, name, answer, example, refQuizGroup);
+      Object.hash(id, uuid, name, answer, example, refWord, refQuizGroup);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3187,6 +3207,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           other.name == this.name &&
           other.answer == this.answer &&
           other.example == this.example &&
+          other.refWord == this.refWord &&
           other.refQuizGroup == this.refQuizGroup);
 }
 
@@ -3196,6 +3217,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
   final Value<String> name;
   final Value<String> answer;
   final Value<String> example;
+  final Value<int> refWord;
   final Value<int> refQuizGroup;
   const QuestionCompanion({
     this.id = const Value.absent(),
@@ -3203,6 +3225,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     this.name = const Value.absent(),
     this.answer = const Value.absent(),
     this.example = const Value.absent(),
+    this.refWord = const Value.absent(),
     this.refQuizGroup = const Value.absent(),
   });
   QuestionCompanion.insert({
@@ -3211,6 +3234,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     required String name,
     required String answer,
     required String example,
+    this.refWord = const Value.absent(),
     required int refQuizGroup,
   })  : name = Value(name),
         answer = Value(answer),
@@ -3222,6 +3246,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     Expression<String>? name,
     Expression<String>? answer,
     Expression<String>? example,
+    Expression<int>? refWord,
     Expression<int>? refQuizGroup,
   }) {
     return RawValuesInsertable({
@@ -3230,6 +3255,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       if (name != null) 'name': name,
       if (answer != null) 'answer': answer,
       if (example != null) 'example': example,
+      if (refWord != null) 'ref_word': refWord,
       if (refQuizGroup != null) 'ref_quiz_group': refQuizGroup,
     });
   }
@@ -3240,6 +3266,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       Value<String>? name,
       Value<String>? answer,
       Value<String>? example,
+      Value<int>? refWord,
       Value<int>? refQuizGroup}) {
     return QuestionCompanion(
       id: id ?? this.id,
@@ -3247,6 +3274,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       name: name ?? this.name,
       answer: answer ?? this.answer,
       example: example ?? this.example,
+      refWord: refWord ?? this.refWord,
       refQuizGroup: refQuizGroup ?? this.refQuizGroup,
     );
   }
@@ -3269,6 +3297,9 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     if (example.present) {
       map['example'] = Variable<String>(example.value);
     }
+    if (refWord.present) {
+      map['ref_word'] = Variable<int>(refWord.value);
+    }
     if (refQuizGroup.present) {
       map['ref_quiz_group'] = Variable<int>(refQuizGroup.value);
     }
@@ -3283,6 +3314,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
           ..write('name: $name, ')
           ..write('answer: $answer, ')
           ..write('example: $example, ')
+          ..write('refWord: $refWord, ')
           ..write('refQuizGroup: $refQuizGroup')
           ..write(')'))
         .toString();
@@ -3707,19 +3739,6 @@ class $$WordsTableFilterComposer
         builder: (joinBuilder, parentComposers) => $$MeansTableFilterComposer(
             ComposerState(
                 $state.db, $state.db.means, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-
-  ComposableFilter sessionsRefs(
-      ComposableFilter Function($$SessionsTableFilterComposer f) f) {
-    final $$SessionsTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.sessions,
-        getReferencedColumn: (t) => t.baseWord,
-        builder: (joinBuilder, parentComposers) =>
-            $$SessionsTableFilterComposer(ComposerState(
-                $state.db, $state.db.sessions, joinBuilder, parentComposers)));
     return f(composer);
   }
 
@@ -4649,22 +4668,15 @@ class $$SessionsTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
+  ColumnFilters<int> get baseWord => $state.composableBuilder(
+      column: $state.table.baseWord,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get typesession => $state.composableBuilder(
       column: $state.table.typesession,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-
-  $$WordsTableFilterComposer get baseWord {
-    final $$WordsTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.baseWord,
-        referencedTable: $state.db.words,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
-            ComposerState(
-                $state.db, $state.db.words, joinBuilder, parentComposers)));
-    return composer;
-  }
 }
 
 class $$SessionsTableOrderingComposer
@@ -4680,22 +4692,15 @@ class $$SessionsTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
+  ColumnOrderings<int> get baseWord => $state.composableBuilder(
+      column: $state.table.baseWord,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get typesession => $state.composableBuilder(
       column: $state.table.typesession,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  $$WordsTableOrderingComposer get baseWord {
-    final $$WordsTableOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.baseWord,
-        referencedTable: $state.db.words,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => $$WordsTableOrderingComposer(
-            ComposerState(
-                $state.db, $state.db.words, joinBuilder, parentComposers)));
-    return composer;
-  }
 }
 
 typedef $$ExamplesTableInsertCompanionBuilder = ExamplesCompanion Function({
@@ -4985,6 +4990,7 @@ typedef $$QuestionTableInsertCompanionBuilder = QuestionCompanion Function({
   required String name,
   required String answer,
   required String example,
+  Value<int> refWord,
   required int refQuizGroup,
 });
 typedef $$QuestionTableUpdateCompanionBuilder = QuestionCompanion Function({
@@ -4993,6 +4999,7 @@ typedef $$QuestionTableUpdateCompanionBuilder = QuestionCompanion Function({
   Value<String> name,
   Value<String> answer,
   Value<String> example,
+  Value<int> refWord,
   Value<int> refQuizGroup,
 });
 
@@ -5021,6 +5028,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String> answer = const Value.absent(),
             Value<String> example = const Value.absent(),
+            Value<int> refWord = const Value.absent(),
             Value<int> refQuizGroup = const Value.absent(),
           }) =>
               QuestionCompanion(
@@ -5029,6 +5037,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             name: name,
             answer: answer,
             example: example,
+            refWord: refWord,
             refQuizGroup: refQuizGroup,
           ),
           getInsertCompanionBuilder: ({
@@ -5037,6 +5046,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             required String name,
             required String answer,
             required String example,
+            Value<int> refWord = const Value.absent(),
             required int refQuizGroup,
           }) =>
               QuestionCompanion.insert(
@@ -5045,6 +5055,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             name: name,
             answer: answer,
             example: example,
+            refWord: refWord,
             refQuizGroup: refQuizGroup,
           ),
         ));
@@ -5090,6 +5101,11 @@ class $$QuestionTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
+  ColumnFilters<int> get refWord => $state.composableBuilder(
+      column: $state.table.refWord,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$QuizGroupTableFilterComposer get refQuizGroup {
     final $$QuizGroupTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -5128,6 +5144,11 @@ class $$QuestionTableOrderingComposer
 
   ColumnOrderings<String> get example => $state.composableBuilder(
       column: $state.table.example,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get refWord => $state.composableBuilder(
+      column: $state.table.refWord,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

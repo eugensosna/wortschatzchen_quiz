@@ -106,6 +106,11 @@ class Question extends Table {
   TextColumn get name => text()();
   TextColumn get answer => text()();
   TextColumn get example => text()();
+  IntColumn get refWord => integer()
+      .clientDefault(
+        () => 0,
+      )
+      .references(Word, #id)();
   IntColumn get refQuizGroup => integer().references(QuizGroup, #id)();
 }
 
@@ -113,7 +118,7 @@ class Question extends Table {
 class Sessions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
-  IntColumn get baseWord => integer().references(Words, #id)();
+  IntColumn get baseWord => integer().references(Word, #id)();
   TextColumn get typesession => text()();
 }
 
@@ -149,7 +154,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -157,6 +162,13 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
+        if (to == 19) {
+          await m.database.customStatement(
+              """ ALTER TABLE "question" ADD COLUMN "ref_word" INTEGER NOT NULL DEFAULT 0""");
+          // await m.addColumn(question, question.refWord);
+          // await m.createTable(quizGroup);
+          // await m.createTable(question);
+        }
         // talker.info("start migrate");
         if (to == 18) {
           await m.createTable(quizGroup);
@@ -210,6 +222,7 @@ class AppDatabase extends _$AppDatabase {
         }
       },
       beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = OFF');
         // talker.info("start before open");
         if (details.wasCreated) {
           (await into(languages).insert(
@@ -232,7 +245,7 @@ LazyDatabase _openConnection(String pathToFile) {
     // for your app.
 
     final dbFolder = await getApplicationDocumentsDirectory();
-    
+
     final file = File(pathToFile.isNotEmpty
         ? pathToFile
         : p.join(dbFolder.path, 'worts.sqlite'));

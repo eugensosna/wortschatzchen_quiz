@@ -41,6 +41,8 @@ class WordsDetailState extends State<WordsDetail> {
 
   final translator = GoogleTranslator();
   bool isLoading = false;
+  bool isLoadFast = false;
+  String semantic = "";
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -63,7 +65,14 @@ class WordsDetailState extends State<WordsDetail> {
     widget.talker.info("libre translator start  $input");
 
     // final lt = SimplyTranslator(EngineType.libre);
-    _progress = 0.1;
+    widget.talker.verbose("libre save to base $input");
+
+    setState(() {
+      isLoadFast = true;
+      _progress = 0.1;
+      semantic = "save to base";
+    });
+    widget.talker.verbose("libre save to base $input");
     editWord = await saveWord();
 
     final st = SimplyTranslator(EngineType.google);
@@ -75,8 +84,11 @@ class WordsDetailState extends State<WordsDetail> {
     var eipzTranslator = LeipzigTranslator(db: db);
     eipzTranslator.updateLanguagesData();
     _progress += 0.2;
+    widget.talker.verbose("start Internet $input");
+
     setState(() {
       _progress += 0.2;
+      semantic = "start Internet";
     });
     List<String> stringMeans = [];
 
@@ -90,27 +102,37 @@ class WordsDetailState extends State<WordsDetail> {
       descriptionController.text =
           encodeToHumanText(translated.translations.text);
       setState(() {
-        _progress = 0.7;
+        semantic = "end Internet";
+        _progress = 0.5;
       });
+      widget.talker.verbose("libre end Internet $input");
+
       if (translated.translations.definitions.isNotEmpty) {
         for (var item in translated.translations.definitions) {
           stringMeans.add(encodeToHumanText(item.definition));
         }
       }
+
     } catch (e) {
       widget.talker.error(" fillSimpleTranslations ", e);
     }
+    widget.talker.verbose("libre save Means");
 
+    setState(() {
+      semantic = "save Means";
+      _progress = 0.7;
+    });
     try {
       if (stringMeans.isNotEmpty) {
-      await Provider.of<AppDataProvider>(context, listen: false)
+        await Provider.of<AppDataProvider>(context, listen: false)
             .addMeansToBase(stringMeans, editWord);
       }
       editWord = await db.getWordById(editWord.id) ?? editWord;
-
     } catch (e) {
       widget.talker.error(" fillSimpleTranslations write means ", e);
     }
+    widget.talker.verbose(" fillSimpleTranslations write means ");
+
 
     setState(() {
       _progress = 0.9;
@@ -121,13 +143,20 @@ class WordsDetailState extends State<WordsDetail> {
       editWord = toUpdate;
     }
 
-    widget.talker.info("libre translator end $input");
+    widget.talker.verbose("libre translator end $input");
     await setBaseSettings(editWord);
     setState(() {
-      isLoading = false;
-      _progress = 0.0;
+      isLoadFast = true;
+      _progress = 1.0;
     });
+    widget.talker.verbose("libre translator setbasesettinngs");
+
+    
     Provider.of<AppDataProvider>(context, listen: false).translateNeededWords();
+     setState(() {
+      isLoadFast = false;
+      _progress = 0;
+    });
   }
 
   Future<String> translateText(String inputText) async {
@@ -142,11 +171,12 @@ class WordsDetailState extends State<WordsDetail> {
       return translated;
     } catch (e) {
       widget.talker.error(" detail translateText $inputText", e);
-    } finally {
+    } 
+
+     
       // ignore: control_flow_in_finally
       return "";
     }
-  }
 
   Future<String> _getWordSession(Word wordItem) async {
     String result = getDefaultSessionName();
@@ -316,7 +346,6 @@ class WordsDetailState extends State<WordsDetail> {
             actions: [
               buttonBack() ?? Container(),
             ],
-            
           ),
           body: Padding(
             padding: const EdgeInsets.all(8),
@@ -387,46 +416,42 @@ class WordsDetailState extends State<WordsDetail> {
                           )
                         : TextButton(
                             onPressed: _fillData,
-                            child: const Text("Fill"),
+                            child: const Text("Full"),
                           ),
                     // icon: const Icon(Icons.downloading)),
                     TextButton.icon(
                       onPressed: saveWord,
-                      label: const Text("S"),
+                      label: const Text("Save"),
                       icon: const Icon(Icons.save),
                     ),
                     IconButton(
                         onPressed: goToVerbForm,
                         icon: const Icon(Icons.add_task)),
-                    IconButton(
-                        onPressed: () async {
-                          var result =
-                              await _showOrEditReordable(context, listSynonyms);
-                          await _saveToExamples(result);
-                        },
-                        icon: const Icon(Icons.edit)),
+
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            isLoading = true;
+                            isLoadFast = true;
                           });
                           fillSimpleTranslations(
                               titleController.text, editWord);
                         },
-                        child: const Text("Simp")),
-                    isLoading
+                        child: const Text("Fast")),
+                    isLoadFast
                         ? CircularProgressIndicator(
                             value: _progress,
-                            valueColor:
-                                const AlwaysStoppedAnimation<Color>(
+                            semanticsValue: "Download $_progress*100",
+                            valueColor: const AlwaysStoppedAnimation<Color>(
                                 Colors.blue),
                           )
                         : Container(),
                   ],
                 ),
-                isLoading
+                isLoading || isLoadFast
                     ? LinearProgressIndicator(
                         value: _progress,
+                        minHeight: 5,
+                        semanticsLabel: semantic,
                       )
                     : Container(),
               ],
@@ -442,6 +467,7 @@ class WordsDetailState extends State<WordsDetail> {
           moveToLastScreen();
         });
   }
+
   DropdownButtonFormField<String> DroupDownSessionsChange() {
     return DropdownButtonFormField(
         value: currentWordSession,
@@ -632,7 +658,7 @@ class WordsDetailState extends State<WordsDetail> {
           var result = await _showOrEditReordable(context, listExamples);
           await _saveToExamples(result);
           setState(() {
-            isLoading = true;
+            // isLoading = true;
           });
 
           db.getSynonymsByWord(editWord.id).then((value) {
@@ -642,9 +668,9 @@ class WordsDetailState extends State<WordsDetail> {
             // });
             db.getExamplesByWord(editWord.id).then((onValue) {
               listExamples = onValue;
-              setState(() {
-                isLoading = false;
-              });
+              // setState(() {
+              // isLoading = false;
+              // });
             });
           });
         },
@@ -711,9 +737,9 @@ class WordsDetailState extends State<WordsDetail> {
             // });
             db.getExamplesByWord(editWord.id).then((onValue) {
               listExamples = onValue;
-              setState(() {
-                isLoading = false;
-              });
+              // setState(() {
+              //   isLoading = false;
+              // });
             });
           });
         },
@@ -808,8 +834,7 @@ class WordsDetailState extends State<WordsDetail> {
         .warning("start _addUpdateWord- getFromInternet ${editWord.name}");
 
     try {
-      var leipzigTempWord =
-          await leipzigSynonyms.getParseAllDataSpeed(
+      var leipzigTempWord = await leipzigSynonyms.getParseAllDataSpeed(
           leipzigSynonyms, editWord, _progressbar);
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
@@ -818,14 +843,14 @@ class WordsDetailState extends State<WordsDetail> {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }
 
-      // var baseForm = leipzigSynonyms.baseWord;
-      // leipzigSynonyms.talker
-      //     .warning("start _addUpdateWord- updateDataDB $baseForm");
+    // var baseForm = leipzigSynonyms.baseWord;
+    // leipzigSynonyms.talker
+    //     .warning("start _addUpdateWord- updateDataDB $baseForm");
 
-      // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
-      leipzigSynonyms.translateNeededWords();
-      await setBaseSettings(editWord);
-    
+    // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, editWord);
+    leipzigSynonyms.translateNeededWords();
+    await setBaseSettings(editWord);
+
     listSynonyms = await db.getSynonymsByWord(editWord.id);
     listExamples = await db.getExamplesByWord(editWord.id);
     editWord = (await db.getWordById(editWord.id))!;
@@ -882,8 +907,7 @@ class WordsDetailState extends State<WordsDetail> {
 
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
 
-      leipzigSynonyms =
-          await leipzigSynonyms.getParseAllDataSpeed(
+      leipzigSynonyms = await leipzigSynonyms.getParseAllDataSpeed(
           leipzigSynonyms, editWord, _progressbar);
       // await leipzigSynonyms
       //     .getOpenthesaurusFromInternet()

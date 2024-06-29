@@ -31,9 +31,15 @@ class LeipzigWord {
   DbHelper db;
   bool serviceMode = false;
 
-  LeipzigTranslator translator = LeipzigTranslator(db: DbHelper());
+  late LeipzigTranslator translator;
 
-  LeipzigWord(this.name, this.db, this.talker);
+  LeipzigWord(
+    this.name,
+    this.db,
+    this.talker,
+  ) {
+    translator = LeipzigTranslator(db: db);
+  }
 
   void translateNeededWords() async {
     talker.info("start translateNeededWords");
@@ -234,7 +240,6 @@ class LeipzigWord {
       LeipzigWord wort, Word editWord, Function onProgress) async {
     talker.info("start sync getLeipzigBaseFromInternet");
     wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
-      
       var wortL = await wort.parseDataLeipzigWord(onValue);
       await wortL.saveBaseDataDB(wortL, db, editWord);
       talker.info("end then getLeipzigBaseFromInternet");
@@ -242,7 +247,7 @@ class LeipzigWord {
     });
 
     talker.info("start getOpenthesaurusFromInternet");
-onProgress(0.7);
+    onProgress(0.7);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
     onProgress(0.8);
@@ -250,7 +255,7 @@ onProgress(0.7);
     talker.info("end getOpenthesaurusFromInternet");
 
     talker.info("start then getLeipzigExamplesFromInternet");
-onProgress(0.8);
+    onProgress(0.8);
     wort.getLeipzigExamplesFromInternet().then((onValue) {
       onValue.parseDataExamplesWord(onValue, editWord).then((onValue) async {
         await onValue.saveRelationsDataDB(onValue, db, editWord);
@@ -638,6 +643,7 @@ onProgress(0.8);
     }
 
     await db.updateWord(wordToUpdate);
+    editWord = wordToUpdate.copyWith();
     if (wordToUpdate.baseForm.trim().isNotEmpty &&
         wordToUpdate.name != wordToUpdate.baseForm &&
         applyRecursionBaseForm) {
@@ -658,20 +664,29 @@ onProgress(0.8);
               translator.baseLang);
 
       if (baseFormWord != null) {
-        var leipzigRecursWord = LeipzigWord(wordToUpdate.baseForm, db, talker);
-        leipzigRecursWord.applyRecursionBaseForm = false;
-        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord.id);
+        var toUpdate = wordToUpdate.copyWith(
+            rootWordID: baseFormWord.id, baseForm: word.baseWord);
         db.updateWord(toUpdate);
+        editWord = toUpdate;
+      } else {
+        var leipzigRecursWord = LeipzigWord(editWord.baseForm, db, talker);
+
+        leipzigRecursWord.applyRecursionBaseForm = false;
+        
+        var baseFormWord = await leipzigRecursWord.addWordUpdateShort(
+            editWord.baseForm, "", editWord, translator.baseLang);
+        
         talker.info(
-            "start parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
+            "start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         leipzigRecursWord
-            .parseRawHtmlData(baseFormWord.name, baseFormWord)
+            .parseRawHtmlData(name, baseFormWord)
             .then((onValue) {
           talker.info(
               "end parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         });
-        // parseRawHtmlData(onValue.name, toUpdate);
       }
+        // parseRawHtmlData(onValue.name, toUpdate);
+
     }
     try {
       await saveRelationsDataDB(word, db, editWord);
@@ -701,13 +716,14 @@ onProgress(0.8);
           wordOfBase: baseWord);
       await db.updateLeipzigData(updatedEntry);
     } else {
-      await db.into(db.leipzigDataFromIntranet).insert(
-          LeipzigDataFromIntranetCompanion.insert(
-              baseWord: editWord.id,
-              url: url,
-              html: rawHTML,
-              article: article,
-              KindOfWort: kindOfWort,
+      await db
+          .into(db.leipzigDataFromIntranet)
+          .insert(LeipzigDataFromIntranetCompanion.insert(
+            baseWord: editWord.id,
+            url: url,
+            html: rawHTML,
+            article: article,
+            KindOfWort: kindOfWort,
             wordOfBase: baseWord,
           ));
     }
@@ -850,7 +866,6 @@ class AutocompleteDataHelper {
   final bool isIntern;
   final String uuid;
   String unviewUnicode = "	";
-
 
   AutocompleteDataHelper(
       {required this.name, required this.isIntern, required this.uuid});

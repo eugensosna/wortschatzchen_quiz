@@ -18,6 +18,7 @@ class WordsList extends StatefulWidget {
 }
 
 class WordsListState extends State<WordsList> {
+  
   int count = 2;
   String currentSearch = "";
   String unviewUnicode = "	";
@@ -51,6 +52,7 @@ class WordsListState extends State<WordsList> {
         title: const Text('Words'),
         actions: [
           IconButton(
+              // autofocus: ,
               onPressed: () {
                 searchCache.clear();
                 stateAutocomplit = true;
@@ -121,10 +123,13 @@ class WordsListState extends State<WordsList> {
           autoComplitData.clear();
           searchCache.clear();
           // debugPrint(item.name);
-          if (item.isIntern) {
-            Word? wordItem = await widget.db.getWordByName(item.name);
+          autocompleteController.clear();
+          var currentName = item.name;
+          item.name = "";
 
-            autocompleteController.clear();
+          setState(() {});
+          if (item.isIntern) {
+            Word? wordItem = await widget.db.getWordByName(currentName);
 
             if (wordItem != null) {
               for (var (index, element) in listWords.indexed) {
@@ -145,7 +150,7 @@ class WordsListState extends State<WordsList> {
                 Word(
                     id: -99,
                     uuid: "uuid",
-                    name: item.name,
+                    name: currentName,
                     important: "",
                     description: "",
                     mean: "",
@@ -154,7 +159,6 @@ class WordsListState extends State<WordsList> {
                     rootWordID: 0),
                 "Add ${item.name}");
           }
-          item.name = "";
         },
         fieldViewBuilder:
             (context, textEditingController, focusNode, onFieldSubmitted) {
@@ -173,7 +177,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             autoComplitData.clear();
           }
           return TextFormField(
-            autofocus: true,
+            // autofocus: true,
             focusNode: focusNode,
             controller: textEditingController,
             onFieldSubmitted: (value) {
@@ -262,7 +266,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         itemBuilder: (context, index) {
           Word wordItem = listWords[index];
           if (wordItem.rootWordID > 0) {}
-          return listItemWidget(wordItem);
+          return listItemWidget(wordItem, index);
         }
 
         //   Card(
@@ -274,7 +278,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         );
   }
 
-  GestureDetector listItemWidget(Word wordItem) {
+  GestureDetector listItemWidget(Word wordItem, int index) {
     return GestureDetector(
       // onDoubleTap: () {
       //   navigateToDetail(wordItem, "View ${wordItem.name}");
@@ -294,11 +298,10 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             ),
             onDismissed: (direction) {
               widget.talker.debug("Dismissible delete ${wordItem.name} ");
-              _delete(wordItem).then(
-                (value) {
-                  setState(() {});
-                },
-              );
+              setState(() {
+                listWords.removeAt(index);
+              });
+              _delete(wordItem);
             },
             child: listWordView(wordItem),
           )),
@@ -422,19 +425,22 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     }
   }
 
-  Future<int> _delete(Word itemWord) async {
-    widget.db.deleteWord(itemWord).then((value) async {
-      await updateListWords();
-      setState(() {});
-    });
+  void _delete(Word itemWord) async {
+    await widget.db.deleteWord(itemWord);
     for (var (index, item) in listWords.indexed) {
       if (item.id == itemWord) {
         listWords.removeAt(index);
         break;
       }
     }
-
-    return 0;
+    updateListWords().then((words) {
+      setState(() {
+        listWords = words;
+      });
+    });
+    setState(() {
+      listWords = listWords;
+    });
   }
 
   bottomNavigationBar(BuildContext context) {

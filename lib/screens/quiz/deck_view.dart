@@ -63,6 +63,10 @@ class _DeckViewState extends State<DeckView> {
 
 _navigateToSelectedDeckEntryScreen(
     BuildContext context, Deck currentDeck) async {
+  var currentDeckLoc =
+      await Provider.of<AppDataProvider>(context, listen: false)
+              .getQuizData(currentDeck) ??
+          currentDeck;
   var decks = await Navigator.push(context,
-      MaterialPageRoute(builder: (context) => DeckEntryView(currentDeck)));
+      MaterialPageRoute(builder: (context) => DeckEntryView(currentDeckLoc)));
 }

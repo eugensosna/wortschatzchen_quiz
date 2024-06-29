@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/drawers/main_drawer.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/image_to_text.dart';
 import 'package:wortschatzchen_quiz/screens/quiz_page.dart';
 import 'package:wortschatzchen_quiz/screens/sessions_dates.dart';
@@ -13,8 +15,6 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.talker});
   final Talker talker;
 
-
-
   @override
   State<StatefulWidget> createState() {
     return HomePageState();
@@ -24,12 +24,13 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   int count = 2;
   int selectedIndex = 2;
-  final DbHelper dbH = DbHelper();
+  // DbHelper dbH;
   List<Widget> tabBarPages = [];
 
   @override
   void initState() {
-    dbH.setTalker(widget.talker);
+    // dbH.setTalker(widget.talker);P
+    var dbH = Provider.of<AppDataProvider>(context, listen: false).db;
 
     tabBarPages = [
       QuizPage(db: dbH, talker: widget.talker),
@@ -48,13 +49,12 @@ class HomePageState extends State<HomePage> {
               TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
             },
           )),
-
       ImageToText(
         db: dbH,
         talker: widget.talker,
       )
     ];
-    
+
     super.initState();
   }
 
@@ -68,11 +68,9 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const MainDrawer(),
-      
       appBar: AppBar(
         title: Text(routeNameHome),
       ),
-      
       bottomNavigationBar: bottomNavigationBar(context),
       body: Center(
         child: tabBarPages.elementAt(selectedIndex),

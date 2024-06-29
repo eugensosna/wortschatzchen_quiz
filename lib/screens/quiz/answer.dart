@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class Answer extends ChangeNotifier {
   UserAnswer userAnswer = UserAnswer.undecided;
+  UserActions userAction = UserActions.undecided;
 
   void correct() {
     if (userAnswer == UserAnswer.undecided ||
@@ -26,4 +27,6 @@ class Answer extends ChangeNotifier {
   }
 }
 
-enum UserAnswer { undecided, correct, incorrect }
+enum UserAnswer { undecided, correct, incorrect, goBack }
+
+enum UserActions { left, right, upper, down, undecided }

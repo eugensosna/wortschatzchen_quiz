@@ -47,6 +47,14 @@ class AppDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Deck?> getQuizData(Deck currentDeck) async {
+    var result = await db.getQuestionById(
+        currentDeck.id, translator.baseLang!.id, translator.targetLanguage!.id);
+
+    notifyListeners();
+    return result;
+  }
+
   Future<List<Deck>> updateDecks() async {
     _decks = await db.getQuestions();
     notifyListeners();
@@ -121,7 +129,7 @@ class AppDataProvider extends ChangeNotifier {
   }
 
   Future<Deck> addQuizQuestion(String question, String answer, Deck deck,
-      {String example = ""}) async {
+      {String example = "", int wordID = 0}) async {
     var deckDB = await (db.select(db.quizGroup)
           ..where((tbl) => tbl.name.equals(deck.deckTitle)))
         .getSingleOrNull();

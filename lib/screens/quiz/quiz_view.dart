@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/activ_quiz_card.dart';
@@ -34,7 +35,7 @@ class _QuizViewState extends State<QuizView> {
         centerTitle: true,
         backgroundColor: Colors.amber[900],
       ),
-      backgroundColor: Colors.amber[700],
+      // backgroundColor: const Color.fromARGB(255, 15, 15, 14),
       body: Center(
         child: activeCardIndex == -1
             ? Column(
@@ -73,6 +74,10 @@ class _QuizViewState extends State<QuizView> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  Text(
+                    "Quiz name ${deck.deckTitle}",
+                    style: TextStyle(fontSize: 30),
+                  ),
                   Container(
                     alignment: Alignment.center,
                     margin: const EdgeInsets.all(20.0),
@@ -105,6 +110,7 @@ class _QuizViewState extends State<QuizView> {
           answer: userAnswer,
           isDraggable: currentCardIndex++ == activeCardIndex ? true : false,
           onSlideOutComplete: _onSlideOutComplete,
+          onSlideSwiped: _onSlideSwaped,
         );
         newCardDeck.add(x);
       }
@@ -136,7 +142,7 @@ class _QuizViewState extends State<QuizView> {
           userAnswer = newCardDeck[0].answer;
         }
         buttonText == "Correct" ? userAnswer.correct() : userAnswer.incorrect();
-        _onSlideOutComplete();
+        _onSlideOutComplete(userAnswer.userAnswer);
       },
       // shape: RoundedRectangleBorder(
       //     borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -157,9 +163,36 @@ class _QuizViewState extends State<QuizView> {
     );
   }
 
-  _onSlideOutComplete() {
+  _onSlideOutComplete(UserAnswer userAnswer) {
+    var addition = -1;
+    switch (userAnswer) {
+      case UserAnswer.goBack:
+        addition = 1;
+        break;
+      default:
+        addition = -1;
+    }
+
     setState(() {
-      activeCardIndex = activeCardIndex - 1;
+      activeCardIndex = activeCardIndex + addition;
+    });
+  }
+
+  _onSlideSwaped(UserActions status) {
+    var addition = -1;
+    switch (status) {
+      case UserActions.left:
+        addition = 1;
+        break;
+      case UserActions.right:
+        addition = -1;
+        break;
+      default:
+        addition = 0;
+    }
+
+    setState(() {
+      activeCardIndex = activeCardIndex + addition;
     });
   }
 }

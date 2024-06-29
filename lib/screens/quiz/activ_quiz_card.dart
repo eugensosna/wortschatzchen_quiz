@@ -3,18 +3,21 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/answer.dart';
+import 'package:wortschatzchen_quiz/widgets/navigate_to_detail.dart';
 
 class ActiveQuizCard extends StatefulWidget {
   final QuizCard card;
   final Answer answer;
   final bool isDraggable;
   final Function onSlideOutComplete;
+  final Function onSlideSwiped;
   const ActiveQuizCard(
       {super.key,
       required this.card,
       required this.answer,
       required this.isDraggable,
-      required this.onSlideOutComplete});
+      required this.onSlideOutComplete,
+      required this.onSlideSwiped});
 
   @override
   State<ActiveQuizCard> createState() => _ActiveQuizCardState();
@@ -33,6 +36,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
   UserAnswer? userAnswer;
   bool isShowingAnswer = false;
   bool needTranslate = false;
+  UserAnswer currentStatus = UserAnswer.undecided;
 
   @override
   void initState() {
@@ -52,6 +56,9 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             dragPosition = null;
             slideCardBack = null;
           });
+          if (status == AnimationStatus.forward) {
+            widget.onSlideSwiped(status);
+          }
         }
       });
 
@@ -69,9 +76,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             dragPosition = null;
             slideOutTween = null;
 
-            widget.onSlideOutComplete(
-                // TODO: slideDirection
-                );
+            widget.onSlideOutComplete(currentStatus);
           });
         }
       });
@@ -114,6 +119,11 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         onPanUpdate: _onPanUpdate,
         onPanEnd: _onPanEnd,
         onTap: _flipCard,
+        onDoubleTap: () {
+          if (card.word != null) {
+            navigateToDetail(context, card.word, "view");
+          }
+        },
         child: Card(
           key: cardKey,
           color: isShowingAnswer ? Colors.pinkAccent : Colors.deepPurple[800],
@@ -131,14 +141,29 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             child: Container(
                 height: screenSize.height / 2.0,
                 alignment: Alignment.center,
-                child: Text(
-                  isShowingAnswer ? card.answer : card.question,
-                  style: const TextStyle(
-                    fontSize: 30.0,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isShowingAnswer ? card.answer : card.question,
+                      style: const TextStyle(
+                        fontSize: 30.0,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                    ),
+                    needTranslate
+                        ? Text(
+                            isShowingAnswer
+                                ? card.translatedAnswer
+                                : card.translatedQuestions,
+                            style: const TextStyle(
+                              fontSize: 20.0,
+                              color: Colors.white,
+                            ))
+                        : Container(),
+                  ],
                 )),
           ),
         ),
@@ -191,11 +216,27 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
 
   void _onPanEnd(DragEndDetails details) {
     final dragVector = cardOffset! / cardOffset!.distance;
-    final isInCorrect = (cardOffset!.dx / context.size!.width) < -0.45;
-    final isCorrect = (cardOffset!.dx / context.size!.width) > 0.45;
+    final isInLeft = (cardOffset!.dx / context.size!.width) < -0.30;
+    final isCorrect = (cardOffset!.dx / context.size!.width) > 0.30;
+    final isUpper = (cardOffset!.dy / context.size!.height) < -0.30;
+    if (isInLeft) {
+      widget.answer.userAction = UserActions.left;
+    } else {
+      if (isCorrect) {
+        widget.answer.userAction = UserActions.right;
+      } else {
+        if (isUpper) {
+          widget.answer.userAction = UserActions.upper;
+        }
+      }
+    }
 
     setState(() {
-      if (isInCorrect || isCorrect) {
+      needTranslate = needTranslate && isUpper ? false : true;
+
+      if (isInLeft || isCorrect) {
+        currentStatus = isInLeft ? UserAnswer.goBack : UserAnswer.correct;
+
         slideOutTween = Tween(
           begin: cardOffset,
           end: dragVector * (2 * context.size!.width),
@@ -206,6 +247,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         slideCardBackController!.forward(from: 0.0);
       }
     });
+    widget.onSlideSwiped(widget.answer.userAction);
   }
 
   void _flipCard() {
