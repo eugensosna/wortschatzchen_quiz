@@ -118,16 +118,18 @@ class _AnimatedCardState extends State<AnimatedCard>
 
     return Container(
       color: Colors.grey,
-      child: ListView.builder(
-        itemCount: localMeans.length,
-        itemBuilder: (context, index) {
-          var item = localMeans.elementAt(index);
-          return ListTile(
-            subtitle: Text(item.translate),
-            title: Text(item.name),
-            isThreeLine: true,
-          );
-        },
+      child: Center(
+        child: ListView.builder(
+          itemCount: localMeans.length,
+          itemBuilder: (context, index) {
+            var item = localMeans.elementAt(index);
+            return ListTile(
+              subtitle: Text(item.translate),
+              title: Text(item.name),
+              isThreeLine: true,
+            );
+          },
+        ),
       ),
     );
   }

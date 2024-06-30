@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/answer.dart';
 import 'package:wortschatzchen_quiz/widgets/navigate_to_detail.dart';
@@ -37,6 +40,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
   bool isShowingAnswer = false;
   bool needTranslate = false;
   UserAnswer currentStatus = UserAnswer.undecided;
+  UserActions currentAction = UserActions.undecided;
 
   @override
   void initState() {
@@ -57,7 +61,6 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             slideCardBack = null;
           });
           if (status == AnimationStatus.forward) {
-            widget.onSlideSwiped(status);
           }
         }
       });
@@ -75,8 +78,10 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             dragStart = null;
             dragPosition = null;
             slideOutTween = null;
+            // if (currentAction != UserActions.undecided)
+            widget.onSlideSwiped(currentAction);
 
-            widget.onSlideOutComplete(currentStatus);
+            // widget.onSlideOutComplete(currentStatus);
           });
         }
       });
@@ -119,11 +124,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         onPanUpdate: _onPanUpdate,
         onPanEnd: _onPanEnd,
         onTap: _flipCard,
-        onDoubleTap: () {
-          if (card.word != null) {
-            navigateToDetail(context, card.word, "view");
-          }
-        },
+        onDoubleTap: _onDoubleTapCard,
         child: Card(
           key: cardKey,
           color: isShowingAnswer ? Colors.pinkAccent : Colors.deepPurple[800],
@@ -230,10 +231,10 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         }
       }
     }
+    currentAction = widget.answer.userAction;
+    needTranslate = needTranslate && isUpper ? false : true;
 
     setState(() {
-      needTranslate = needTranslate && isUpper ? false : true;
-
       if (isInLeft || isCorrect) {
         currentStatus = isInLeft ? UserAnswer.goBack : UserAnswer.correct;
 
@@ -247,7 +248,7 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
         slideCardBackController!.forward(from: 0.0);
       }
     });
-    widget.onSlideSwiped(widget.answer.userAction);
+    // widget.onSlideSwiped(widget.answer.userAction);
   }
 
   void _flipCard() {
@@ -286,6 +287,26 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
             break;
         }
       }
+    }
+  }
+
+  void _onDoubleTapCard() async {
+    Word? wordToView;
+    if (widget.card.word != null) {
+      wordToView = widget.card.word;
+      navigateToDetail(context, widget.card.word, "view");
+    } else {
+      final db = Provider.of<AppDataProvider>(context, listen: false).db;
+      var wort = await db.getWordByName(widget.card.question);
+
+      if (wort != null) {
+        wordToView = wort;
+      } else {
+        wordToView = await db.getWordByName(widget.card.answer);
+      }
+    }
+    if (wordToView != null) {
+      navigateToDetail(context, widget.card.word, "view");
     }
   }
 }

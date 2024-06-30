@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
@@ -10,6 +11,7 @@ class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;
   final Talker _talker = Talker();
   DbHelper get db => _db;
+  List<Word> _listWords = [];
   Talker get talker => _talker;
   late LeipzigTranslator translator;
   List<SessionsGroupedByName> _sessions = [];
@@ -17,6 +19,7 @@ class AppDataProvider extends ChangeNotifier {
   String currentSession = "";
   List<Word> sessionByFilter = [];
   List<Deck> _decks = [];
+  List<Word> get listWords => _listWords;
 
   List<Deck> get decks => _decks;
 
@@ -42,13 +45,34 @@ class AppDataProvider extends ChangeNotifier {
     return sessionByFilter;
   }
 
+  Future<List<Word>> updateListWords() async {
+    // widget.talker.info("start get wordList");
+    _listWords = await db.getOrdersWordList();
+    listWords.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+    notifyListeners();
+
+    return listWords;
+  }
+
   void updateSessions() async {
     _sessions = await db.getGroupedSessionsByName();
     notifyListeners();
   }
 
+  void deleteQuestion(Deck deck, QuizCard question) async {
+    var toDelete = await db.getQuestionById(question.id);
+    if (toDelete != null) {
+      db.deleteQuestion(toDelete);
+    }
+
+    deck.cards.removeWhere((e) => e.id == question.id);
+    updateDecks();
+  }
+
   Future<Deck?> getQuizData(Deck currentDeck) async {
-    var result = await db.getQuestionById(
+    var result = await db.getQuizById(
         currentDeck.id, translator.baseLang!.id, translator.targetLanguage!.id);
 
     notifyListeners();
@@ -65,6 +89,7 @@ class AppDataProvider extends ChangeNotifier {
     updateSessions();
     updateSessionByFilter();
     updateDecks();
+    updateListWords();
   }
 
   Future<String> translate(String input, {addtoBase = true}) async {
@@ -102,11 +127,11 @@ class AppDataProvider extends ChangeNotifier {
           .into(db.means)
           .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
     }
+    var toUpdate = await db.getWordById(editWord.id) ?? editWord;
     listOfBaseMeans = await db.getMeansByWord(editWord.id);
-    if (editWord.mean.isEmpty && listOfBaseMeans.isNotEmpty) {
-      var toUpdate = editWord.copyWith(mean: means[0]);
-      db.updateWord(toUpdate);
-      editWord = toUpdate;
+    if (toUpdate.mean.isEmpty && listOfBaseMeans.isNotEmpty) {
+      toUpdate = toUpdate.copyWith(mean: means[0]);
+      editWord = await db.updateWord(toUpdate);
     }
 
     updateAll();
@@ -126,6 +151,25 @@ class AppDataProvider extends ChangeNotifier {
     // result ??= ;
     notifyListeners();
     return result;
+  }
+
+  Future<QuizCard> updateQuestion(
+      QuizCard card, String answer, Deck deck, String question) async {
+    QuizCard toReturn =
+        QuizCard(question: question, answer: answer, id: card.id, example: "");
+
+    var questionDb = await db.getQuestionById(card.id);
+    if (questionDb != null) {
+      var toupdate = questionDb.copyWith(name: question, answer: answer);
+      db.update(db.question).replace(toupdate);
+      toReturn = QuizCard(
+          question: question,
+          answer: answer,
+          id: card.id,
+          example: toupdate.example);
+      await updateDecks();
+    }
+    return toReturn;
   }
 
   Future<Deck> addQuizQuestion(String question, String answer, Deck deck,

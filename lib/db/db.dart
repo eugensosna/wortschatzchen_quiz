@@ -34,6 +34,7 @@ class Words extends Table {
   TextColumn get baseForm => text()();
   IntColumn get baseLang => integer().references(Languages, #id)();
   IntColumn get rootWordID => integer()();
+  IntColumn get version => integer().nullable().clientDefault(() => 0)();
 }
 
 @DataClassName('translatedwords')
@@ -110,7 +111,7 @@ class Question extends Table {
       .clientDefault(
         () => 0,
       )
-      .references(Word, #id)();
+      .references(Words, #id)();
   IntColumn get refQuizGroup => integer().references(QuizGroup, #id)();
 }
 
@@ -118,7 +119,7 @@ class Question extends Table {
 class Sessions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
-  IntColumn get baseWord => integer().references(Word, #id)();
+  IntColumn get baseWord => integer().references(Words, #id)();
   TextColumn get typesession => text()();
 }
 
@@ -154,7 +155,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -166,6 +167,13 @@ class AppDatabase extends _$AppDatabase {
           await m.database.customStatement(
               """ ALTER TABLE "question" ADD COLUMN "ref_word" INTEGER NOT NULL DEFAULT 0""");
           // await m.addColumn(question, question.refWord);
+          // await m.createTable(quizGroup);
+          // await m.createTable(question);
+        }
+        if (to == 20) {
+          // await m.database.customStatement(
+          //     """ ALTER TABLE "words" ADD COLUMN "version" INTEGER NOT NULL DEFAULT 0""");
+          await m.addColumn(words, words.version);
           // await m.createTable(quizGroup);
           // await m.createTable(question);
         }

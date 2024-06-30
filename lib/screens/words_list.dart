@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:talker/talker.dart';
+import 'package:uuid/uuid.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
 
 class WordsList extends StatefulWidget {
@@ -18,7 +21,6 @@ class WordsList extends StatefulWidget {
 }
 
 class WordsListState extends State<WordsList> {
-  
   int count = 2;
   String currentSearch = "";
   String unviewUnicode = "	";
@@ -27,7 +29,7 @@ class WordsListState extends State<WordsList> {
   bool isLoad = false;
   List<AutocompleteDataHelper> autoComplitData = [];
   TextEditingController autocompleteController = TextEditingController();
-
+  final FocusNode _listViewFocusNode = FocusNode();
   int selectedIndex = 2;
 
   List<Word> listWords = [];
@@ -38,11 +40,13 @@ class WordsListState extends State<WordsList> {
   @override
   void initState() {
     super.initState();
-    updateListWords().then((value) {
-      setState(() {
-        isLoad = false;
-      });
-    });
+    updateListWords();
+  }
+
+  @override
+  void dispose() {
+    _listViewFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -64,29 +68,31 @@ class WordsListState extends State<WordsList> {
               icon: const Icon(Icons.refresh))
         ],
       ),
-      body: isLoad
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // SizedBox(
-                //   height: 40,
-                //   child: Container(
-                //     decoration: BoxDecoration(color: Colors.blue),
-                //   ),
-                // ),
-                autoCompliteWidget(),
-                Expanded(
-                  child: Container(
-                    color: Colors.green.shade100,
-                    child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        // child: getAzWordListView()),
-                        child: getWordsListView()),
-                  ),
-                )
-              ],
-            ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // SizedBox(
+          //   height: 40,
+          //   child: Container(
+          //     decoration: BoxDecoration(color: Colors.blue),
+          //   ),
+          // ),
+          autoCompliteWidget(),
+          Consumer<AppDataProvider>(
+            builder: (context, value, child) {
+              return Expanded(
+                child: Container(
+                  color: Colors.green.shade100,
+                  child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      // child: getAzWordListView()),
+                      child: getWordsListView(value.listWords)),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
 
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -105,16 +111,22 @@ class WordsListState extends State<WordsList> {
       //     border: Border.all(color: Colors.redAccent)),
       child: Autocomplete<AutocompleteDataHelper>(
         optionsBuilder: (textEditingValue) async {
-          final textToTest = textEditingValue.text.trim();
+          final textToSearch = textEditingValue.text.trim();
           List<AutocompleteDataHelper> autoComplitDataLoc = [];
 
-          if (textToTest.isEmpty || textToTest.length <= 1) {
+          if (textToSearch.isEmpty || textToSearch.length <= 1) {
             autoComplitData.clear();
             searchCache.clear();
             return autoComplitDataLoc;
           }
+          widget.talker.verbose("on Autocomplete $textToSearch");
 
-          fillAutocompliteDelayed(textToTest);
+          if (textToSearch.isNotEmpty && textToSearch.length <= 4) {
+            fillAutocompliteDelayed(textToSearch);
+          } else {
+            autoComplitData = await getAutoCompliteForKindeOfWord(textToSearch);
+          }
+
           return autoComplitData;
         },
         onSelected: (AutocompleteDataHelper item) async {
@@ -159,6 +171,7 @@ class WordsListState extends State<WordsList> {
                     rootWordID: 0),
                 "Add ${item.name}");
           }
+          _listViewFocusNode.requestFocus();
         },
         fieldViewBuilder:
             (context, textEditingController, focusNode, onFieldSubmitted) {
@@ -167,6 +180,7 @@ class WordsListState extends State<WordsList> {
           if (stateAutocomplit) {
             textEditingController.text = "";
             stateAutocomplit = false;
+            _listViewFocusNode.requestFocus();
             // textEditingController.value = AutocompleteDataHelper(
             //     name: "", isIntern: false, uuid: "") as TextEditingValue;
           }
@@ -179,6 +193,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
           return TextFormField(
             // keyboardAppearance: ,
             // autofocus: true,
+
             focusNode: focusNode,
             controller: textEditingController,
             onFieldSubmitted: (value) {
@@ -199,6 +214,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
 
   void fillAutocompliteDelayed(String textToSearch) {
     if (searchCache.containsKey(textToSearch)) {
+      autoComplitData = searchCache[textToSearch];
       return;
     }
     if (currentSearch == textToSearch) {
@@ -206,51 +222,113 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       if (textToSearch.isEmpty) {
         autoComplitData.clear();
       } else {
-        widget.talker.verbose(
-            "delay fillAutocompliteDelayed $textToSearch current $currentSearch");
+        // widget.talker.verbose(
+        //     "delay fillAutocompliteDelayed $textToSearch current $currentSearch");
         currentSearch = textToSearch;
 
         Future.delayed(const Duration(microseconds: 500), () async {
           widget.talker.verbose(
-              "start fillAutocompliteDelayed $textToSearch current $currentSearch");
+              "start delay fillAutocompliteDelayed $textToSearch current $currentSearch");
 
-          autoComplitData = [];
-          if (currentSearch.isEmpty) {
-            autoComplitData.clear();
-            return;
-          }
-          if (searchCache.containsKey(currentSearch)) {
-            autoComplitData = searchCache[currentSearch];
-            widget.talker.verbose(
-                "fillAutocompliteDelayed  found $textToSearch in cache ${autoComplitData.length}");
-            return;
-          }
-          var toSearch = currentSearch;
-
-          if (toSearch.startsWith("+ ")) {
-            toSearch = toSearch.replaceFirst("+ ", "");
-          }
-
-          var leipzig = LeipzigWord(toSearch, widget.db, widget.talker);
-          var autoComplitDataLoc = await leipzig.getAutocompleteLocal(toSearch);
-
-          var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
-          var autoComplitDataVerb =
-              await leipzig.getAutocompleteVerbForm(toSearch);
-
-          autoComplitDataLoc.addAll(autoComplitDataExt);
-          autoComplitDataLoc.addAll(autoComplitDataVerb);
-          autoComplitData = autoComplitDataLoc.toList();
-          var element =
-              autoComplitData.firstWhere((element) => element.name == toSearch);
-          searchCache[toSearch] = autoComplitData;
-          autoComplitData
-              .map((element) => searchCache[element.name] = autoComplitData);
-          widget.talker.verbose(
-              "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitData.length}");
+          autoComplitData = await getAutoCompliteForKindeOfWord(currentSearch);
+          setState(() {
+            autoComplitData = autoComplitData;
+          });
         });
       }
     }
+  }
+
+  Future<List<AutocompleteDataHelper>> getAutoCompliteForKindeOfWord(
+      String textToSearch) async {
+    widget.talker.verbose(
+        "start getAutoCompliteForKindeOfWord $textToSearch current $textToSearch");
+
+    List<AutocompleteDataHelper> autoComplitDataLocal = [];
+    if (textToSearch.isEmpty) {
+      autoComplitDataLocal.clear();
+      return autoComplitDataLocal;
+    }
+    if (searchCache.containsKey(textToSearch)) {
+      autoComplitDataLocal = searchCache[textToSearch];
+
+      var toReturn = autoComplitDataLocal.toList();
+      toReturn.firstWhere((element) => element.name == textToSearch,
+          orElse: () {
+        var newElement = AutocompleteDataHelper(
+            name: textToSearch, isIntern: false, uuid: Uuid().v4());
+        toReturn.insert(0, newElement);
+        return newElement;
+      });
+
+      widget.talker.verbose(
+          "CACHE fillAutocompliteDelayed  found $textToSearch in cache ${autoComplitData.length}");
+      return toReturn;
+    }
+    var toSearch = textToSearch;
+
+    if (toSearch.startsWith("+ ")) {
+      toSearch = toSearch.replaceFirst("+ ", "");
+    }
+
+    var leipzig = LeipzigWord(toSearch, widget.db, widget.talker);
+    var autoComplitDataLoc = await leipzig.getAutocompleteLocal(toSearch);
+
+    var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
+    var autoComplitDataVerb = await leipzig.getAutocompleteVerbForm(toSearch);
+
+    autoComplitDataLoc.addAll(autoComplitDataExt);
+    autoComplitDataLoc.addAll(autoComplitDataVerb);
+
+    autoComplitDataLocal = autoComplitDataLoc.toList();
+    autoComplitDataLocal.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+    autoComplitDataLocal.sort((a, b) {
+      if (a.name.startsWith(textToSearch) && !b.name.startsWith(textToSearch)) {
+        return -1;
+      } else {
+        if (!a.name.startsWith(textToSearch) &&
+            b.name.startsWith(textToSearch)) {
+          return 1;
+        } else {
+          return a.name.compareTo(b.name);
+        }
+      }
+    });
+
+    var element =
+        autoComplitDataLocal.firstWhere((element) => element.name == toSearch);
+    searchCache[toSearch] = autoComplitDataLocal.toList();
+
+    widget.talker.verbose(
+        "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitData.length}");
+    var toReturn = autoComplitDataLocal.toList();
+
+    final ids = toReturn.map((toElement) => toElement.name).toSet();
+    toReturn.retainWhere(
+      (element) {
+        if (ids.contains(element.name)) {
+          ids.remove(element.name);
+          return false;
+        } else {
+          return true;
+        }
+      },
+    );
+
+    toReturn.map((element) {
+      searchCache[element.name] = toReturn;
+      return element;
+    }).toList();
+
+    toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
+      var newElement = AutocompleteDataHelper(
+          name: toSearch, isIntern: false, uuid: Uuid().v4());
+      toReturn.insert(0, newElement);
+      return newElement;
+    });
+    return toReturn;
   }
 
   Decoration getIndexBarDecoration(Color color) {
@@ -260,14 +338,14 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         border: Border.all(color: Colors.grey[300]!, width: .5));
   }
 
-  ScrollablePositionedList getWordsListView() {
+  ScrollablePositionedList getWordsListView(List<Word> listWords) {
     return ScrollablePositionedList.builder(
         itemScrollController: _scrollController,
         itemCount: listWords.length,
         itemBuilder: (context, index) {
           Word wordItem = listWords[index];
           if (wordItem.rootWordID > 0) {}
-          return listItemWidget(wordItem, index);
+          return listItemWidget(wordItem, index, listWords);
         }
 
         //   Card(
@@ -279,7 +357,8 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         );
   }
 
-  GestureDetector listItemWidget(Word wordItem, int index) {
+  GestureDetector listItemWidget(
+      Word wordItem, int index, List<Word> listWords) {
     return GestureDetector(
       // onDoubleTap: () {
       //   navigateToDetail(wordItem, "View ${wordItem.name}");
@@ -311,6 +390,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
 
   Focus listWordView(Word itemWord) {
     return Focus(
+      focusNode: _listViewFocusNode,
       child: ListTile(
         autofocus: true,
         isThreeLine: true,
@@ -320,8 +400,10 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         ),
         title: Text(
           itemWord.baseForm.isNotEmpty
-              ? "${itemWord.baseForm}, ${itemWord.name}"
-              : itemWord.name,
+              ? "${itemWord.baseForm}, ${itemWord.name} ${itemWord.important}"
+              : itemWord.important.isNotEmpty
+                  ? " ${itemWord.name} ,${itemWord.important}"
+                  : itemWord.name,
           //style: const TextStyle(fontSize: 6),
         ),
         subtitle: Text("${itemWord.description} ${itemWord.mean}"),
@@ -337,9 +419,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    updateListWords().then((onValue) {
-      setState(() {});
-    });
+    updateListWords();
   }
 
   void onItemTapped(int index) {
@@ -367,9 +447,6 @@ fieldViewBuilder contains + ${textEditingController.text}""");
           break;
         }
       }
-      setState(() {
-        isLoad = false;
-      });
       _scrollController.jumpTo(index: positionIndex);
       // Scrollable.ensureVisible(positionKey)
     });
@@ -393,30 +470,8 @@ fieldViewBuilder contains + ${textEditingController.text}""");
   }
 
   Future<List<Word>> updateListWords() async {
-    // setState(() {
-    isLoad = true;
-    // });
-    // widget.talker.info("start get wordList");
-    listWords = await widget.db.getOrdersWordList();
-    listWords.sort(
-      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-    );
-
-    Future<List<Word>> fListWords =
-        widget.db.getOrdersWordList(); //db.select(db.words).get();
-    fListWords.then((value) async {
-      // listWords = value;
-      listAzWords = value.map((e) {
-        return AzWords(e, e.name, e.name.trim().substring(0, 1).toUpperCase());
-      }).toList();
-
-      setState(() {
-        // listWords = value;
-        isLoad = false;
-      });
-      // widget.talker.info("end get wordList");
-      return orderedListWords;
-    });
+    listWords = await Provider.of<AppDataProvider>(context, listen: false)
+        .updateListWords();
 
     return listWords;
   }

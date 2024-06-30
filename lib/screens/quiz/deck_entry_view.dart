@@ -9,6 +9,7 @@ import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 // import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/add_card_view.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/question_list_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/widgets/drop_down_sessions_list.dart';
@@ -100,9 +101,30 @@ class DeckEntryView extends StatelessWidget {
                           //       width: 2.0,
                           //     )),
                           child: const Text(
-                            "Add Card",
+                            "Add Question",
                             style: TextStyle(
                               fontSize: 40.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => QuestionListView(
+                                        questions: deck.cards,
+                                        deck: deck,
+                                      )),
+                            );
+                          },
+                          child: const Text(
+                            "View Questions",
+                            style: TextStyle(
+                              fontSize: 35.0,
                             ),
                           ),
                         ),
@@ -127,12 +149,20 @@ class DeckEntryView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ElevatedButton(
-                          onPressed: () async {
-                            fillQuestions(
-                                context, currentSessionName, "mean", "name");
-                          },
-                          child: const Text("Fill by sessions")),
+                      
+                      Container(
+                        margin: EdgeInsets.all(10.0),
+                        padding: EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                            border:
+                                Border(top: BorderSide(color: Colors.black))),
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              fillQuestions(
+                                  context, currentSessionName, "mean", "name");
+                            },
+                            child: const Text("Fill by sessions")),
+                      ),
                       DropDownMenuForSessions(
                         sessions: listSessions,
                         defaultValue: listSessions.isNotEmpty
@@ -178,6 +208,8 @@ class DeckEntryView extends StatelessWidget {
 
   dynamic getValueByFieldName(String fieldName, Db.Word item) {
     dynamic result = "";
+    var mapItem = item.toColumns(false);
+    result = mapItem[fieldName];
     switch (fieldName) {
       case "mean":
         result = item.mean;

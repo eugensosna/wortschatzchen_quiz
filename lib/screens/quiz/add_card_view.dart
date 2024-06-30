@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 
 class AddCardView extends StatefulWidget {
   final Deck deck;
-  const AddCardView({super.key, required this.deck});
+  final QuizCard? quizCard;
+  const AddCardView({super.key, required this.deck, this.quizCard});
 
   @override
   State<AddCardView> createState() => _AddCardViewState();
@@ -17,13 +19,25 @@ class _AddCardViewState extends State<AddCardView> {
   final answerTextController = TextEditingController();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.quizCard != null) {
+      questionTextController.text = widget.quizCard!.question;
+      answerTextController.text = widget.quizCard!.answer;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     Deck deck = widget.deck;
 
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: true,
-          title: const Text("Add Card"),
+        title: widget.quizCard == null
+            ? const Text("Add Card")
+            : const Text("View Card"),
           // backgroundColor: Colors.black,
         ),
         body: ListView(
@@ -45,7 +59,8 @@ class _AddCardViewState extends State<AddCardView> {
               ),
             ),
           ],
-        ));
+      ),
+    );
   }
 
 // custom Widgets
@@ -84,15 +99,29 @@ class _AddCardViewState extends State<AddCardView> {
     return ElevatedButton(
       // color: Colors.black,
       onPressed: () async {
-        var deck = await Provider.of<AppDataProvider>(context, listen: false)
-            .addQuizQuestion(questionTextController.text,
-                answerTextController.text, currenDeck);
+        var card = QuizCard(
+            question: questionTextController.text,
+            answer: answerTextController.text,
+            id: 0,
+            example: "");
+        if (widget.quizCard == null) {
+          var card = await Provider.of<AppDataProvider>(context, listen: false)
+              .addQuizQuestion(questionTextController.text,
+                  answerTextController.text, currenDeck);
 
-        // MockDecks.addCard(
-        //     questionTextController.text, answerTextController.text, deck);
-        questionTextController.text = "";
-        answerTextController.text = "";
-        Navigator.pop(context, deck);
+          // MockDecks.addCard(
+          //     questionTextController.text, answerTextController.text, deck);
+          questionTextController.text = "";
+          answerTextController.text = "";
+        } else {
+          card = await Provider.of<AppDataProvider>(context, listen: false)
+              .updateQuestion(widget.quizCard!, answerTextController.text,
+                  currenDeck, questionTextController.text);
+
+          // .addQuizQuestion(questionTextController.text,
+          // answerTextController.text, currenDeck);
+        }
+        Navigator.pop(context, card);
       },
       // textColor: Colors.white,
       // padding: EdgeInsets.fromLTRB(40.0, 15.0, 40.0, 15.0),

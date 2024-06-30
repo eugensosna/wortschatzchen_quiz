@@ -83,13 +83,17 @@ class SessionWordListState extends State<SessionWordList> {
                 SliverGrid.builder(
                   itemCount: listWords.length,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 500, crossAxisSpacing: 5),
+                            maxCrossAxisExtent: 300, crossAxisSpacing: 5),
                   itemBuilder: (context, index) {
                     Word element = listWords.elementAt(index);
-                    return AnimatedCard(
-                        editWord: element,
-                        db: widget.db,
-                        talker: widget.talker);
+                      return Container(
+                        child: Center(
+                          child: AnimatedCard(
+                              editWord: element,
+                              db: widget.db,
+                              talker: widget.talker),
+                        ),
+                      );
                     //  Card(
                     //   color: Colors.amber,
                     // );

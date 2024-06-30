@@ -134,8 +134,8 @@ class WordsDetailState extends State<WordsDetail> {
     });
     if (descriptionController.text.isNotEmpty) {
       var toUpdate = editWord.copyWith(description: descriptionController.text);
-      await db.updateWord(toUpdate);
-      editWord = toUpdate;
+      editWord = await db.updateWord(toUpdate);
+      // editWord = toUpdate;
     }
 
     widget.talker.verbose("libre translator end $input");
@@ -498,6 +498,8 @@ class WordsDetailState extends State<WordsDetail> {
 
   Future<Word> saveWord() async {
     Word result;
+
+    editWord = await db.getWordById(editWord.id) ?? editWord;
     editWord = editWord.copyWith(
         name: titleController.text,
         description: descriptionController.text,
@@ -810,8 +812,9 @@ class WordsDetailState extends State<WordsDetail> {
       Word toUpdate = wordToUpdate.copyWith();
 
       if (isChanched) {
-        await db.updateWord(toUpdate);
-        wordToUpdate = toUpdate;
+        wordToUpdate = await db.updateWord(toUpdate);
+
+        // wordToUpdate = toUpdate;
       }
     }
     return wordToUpdate;
@@ -1033,8 +1036,8 @@ class WordsDetailState extends State<WordsDetail> {
     }
     if (result.isNotEmpty && editWord.mean != result[0].name) {
       var toUpdate = editWord.copyWith(mean: result[0].name);
-      db.updateWord(toUpdate);
-      editWord = toUpdate;
+      editWord = await db.updateWord(toUpdate);
+      
     }
     // fillControllers(editWord);
     await setBaseSettings(editWord);

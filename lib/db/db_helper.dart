@@ -189,6 +189,13 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
+  Future<QuestionData?> getQuestionById(int id) async {
+    return (select(question)
+          ..where((tbl) => tbl.id.equals(id))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
   Future<int> deleteWord(Word item) async {
     await (delete(synonyms)..where((tbl) => tbl.baseWord.equals(item.id))).go();
     await (delete(examples)..where((tbl) => tbl.baseWord.equals(item.id))).go();
@@ -208,6 +215,13 @@ class DbHelper extends AppDatabase {
 
   Future deleteSession(Session item) async {
     return (delete(sessions)..where((tbl) => tbl.id.equals(item.id))).go();
+  }
+
+  void deleteQuestion(QuestionData? item) async {
+    if (item != null) {
+      (delete(question)..where((tbl) => tbl.id.equals(item.id))).go();
+    }
+    return;
   }
 
   Future deleteSynonymsByWord(Word item) async {
@@ -244,8 +258,22 @@ class DbHelper extends AppDatabase {
         .get();
   }
 
-  Future<bool> updateWord(Word item) async {
-    return update(words).replace(item);
+  Future<Word> updateWord(Word item, {bool skipComtrol = false}) async {
+    int? versionToWrite = item.version ?? 0;
+    if (!skipComtrol) {
+      var oldItem = await getWordById(item.id);
+      if (oldItem != null) {
+        var oldVersion = oldItem.version ?? 0;
+        var newVersion = item.version ?? 0;
+        if (oldVersion > newVersion) {
+          throw "version mismatch for word ${item.id}, old $oldVersion <>new $newVersion";
+        }
+      }
+    }
+    versionToWrite += 1;
+    var toUpdate = item.copyWith(version: Value<int?>(versionToWrite));
+    await update(words).replace(toUpdate);
+    return toUpdate;
   }
 
   Future<bool> updateExample(Example item) async {
@@ -394,8 +422,7 @@ ORDER by words.name ; ''',
     return result;
   }
 
-  Future<Deck?> getQuestionById(
-      int id, int baseLangID, int targetLangID) async {
+  Future<Deck?> getQuizById(int id, int baseLangID, int targetLangID) async {
     Deck result;
     var quizGroupLoc = await (select(quizGroup)
           ..where((tbl) => tbl.id.equals(id))

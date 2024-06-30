@@ -182,7 +182,7 @@ class _QuizViewState extends State<QuizView> {
     var addition = -1;
     switch (status) {
       case UserActions.left:
-        addition = 1;
+        addition = 2; //current swiped
         break;
       case UserActions.right:
         addition = -1;

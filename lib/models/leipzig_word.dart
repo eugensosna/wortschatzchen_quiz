@@ -5,6 +5,7 @@ import 'package:simplytranslate/simplytranslate.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:translator/translator.dart';
+import 'package:uuid/uuid.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:dio/dio.dart';
@@ -133,9 +134,7 @@ class LeipzigWord {
 
             if (autocompleteName != null) {
               result.add(AutocompleteDataHelper(
-                  name: autocompleteName,
-                  isIntern: false,
-                  uuid: description ?? ""));
+                  name: autocompleteName, isIntern: false, uuid: Uuid().v4()));
             }
           }
         }
@@ -460,7 +459,7 @@ class LeipzigWord {
       if (description.isEmpty) {
         if (word.description != description) {
           var wordToWrite = word.copyWith(description: description);
-          await db.updateWord(wordToWrite);
+          wordToWrite = await db.updateWord(wordToWrite);
           return wordToWrite;
         }
       }
@@ -513,7 +512,8 @@ class LeipzigWord {
         translatedName = await leipzigTranslator.translate(name);
       }
       word = word.copyWith(description: translatedName);
-      db.update(db.words).replace(word);
+      await db.updateWord(word);
+      // db.update(db.words).replace(word);
     }
 
     return word;
@@ -546,15 +546,17 @@ class LeipzigWord {
 
   Future<bool> saveRelationsDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
+    editWord = await db.getWordById(editWord.id) ?? editWord;
+
     var wordToUpdate = editWord.copyWith();
 
-    await db.updateWord(wordToUpdate);
+    editWord = await db.updateWord(wordToUpdate);
 
     if (word.definitions.isNotEmpty) {
       var mean = word.definitions[0];
       if (wordToUpdate.mean.isEmpty || serviceMode) {
-        wordToUpdate = wordToUpdate.copyWith(mean: mean);
-        db.updateWord(wordToUpdate);
+        wordToUpdate = editWord.copyWith(mean: mean);
+        editWord = await db.updateWord(wordToUpdate);
       }
       await db.deleteMeansByWord(editWord);
       for (var item in word.definitions) {
@@ -630,6 +632,7 @@ class LeipzigWord {
       LeipzigWord word, DbHelper db, Word editWord) async {
     talker.info("start saveBaseDataDB $name");
     translator = LeipzigTranslator(db: db);
+    editWord = await db.getWordById(editWord.id) ?? editWord;
     await translator.updateLanguagesData();
 
     var wordToUpdate = editWord.copyWith();
@@ -640,6 +643,16 @@ class LeipzigWord {
     }
     if (word.article.trim().isNotEmpty) {
       wordToUpdate = wordToUpdate.copyWith(important: word.article.trim());
+    }
+
+    if (word.kindOfWort == "Nomen" &&
+        translator.inputLanguage == "de" &&
+        wordToUpdate.name.substring(0, 1).toLowerCase() ==
+            wordToUpdate.name.substring(0, 1)) {
+      var first = wordToUpdate.name.substring(0, 1).toUpperCase();
+      var last = wordToUpdate.name.substring(1);
+      var newName = "$first$last";
+      wordToUpdate = wordToUpdate.copyWith(name: newName);
     }
 
     await db.updateWord(wordToUpdate);
@@ -666,27 +679,24 @@ class LeipzigWord {
       if (baseFormWord != null) {
         var toUpdate = wordToUpdate.copyWith(
             rootWordID: baseFormWord.id, baseForm: word.baseWord);
-        db.updateWord(toUpdate);
+        editWord = await db.updateWord(toUpdate);
         editWord = toUpdate;
       } else {
         var leipzigRecursWord = LeipzigWord(editWord.baseForm, db, talker);
 
         leipzigRecursWord.applyRecursionBaseForm = false;
-        
+
         var baseFormWord = await leipzigRecursWord.addWordUpdateShort(
             editWord.baseForm, "", editWord, translator.baseLang);
-        
+
         talker.info(
             "start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
-        leipzigRecursWord
-            .parseRawHtmlData(name, baseFormWord)
-            .then((onValue) {
+        leipzigRecursWord.parseRawHtmlData(name, baseFormWord).then((onValue) {
           talker.info(
               "end parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         });
       }
-        // parseRawHtmlData(onValue.name, toUpdate);
-
+      // parseRawHtmlData(onValue.name, toUpdate);
     }
     try {
       await saveRelationsDataDB(word, db, editWord);
@@ -697,6 +707,8 @@ class LeipzigWord {
   Future<bool> updateDataDB(
       LeipzigWord word, DbHelper db, Word editWord) async {
     talker.info("start updateDataDB $name");
+    editWord = await db.getWordById(editWord.id) ?? editWord;
+
     await saveBaseDataDB(word, db, editWord);
     await saveRelationsDataDB(word, db, editWord);
 
