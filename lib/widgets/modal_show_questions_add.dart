@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
@@ -25,14 +26,37 @@ class QuestionsGenerator extends StatefulWidget {
 class _QuestionsGeneratorState extends State<QuestionsGenerator> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<SessionHeader> listSessions = [];
+  List<SessionsGroupedByName> listSessions = [];
+  List<String> fieldNames = ["mean", "description", "important", "name"];
 
   TextEditingController descriptionController = TextEditingController();
 
   TextEditingController translateController = TextEditingController();
 
+  final TextEditingController sessionsController = TextEditingController();
+  final TextEditingController questionController = TextEditingController();
+  final TextEditingController answerController = TextEditingController();
+  List<QuestionCardMarkable> words = [];
+
   void moveToLastScreen(BuildContext context) {
     Navigator.pop(context);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    listSessions =
+        Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
+    widget.QuizGroup.cards.map((toElement) {
+      var elem = QuestionCardMarkable(
+          question: toElement.question,
+          answer: toElement.answer,
+          id: 0,
+          example: "");
+      elem.mark = false;
+      words.add(elem);
+    });
   }
 
   @override
@@ -46,7 +70,82 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
   @override
   Widget build(BuildContext context) {
     //listToView.length;
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Generate "),
+        leading: ElevatedButton(
+            onPressed: () {}, child: const Icon(Icons.backpack_rounded)),
+        actions: [],
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+            height: MediaQuery.of(context).size.height / 3,
+            child: Row(
+              textBaseline: TextBaseline.alphabetic,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                DropdownMenu<String>(
+                    helperText: "Session for words ",
+                    hintText: "Session",
+                    enableFilter: false,
+                    enableSearch: true,
+                    controller: sessionsController,
+                    dropdownMenuEntries: listSessions.map((toElement) {
+                      return DropdownMenuEntry<String>(
+                        value: toElement.typesession,
+                        label: "${toElement.typesession}",
+                      );
+                    }).toList()),
+                DropdownMenu<String>(
+                    helperText: "Question field",
+                    hintText: "Question",
+                    enableFilter: false,
+                    enableSearch: true,
+                    controller: questionController,
+                    dropdownMenuEntries: fieldNames.map((value) {
+                      return DropdownMenuEntry<String>(
+                          value: value, label: value);
+                      // trailingIcon: Icon(Icons.question_mark));
+                    }).toList()),
+                DropdownMenu<String>(
+                    helperText: "Answer field",
+                    hintText: "Answer",
+                    enableFilter: false,
+                    enableSearch: true,
+                    controller: answerController,
+                    dropdownMenuEntries: fieldNames.map((value) {
+                      return DropdownMenuEntry<String>(
+                          value: value,
+                          label: value,
+                          trailingIcon: Icon(Icons.abc));
+                    }).toList()),
+              ],
+            ),
+          ),
+          Expanded(child: ListView.builder(
+              itemBuilder: (context, index) {
+                var item = words[index];
+                return ListTile(
+                  leading: item.mark
+                      ? Icon(Icons.chat_outlined)
+                      : Icon(Icons.chat_outlined),
+                  title: Text(item.question),
+                  subtitle: Text(item.answer),
+                );
+              },
+            )),
+
+          Container(
+            decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+            child: 
+            // height: MediaQuery.of(context).size.height * 2 / 3,
+          ),
+        ],
+      ),
+    );
     /*
       key: _scaffoldKey,
       appBar: AppBar(
