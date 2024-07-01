@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -182,7 +183,8 @@ class AppDataProvider extends ChangeNotifier {
           name: question,
           answer: answer,
           example: example,
-          refQuizGroup: deckDB.id));
+          refQuizGroup: deckDB.id,
+          refWord: Value<int>(wordID)));
       deck.cards.add(
           QuizCard(answer: answer, question: question, example: "", id: newId));
     }
@@ -191,6 +193,8 @@ class AppDataProvider extends ChangeNotifier {
 
     return deck;
   }
+
+  
 
   void translateNeededWords() async {
     talker.info("start translateNeededWords");

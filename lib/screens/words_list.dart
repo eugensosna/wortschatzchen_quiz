@@ -134,12 +134,15 @@ class WordsListState extends State<WordsList> {
           stateAutocomplit = true;
           autoComplitData.clear();
           searchCache.clear();
+          searchCache = {};
           // debugPrint(item.name);
           autocompleteController.clear();
           var currentName = item.name;
           item.name = "";
 
-          setState(() {});
+          setState(() {
+            stateAutocomplit = true;
+          });
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(currentName);
 

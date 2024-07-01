@@ -149,7 +149,6 @@ class DeckEntryView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
                       Container(
                         margin: EdgeInsets.all(10.0),
                         padding: EdgeInsets.all(8.0),
@@ -158,10 +157,10 @@ class DeckEntryView extends StatelessWidget {
                                 Border(top: BorderSide(color: Colors.black))),
                         child: ElevatedButton(
                             onPressed: () async {
-                              fillQuestions(
-                                  context, currentSessionName, "mean", "name");
+                              fillQuestions(context, currentSessionName, "name",
+                                  "description");
                             },
-                            child: const Text("Fill by sessions")),
+                            child: const Text("Generate to lern")),
                       ),
                       DropDownMenuForSessions(
                         sessions: listSessions,
@@ -172,10 +171,10 @@ class DeckEntryView extends StatelessWidget {
                       ),
                       ElevatedButton(
                           onPressed: () async {
-                            fillQuestions(context, currentSessionName, "name",
-                                "description");
+                            fillQuestions(
+                                context, currentSessionName, "mean", "name");
                           },
-                          child: const Text("Fill by translate"))
+                          child: const Text("Generate to test"))
                     ],
                   ),
                 ),
@@ -194,10 +193,17 @@ class DeckEntryView extends StatelessWidget {
   void fillQuestions(BuildContext context, String currentSessionName,
       String questionField, String answerField) async {
     String question;
+    var db = await Provider.of<AppDataProvider>(context, listen: false).db;
     var words = await Provider.of<AppDataProvider>(context, listen: false)
         .updateSessionByFilter(current: currentSessionName);
     for (var item in words) {
       question = getValueByFieldName(questionField, item).toString();
+      var questiondb =
+          await db.getQuestionByName(question, deck.id, wordId: item.id);
+      if (questiondb != null) {
+        continue;
+      }
+
       String answer = getValueByFieldName(answerField, item).toString();
       if (question.isNotEmpty && answer.isNotEmpty) {
         deck = await Provider.of<AppDataProvider>(context, listen: false)

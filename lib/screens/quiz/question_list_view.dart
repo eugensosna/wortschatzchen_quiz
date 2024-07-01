@@ -5,6 +5,7 @@ import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/add_card_view.dart';
+import 'package:wortschatzchen_quiz/widgets/modal_show_questions_add.dart';
 
 class QuestionListView extends StatefulWidget {
   final Deck deck;
@@ -30,9 +31,19 @@ class _QuestionListViewState extends State<QuestionListView> {
         ),
         actions: [
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => QuestionsGenerator(
+                            widget.deck,
+                            QuizGroup: widget.deck,
+                            questionsField: "mean",
+                            answerField: "name",
+                          )));
+            },
             child: Text(
-              "generate Translate",
+              "generate",
             ),
             style: ButtonStyle(),
           ),

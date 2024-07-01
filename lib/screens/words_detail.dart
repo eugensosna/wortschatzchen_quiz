@@ -810,11 +810,25 @@ class WordsDetailState extends State<WordsDetail> {
       var isChanched = true;
 
       Word toUpdate = wordToUpdate.copyWith();
+      if (toUpdate.mean.isNotEmpty) {
+        var translator =
+            await Provider.of<AppDataProvider>(context, listen: false)
+                .translator;
+
+        var translatedMean = await db.getTranslateString(
+            toUpdate.mean, toUpdate.baseLang, translator.targetLanguage!.id);
+        if (translatedMean.isEmpty) {
+          await db.into(db.translatedWords).insert(
+              TranslatedWordsCompanion.insert(
+                  baseLang: toUpdate.baseLang,
+                  targetLang: translator.targetLanguage!.id,
+                  name: toUpdate.mean,
+                  translatedName: ""));
+        }
+      }
 
       if (isChanched) {
         wordToUpdate = await db.updateWord(toUpdate);
-
-        // wordToUpdate = toUpdate;
       }
     }
     return wordToUpdate;
@@ -1037,7 +1051,6 @@ class WordsDetailState extends State<WordsDetail> {
     if (result.isNotEmpty && editWord.mean != result[0].name) {
       var toUpdate = editWord.copyWith(mean: result[0].name);
       editWord = await db.updateWord(toUpdate);
-      
     }
     // fillControllers(editWord);
     await setBaseSettings(editWord);

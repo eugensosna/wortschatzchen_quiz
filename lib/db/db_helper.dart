@@ -178,6 +178,21 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
+  Future<QuestionData?> getQuestionByName(String name, int quizID,
+      {int wordId = 0}) async {
+    return (select(question)
+          ..where((tbl) => Expression.and([
+                tbl.name.equals(name),
+                tbl.refQuizGroup.equals(quizID),
+                wordId > 0
+                    ? tbl.refWord.equals(wordId)
+                    : tbl.refWord.isBiggerThanValue(wordId)
+              ]))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+
   Future<List<Word>> getWordsByNameLike(String name) async {
     return (select(words)..where((tbl) => tbl.name.contains(name))).get();
   }

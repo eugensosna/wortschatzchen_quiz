@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -25,6 +26,7 @@ class ImageToTextState extends State<ImageToText> {
   List<String> wordsInImage = [];
   List<String> lines = [];
   List<String> transLines = [];
+  bool isLoad = false;
 
   XFile? _image;
   final picker = ImagePicker();
@@ -40,12 +42,16 @@ class ImageToTextState extends State<ImageToText> {
   Future getImageFromGallery() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      setState(() {
+        isLoad = true;
+      });
       _image = XFile(pickedFile.path);
       String a = await getImageTotext(_image!.path);
 
       await openAddWidgets(a);
       setState(() {
         _image = XFile(pickedFile.path);
+        isLoad = false;
       });
     }
     setState(() {});
@@ -57,12 +63,19 @@ class ImageToTextState extends State<ImageToText> {
 
     if (pickedFile != null) {
       _image = XFile(pickedFile.path);
+      setState(() {
+        isLoad = true;
+      });
       String a = await getImageTotext(_image!.path);
+      setState(() {
+        isLoad = false;
+      });
       // lines = a.split("\n");
       await openAddWidgets(a);
 
       setState(() {
         _image = XFile(pickedFile.path);
+        isLoad = true;
       });
     }
   }
@@ -220,34 +233,36 @@ class ImageToTextState extends State<ImageToText> {
         padding: const EdgeInsets.all(15.0),
         children: [
           Column(children: [
-            SizedBox(
-              height: 250,
-              width: 250,
-              child: Center(
-                child: GestureDetector(
-                  onTap: () {
-                    showOptions(context).then((value) => null);
-                  },
+            isLoad
+                ? CircularProgressIndicator()
+                : SizedBox(
+                    height: 400,
+                    width: 400,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          showOptions(context).then((value) => null);
+                        },
 
-                  // onTap: () async {
-                  //   final XFile? image =
-                  //       await _picker.pickImage(source: ImageSource.);
-                  //   String a = await getImageTotext(image!.path);
-                  //
-                  //   setState(() {
-                  //     s = a;
-                  //   });
-                  //),
-                  child: Center(
-                    child: _image == null
-                        ? const Icon(
-                            Icons.file_copy,
-                          )
-                        : Image.file(File(_image!.path)),
+                        // onTap: () async {
+                        //   final XFile? image =
+                        //       await _picker.pickImage(source: ImageSource.);
+                        //   String a = await getImageTotext(image!.path);
+                        //
+                        //   setState(() {
+                        //     s = a;
+                        //   });
+                        //),
+                        child: Center(
+                          child: _image == null
+                              ? const Icon(
+                                  Icons.file_copy,
+                                )
+                              : Image.file(File(_image!.path)),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
             Text(
               s,
               style: const TextStyle(color: Colors.black, fontSize: 20),
