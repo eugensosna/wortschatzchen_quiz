@@ -167,8 +167,8 @@ class AppDatabase extends _$AppDatabase {
           await m.database.customStatement(
               """ ALTER TABLE "question" ADD COLUMN "ref_word" INTEGER NOT NULL DEFAULT 0""");
           // await m.addColumn(question, question.refWord);
-          // await m.createTable(quizGroup);
-          // await m.createTable(question);
+          //await m.createTable(quizGroup);
+          //await m.createTable(question);
         }
         if (to == 20) {
           // await m.database.customStatement(
@@ -182,10 +182,10 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(quizGroup);
           // await m.createTable(question);
           await m.createTable(question);
-          await m.addColumn(
-              leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
-          await m.addColumn(
-              leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
+          // await m.addColumn(
+          //     leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
+          // await m.addColumn(
+          //     leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
         }
 
         await transaction(() async {

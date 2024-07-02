@@ -31,13 +31,17 @@ class _QuestionListViewState extends State<QuestionListView> {
         ),
         actions: [
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              var quizUpdated =
+                  await Provider.of<AppDataProvider>(context, listen: false)
+                          .getQuizData(widget.deck) ??
+                      widget.deck;
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => QuestionsGenerator(
                             widget.deck,
-                            QuizGroup: widget.deck,
+                            QuizGroup: quizUpdated,
                             questionsField: "mean",
                             answerField: "name",
                           )));

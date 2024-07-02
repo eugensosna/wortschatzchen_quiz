@@ -48,15 +48,16 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     super.initState();
     listSessions =
         Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
-    widget.QuizGroup.cards.map((toElement) {
+
+    words = widget.QuizGroup.cards.map((toElement) {
       var elem = QuestionCardMarkable(
           question: toElement.question,
           answer: toElement.answer,
           id: 0,
           example: "");
       elem.mark = false;
-      words.add(elem);
-    });
+      return elem;
+    }).toList();
   }
 
   @override
@@ -73,8 +74,11 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Generate "),
-        leading: ElevatedButton(
-            onPressed: () {}, child: const Icon(Icons.backpack_rounded)),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              moveToLastScreen(context);
+            }),
         actions: [],
       ),
       body: Column(
@@ -82,7 +86,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
         children: [
           Container(
             decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-            height: MediaQuery.of(context).size.height / 3,
+            //height: MediaQuery.of(context).size.height / 3,
             child: Row(
               textBaseline: TextBaseline.alphabetic,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -125,24 +129,22 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
               ],
             ),
           ),
-          Expanded(child: ListView.builder(
-              itemBuilder: (context, index) {
-                var item = words[index];
-                return ListTile(
-                  leading: item.mark
-                      ? Icon(Icons.chat_outlined)
-                      : Icon(Icons.chat_outlined),
-                  title: Text(item.question),
-                  subtitle: Text(item.answer),
-                );
-              },
-            )),
-
-          Container(
-            decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-            child: 
-            // height: MediaQuery.of(context).size.height * 2 / 3,
-          ),
+          words.isEmpty
+              ? CircularProgressIndicator()
+              : Expanded(
+                  child: ListView.builder(
+                    itemCount: words.length,
+                    itemBuilder: (context, index) {
+                      var item = words[index];
+                      return ListTile(
+                        leading: item.mark
+                            ? Icon(Icons.add) : Icon(Icons.menu),
+                        title: Text(item.question),
+                        subtitle: Text(item.answer),
+                      );
+                    },
+                  ),
+                ),
         ],
       ),
     );
@@ -293,6 +295,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     // widget.listToView.removeAt(index);
     setState(() {});
   }
+
 
   void translate(BuildContext context) async {
     print("translate ");

@@ -130,7 +130,7 @@ class LeipzigWord {
         for (var (item as List) in listRawData) {
           if (item.length > 1) {
             var autocompleteName = item.elementAtOrNull(0);
-            var description = item.elementAtOrNull(1);
+            item.elementAtOrNull(1);
 
             if (autocompleteName != null) {
               result.add(AutocompleteDataHelper(

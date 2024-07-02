@@ -52,22 +52,6 @@ class WordsListState extends State<WordsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Words'),
-        actions: [
-          IconButton(
-              // autofocus: ,
-              onPressed: () {
-                searchCache.clear();
-                stateAutocomplit = true;
-                autoComplitData.clear();
-
-                setState(() {});
-              },
-              hoverColor: Colors.amber,
-              icon: const Icon(Icons.refresh))
-        ],
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -193,16 +177,18 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             textEditingController.text = "";
             autoComplitData.clear();
           }
-          return TextFormField(
-            // keyboardAppearance: ,
-            // autofocus: true,
 
+          return TextFormField(
             focusNode: focusNode,
             controller: textEditingController,
             onFieldSubmitted: (value) {
               onFieldSubmitted();
             },
             decoration: const InputDecoration(
+                suffixIcon: Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12.0),
+              child: Icon(Icons.refresh),
+            )
                 // hoverColor: Colors.black38,
                 ),
           );
