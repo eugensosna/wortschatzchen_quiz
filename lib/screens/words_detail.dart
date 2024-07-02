@@ -812,7 +812,7 @@ class WordsDetailState extends State<WordsDetail> {
       Word toUpdate = wordToUpdate.copyWith();
       if (toUpdate.mean.isNotEmpty) {
         var translator =
-            await Provider.of<AppDataProvider>(context, listen: false)
+            Provider.of<AppDataProvider>(context, listen: false)
                 .translator;
 
         var translatedMean = await db.getTranslateString(
@@ -1026,7 +1026,6 @@ class WordsDetailState extends State<WordsDetail> {
     Mean? element;
     var result = await _showOrEditReordable(context, listMeans);
     result ??= listElements;
-    if (result == null) {}
     //await db.deleteMeansByWord(editWord);
     for (var (index, item) in result.indexed) {
       if (item.id <= 0) {

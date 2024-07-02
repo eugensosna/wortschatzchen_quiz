@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/activ_quiz_card.dart';
@@ -76,7 +75,7 @@ class _QuizViewState extends State<QuizView> {
                 children: <Widget>[
                   Text(
                     "Quiz name ${deck.deckTitle}",
-                    style: TextStyle(fontSize: 30),
+                    style: const TextStyle(fontSize: 30),
                   ),
                   Container(
                     alignment: Alignment.center,

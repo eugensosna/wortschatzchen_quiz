@@ -186,7 +186,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             },
             decoration: const InputDecoration(
                 suffixIcon: Padding(
-              padding: const EdgeInsetsDirectional.only(end: 12.0),
+              padding: EdgeInsetsDirectional.only(end: 12.0),
               child: Icon(Icons.refresh),
             )
                 // hoverColor: Colors.black38,
@@ -245,7 +245,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       toReturn.firstWhere((element) => element.name == textToSearch,
           orElse: () {
         var newElement = AutocompleteDataHelper(
-            name: textToSearch, isIntern: false, uuid: Uuid().v4());
+            name: textToSearch, isIntern: false, uuid: const Uuid().v4());
         toReturn.insert(0, newElement);
         return newElement;
       });
@@ -313,7 +313,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
 
     toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
       var newElement = AutocompleteDataHelper(
-          name: toSearch, isIntern: false, uuid: Uuid().v4());
+          name: toSearch, isIntern: false, uuid: const Uuid().v4());
       toReturn.insert(0, newElement);
       return newElement;
     });

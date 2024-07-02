@@ -1,8 +1,6 @@
 // import 'dart:js_interop_unsafe';
 
-import 'package:drift/drift.dart' as driftBase;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart' as Db;
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -150,9 +148,9 @@ class DeckEntryView extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.all(10.0),
-                        padding: EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
+                        margin: const EdgeInsets.all(10.0),
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: const BoxDecoration(
                             border:
                                 Border(top: BorderSide(color: Colors.black))),
                         child: ElevatedButton(
@@ -193,7 +191,7 @@ class DeckEntryView extends StatelessWidget {
   void fillQuestions(BuildContext context, String currentSessionName,
       String questionField, String answerField) async {
     String question;
-    var db = await Provider.of<AppDataProvider>(context, listen: false).db;
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
     var words = await Provider.of<AppDataProvider>(context, listen: false)
         .updateSessionByFilter(current: currentSessionName);
     for (var item in words) {

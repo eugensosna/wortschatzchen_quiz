@@ -32,7 +32,7 @@ String encodeToHumanText(String input) {
     correctText = utf8.decode(bytes);
   } catch (e) {
     // If UTF-8 fails, try other common encodings
-    correctText = Utf8Decoder(allowMalformed: true).convert(bytes);
+    correctText = const Utf8Decoder(allowMalformed: true).convert(bytes);
   }
 
   return correctText;

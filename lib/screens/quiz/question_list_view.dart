@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
@@ -46,13 +45,13 @@ class _QuestionListViewState extends State<QuestionListView> {
                             answerField: "name",
                           )));
             },
-            child: Text(
+            style: const ButtonStyle(),
+            child: const Text(
               "generate",
             ),
-            style: ButtonStyle(),
           ),
         ],
-        title: Text("List questions "),
+        title: const Text("List questions "),
       ),
       body: ListView.builder(
         itemBuilder: (context, index) {
@@ -101,7 +100,7 @@ class _QuestionListViewState extends State<QuestionListView> {
           // )),
           subtitle: Text(
             card.answer,
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
           // Padding(
           //   padding: EdgeInsets.fromLTRB(8, 0.0, 8.0, 8.0),

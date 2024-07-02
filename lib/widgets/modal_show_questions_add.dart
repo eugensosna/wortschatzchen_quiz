@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
-import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 
 class QuestionsGenerator extends StatefulWidget {
   final Deck QuizGroup;
@@ -73,13 +71,13 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     //listToView.length;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Generate "),
+        title: const Text("Generate "),
         leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               moveToLastScreen(context);
             }),
-        actions: [],
+        actions: const [],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -100,7 +98,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     dropdownMenuEntries: listSessions.map((toElement) {
                       return DropdownMenuEntry<String>(
                         value: toElement.typesession,
-                        label: "${toElement.typesession}",
+                        label: toElement.typesession,
                       );
                     }).toList()),
                 DropdownMenu<String>(
@@ -124,13 +122,13 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                       return DropdownMenuEntry<String>(
                           value: value,
                           label: value,
-                          trailingIcon: Icon(Icons.abc));
+                          trailingIcon: const Icon(Icons.abc));
                     }).toList()),
               ],
             ),
           ),
           words.isEmpty
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : Expanded(
                   child: ListView.builder(
                     itemCount: words.length,
@@ -138,7 +136,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                       var item = words[index];
                       return ListTile(
                         leading: item.mark
-                            ? Icon(Icons.add) : Icon(Icons.menu),
+                            ? const Icon(Icons.add) : const Icon(Icons.menu),
                         title: Text(item.question),
                         subtitle: Text(item.answer),
                       );

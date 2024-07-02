@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -234,7 +233,7 @@ class ImageToTextState extends State<ImageToText> {
         children: [
           Column(children: [
             isLoad
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : SizedBox(
                     height: 400,
                     width: 400,

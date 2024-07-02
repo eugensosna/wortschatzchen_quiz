@@ -134,7 +134,7 @@ class LeipzigWord {
 
             if (autocompleteName != null) {
               result.add(AutocompleteDataHelper(
-                  name: autocompleteName, isIntern: false, uuid: Uuid().v4()));
+                  name: autocompleteName, isIntern: false, uuid: const Uuid().v4()));
             }
           }
         }
@@ -693,7 +693,7 @@ class LeipzigWord {
             "start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         leipzigRecursWord.parseRawHtmlData(name, baseFormWord).then((onValue) {
           talker.info(
-              "end parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
+              "end parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
         });
       }
       // parseRawHtmlData(onValue.name, toUpdate);

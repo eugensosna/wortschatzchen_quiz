@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
-import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
-import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/deck_entry_view.dart';
 
 class AddQuizGroup extends StatefulWidget {
