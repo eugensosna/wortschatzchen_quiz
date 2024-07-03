@@ -11,6 +11,7 @@ import 'package:wortschatzchen_quiz/screens/quiz/question_list_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
 import 'package:wortschatzchen_quiz/widgets/drop_down_sessions_list.dart';
+import 'package:wortschatzchen_quiz/widgets/modal_show_questions_add.dart';
 
 class DeckEntryView extends StatelessWidget {
   Deck deck;
@@ -60,7 +61,7 @@ class DeckEntryView extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.black,
-                          fontSize: 60.0,
+                          fontSize: 30.0,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -72,7 +73,7 @@ class DeckEntryView extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.grey,
-                            fontSize: 40.0,
+                            fontSize: 30.0,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -101,7 +102,7 @@ class DeckEntryView extends StatelessWidget {
                           child: const Text(
                             "Add Question",
                             style: TextStyle(
-                              fontSize: 40.0,
+                              fontSize: 30.0,
                             ),
                           ),
                         ),
@@ -122,7 +123,7 @@ class DeckEntryView extends StatelessWidget {
                           child: const Text(
                             "View Questions",
                             style: TextStyle(
-                              fontSize: 35.0,
+                              fontSize: 30.0,
                             ),
                           ),
                         ),
@@ -155,24 +156,24 @@ class DeckEntryView extends StatelessWidget {
                                 Border(top: BorderSide(color: Colors.black))),
                         child: ElevatedButton(
                             onPressed: () async {
-                              fillQuestions(context, currentSessionName, "name",
-                                  "description");
+                              var quizUpdated =
+                                  await Provider.of<AppDataProvider>(context,
+                                              listen: false)
+                                          .getQuizData(deck) ??
+                                      deck;
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => QuestionsGenerator(
+                                            quizUpdated,
+                                            QuizGroup: quizUpdated,
+                                            questionsField: "name",
+                                            answerField: "description",
+                                          )));
+                              
                             },
                             child: const Text("Generate to lern")),
                       ),
-                      DropDownMenuForSessions(
-                        sessions: listSessions,
-                        defaultValue: listSessions.isNotEmpty
-                            ? listSessions[0].typesession
-                            : "",
-                        callBackOnChose: onChangeSession,
-                      ),
-                      ElevatedButton(
-                          onPressed: () async {
-                            fillQuestions(
-                                context, currentSessionName, "mean", "name");
-                          },
-                          child: const Text("Generate to test"))
                     ],
                   ),
                 ),

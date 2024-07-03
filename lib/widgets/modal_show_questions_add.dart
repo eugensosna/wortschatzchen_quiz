@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/db/db.dart' as Db;
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -35,6 +36,8 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
   final TextEditingController questionController = TextEditingController();
   final TextEditingController answerController = TextEditingController();
   List<QuestionCardMarkable> words = [];
+  String questionDefault = "";
+  String answerDefault = "";
 
   void moveToLastScreen(BuildContext context) {
     Navigator.pop(context);
@@ -47,7 +50,13 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     listSessions =
         Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
 
-    words = widget.QuizGroup.cards.map((toElement) {
+    words = fillBaseWords();
+    questionDefault = widget.questionsField;
+    answerDefault = widget.answerField;
+  }
+
+  List<QuestionCardMarkable> fillBaseWords() {
+    return widget.QuizGroup.cards.map((toElement) {
       var elem = QuestionCardMarkable(
           question: toElement.question,
           answer: toElement.answer,
@@ -83,7 +92,8 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
-            decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+            decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.black))),
             //height: MediaQuery.of(context).size.height / 3,
             child: Row(
               textBaseline: TextBaseline.alphabetic,
@@ -94,6 +104,9 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     hintText: "Session",
                     enableFilter: false,
                     enableSearch: true,
+                    onSelected: (value) {
+                      _generate(value);
+                    },
                     controller: sessionsController,
                     dropdownMenuEntries: listSessions.map((toElement) {
                       return DropdownMenuEntry<String>(
@@ -106,17 +119,33 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     hintText: "Question",
                     enableFilter: false,
                     enableSearch: true,
+                    initialSelection: questionDefault,
+                    onSelected: (value) {
+                      _generate(value);
+                    },
                     controller: questionController,
                     dropdownMenuEntries: fieldNames.map((value) {
                       return DropdownMenuEntry<String>(
                           value: value, label: value);
                       // trailingIcon: Icon(Icons.question_mark));
                     }).toList()),
+              ],
+            ),
+          ),
+          Container(
+            decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.black))),
+            child: Row(
+              children: [
                 DropdownMenu<String>(
                     helperText: "Answer field",
                     hintText: "Answer",
+                    initialSelection: answerDefault,
                     enableFilter: false,
                     enableSearch: true,
+                    onSelected: (value) {
+                      _generate(value);
+                    },
                     controller: answerController,
                     dropdownMenuEntries: fieldNames.map((value) {
                       return DropdownMenuEntry<String>(
@@ -124,6 +153,11 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                           label: value,
                           trailingIcon: const Icon(Icons.abc));
                     }).toList()),
+                ElevatedButton(
+                    onPressed: () {
+                      _generate("");
+                    },
+                    child: Text("Generate Questions")),
               ],
             ),
           ),
@@ -135,83 +169,38 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     itemBuilder: (context, index) {
                       var item = words[index];
                       return ListTile(
-                        leading: item.mark
-                            ? const Icon(Icons.add) : const Icon(Icons.menu),
+                        leading: IconButton(
+                          icon: item.mark
+                              ? const Icon(Icons.add)
+                              : const Icon(Icons.menu),
+                          onPressed: () {
+                            item.mark = !item.mark;
+                            setState(() {});
+                          },
+                        ),
                         title: Text(item.question),
                         subtitle: Text(item.answer),
+                        trailing: item.word != null
+                            ? ElevatedButton(
+                                child: Text(
+                                  item.word!.name,
+                                  style: const TextStyle(
+                                      backgroundColor: Colors.blue),
+                                ),
+                                onPressed: () {},
+                              )
+                            : const Icon(Icons.hourglass_empty_sharp),
                       );
                     },
                   ),
                 ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [ElevatedButton(onPressed: _save, child: Text("Save"))],
+          )
         ],
       ),
     );
-    /*
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: const Text("Reorder"),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              moveToLastScreen(context);
-            }),
-      ),
-      body: ReorderableListView.builder(
-        itemCount: widget.listToView.length,
-        itemBuilder: (context, index) {
-          var item = widget.listToView.elementAt(index);
-          return GestureDetector(
-              key: Key(index.toString()),
-              onDoubleTap: () {
-                editItem(context, item);
-              },
-              child: Dismissible(
-                key: Key(index.toString()),
-                direction: DismissDirection.startToEnd,
-                background: Container(
-                  color: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Icon(
-                    Icons.delete,
-                    color: Colors.redAccent,
-                  ),
-                ),
-                onDismissed: (direction) {
-                  // widget.talker.debug("Dismissible delete ${wordItem.name} ");
-                  _delete(index);
-                },
-                child: ListTile(
-                  key: Key(index.toString()),
-                  title: Text(item.name),
-                  subtitle: Text(item.translate),
-                  leading: Text("${item.orderId}"),
-                ),
-              ));
-        },
-        onReorder: (oldIndex, newIndex) {
-          setState(() {
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
-            }
-            final item = widget.listToView.elementAt(oldIndex);
-            widget.listToView.removeAt(oldIndex);
-            widget.listToView.insert(newIndex, item);
-          });
-        },
-      ),
-
-      // bottomNavigationBar: bottomNavigationBar(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          editItem(
-              context,
-              ReordableElement(
-                  id: -1, name: "", translate: "", orderId: 0, uuid: ""));
-        },
-        tooltip: "Add new",
-        child: const Icon(Icons.add),
-      ),
-    );*/
   }
 
   Future<String> onSave(BuildContext context) async {
@@ -219,74 +208,53 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     return "";
   }
 
-  void editItem(BuildContext context, ReordableElement edit) async {
-    descriptionController.text = edit.name;
-    translateController.text = edit.translate;
+  dynamic getValueByFieldName(String fieldName, Db.Word item) {
+    dynamic result = "";
+    var mapItem = item.toColumns(false);
+    result = mapItem[fieldName];
+    switch (fieldName) {
+      case "mean":
+        result = item.mean;
+        break;
+      case "important":
+        result = item.important;
+        break;
+      case "description":
+        result = item.description;
+        break;
+      default:
+        result = item.name;
+    }
+    return result;
+  }
 
-    showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Add"),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                /// The `TextField` widget in Flutter is used to create a text input field where users can
-                /// enter text. In the provided code snippet, the `TextField` widget is being used to
-                /// create an input field for the description of an element. The `controller` property is
-                /// used to control the text entered in the field, and the `onEditingComplete` callback is
-                /// triggered when the user finishes editing the text in the field.
-                TextField(
-                  controller: descriptionController,
-                  onEditingComplete: () {
-                    edit.name = descriptionController.text;
-                  },
-                  decoration: const InputDecoration(hintText: "Description"),
-                ),
-                IconButton(
-                    onPressed: () => translate(context),
-                    icon: const Icon(Icons.move_down)),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Translated"),
-                  controller: translateController,
-                  onEditingComplete: () {
-                    edit.translate = translateController.text;
-                  },
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Disable'),
-                onPressed: () {
-                  Navigator.of(_scaffoldKey.currentContext ?? context)
-                      .pop(false);
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Save'),
-                onPressed: () {
-                  edit.name = descriptionController.text;
-                  edit.translate = translateController.text;
-                  if (edit.id < 0) {
-                    edit.id = 0;
-                    // widget.listToView.insert(0, edit);
-                  }
-                  setState(() {});
+  void _generate(String? value) async {
+    words = fillBaseWords();
+    var questionField = questionController.text;
+    var answerField = answerController.text;
+    var sessionWords =
+        await Provider.of<AppDataProvider>(context, listen: false)
+            .updateSessionByFilter(
+      current: sessionsController.text,
+    );
+    for (var item in sessionWords) {
+      String question = getValueByFieldName(questionField, item).toString();
+      String answer = getValueByFieldName(answerField, item).toString();
 
-                  Navigator.of(context).pop(true);
-                },
-              ),
-            ],
-          );
-        });
+      var questionDB =
+          await Provider.of<AppDataProvider>(context, listen: false)
+              .db
+              .getQuestionByName(question, widget.QuizGroup.id, wordId: 0);
+
+      if (question.isNotEmpty && answer.isNotEmpty) {
+        var newElement = QuestionCardMarkable(
+            question: question, answer: answer, id: 0, example: "");
+        newElement.mark = questionDB == null ? true : false;
+        newElement.word = item;
+        words.insert(0, newElement);
+      }
+    }
+    setState(() {});
   }
 
   _delete(int index) {
@@ -294,67 +262,33 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     setState(() {});
   }
 
-
-  void translate(BuildContext context) async {
-    print("translate ");
-    translateController.text =
+  void _save() async {
+    int count = 0;
+    for (var item in words) {
+      if (item.mark) {
+        item.mark = false;
+        count += 1;
         await Provider.of<AppDataProvider>(context, listen: false)
-            .translate(descriptionController.text);
-  }
-}
+            .addQuizQuestion(item.question, item.answer, widget.QuizGroup,
+                wordID: item.word?.id ?? 0);
 
-class FormExample extends StatefulWidget {
-  final ReordableElement editElement;
-  const FormExample({super.key, required this.editElement});
+        var elem = QuizCard(
+            question: item.question,
+            answer: item.answer,
+            id: item.id,
+            example: item.question);
+        widget.QuizGroup.cards.add(elem);
+      }
+      if (count > 3) {
+        count = 0;
+        setState(() {});
+      }
+    }
+    words = fillBaseWords();
 
-  @override
-  State<FormExample> createState() => _FormExampleState();
-}
-
-class _FormExampleState extends State<FormExample> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController descriptionController = TextEditingController();
-
-  TextEditingController translateController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: EdgeInsetsGeometry.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            /// The `TextField` widget in Flutter is used to create a text input field where users can
-            /// enter text. In the provided code snippet, the `TextField` widget is being used to
-            /// create an input field for the description of an element. The `controller` property is
-            /// used to control the text entered in the field, and the `onEditingComplete` callback is
-            /// triggered when the user finishes editing the text in the field.
-            TextField(
-              controller: descriptionController,
-              onEditingComplete: () {
-                widget.editElement.name = descriptionController.text;
-              },
-              decoration: const InputDecoration(hintText: "Description"),
-            ),
-            IconButton(
-                onPressed: () {
-                  print("translate ");
-                },
-                icon: const Icon(Icons.move_down)),
-            TextField(
-              decoration: const InputDecoration(hintText: "Translated"),
-              controller: translateController,
-              onEditingComplete: () {
-                widget.editElement.translate = translateController.text;
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    setState(() {});
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Complite!")));
   }
 }
 

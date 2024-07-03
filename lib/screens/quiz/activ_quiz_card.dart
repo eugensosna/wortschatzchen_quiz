@@ -306,7 +306,10 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
       }
     }
     if (wordToView != null) {
-      navigateToDetail(context, widget.card.word, "view");
+      navigateToDetail(context, wordToView, "view", name: widget.card.question);
+    } else {
+      navigateToDetail(context, wordToView, "view", name: widget.card.question);
     }
+    
   }
 }
