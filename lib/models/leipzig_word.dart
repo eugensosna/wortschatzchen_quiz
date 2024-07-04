@@ -82,8 +82,13 @@ class LeipzigWord {
   Future<List<AutocompleteDataHelper>> getAutocomplete(
       String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
+    BaseOptions options = new BaseOptions(
+        receiveDataWhenStatusError: true,
+        connectTimeout: const Duration(seconds: 2), // 60 seconds
+        receiveTimeout: const Duration(seconds: 4) //
+        );
 
-    final dio = Dio();
+    final dio = Dio(options);
     String url =
         "https://api.wortschatz-leipzig.de/ws/words/deu_news_2012_3M/prefixword/${Uri.encodeFull(partOfWord)}?minFreq=1&limit=10";
 
@@ -113,8 +118,12 @@ class LeipzigWord {
   Future<List<AutocompleteDataHelper>> getAutocompleteVerbForm(
       String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
-
-    final dio = Dio();
+    BaseOptions options = new BaseOptions(
+        receiveDataWhenStatusError: true,
+        connectTimeout: const Duration(seconds: 2), // 60 seconds
+        receiveTimeout: const Duration(seconds: 4) // 6
+        );
+    final dio = Dio(options);
     String url =
         "https://www.verbformen.de/suche/i/?w=${Uri.encodeFull(partOfWord)}";
     try {
@@ -134,7 +143,9 @@ class LeipzigWord {
 
             if (autocompleteName != null) {
               result.add(AutocompleteDataHelper(
-                  name: autocompleteName, isIntern: false, uuid: const Uuid().v4()));
+                  name: autocompleteName,
+                  isIntern: false,
+                  uuid: const Uuid().v4()));
             }
           }
         }

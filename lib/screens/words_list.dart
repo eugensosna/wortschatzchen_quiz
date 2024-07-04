@@ -201,6 +201,29 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     return Container();
   }
 
+  List<AutocompleteDataHelper> sortAutocomplit(
+      List<AutocompleteDataHelper> autoComplite, String textToSearch) {
+    autoComplite = autoComplite.toList();
+    autoComplite.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+
+    autoComplite.sort((a, b) {
+      if (a.name.startsWith(textToSearch) && !b.name.startsWith(textToSearch)) {
+        return -1;
+      } else {
+        if (!a.name.startsWith(textToSearch) &&
+            b.name.startsWith(textToSearch)) {
+          return 1;
+        } else {
+          return a.name.compareTo(b.name);
+        }
+      }
+    });
+
+    return autoComplite;
+  }
+
   void fillAutocompliteDelayed(String textToSearch) {
     if (searchCache.containsKey(textToSearch)) {
       autoComplitData = searchCache[textToSearch];
@@ -261,7 +284,10 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     }
 
     var leipzig = LeipzigWord(toSearch, widget.db, widget.talker);
-    var autoComplitDataLoc = await leipzig.getAutocompleteLocal(toSearch);
+     
+    List<AutocompleteDataHelper> autoComplitDataLoc = [];
+
+    autoComplitDataLoc = [];
 
     var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
     var autoComplitDataVerb = await leipzig.getAutocompleteVerbForm(toSearch);
@@ -269,26 +295,9 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     autoComplitDataLoc.addAll(autoComplitDataExt);
     autoComplitDataLoc.addAll(autoComplitDataVerb);
 
-    autoComplitDataLocal = autoComplitDataLoc.toList();
-    autoComplitDataLocal.sort(
-      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-    );
-    autoComplitDataLocal.sort((a, b) {
-      if (a.name.startsWith(textToSearch) && !b.name.startsWith(textToSearch)) {
-        return -1;
-      } else {
-        if (!a.name.startsWith(textToSearch) &&
-            b.name.startsWith(textToSearch)) {
-          return 1;
-        } else {
-          return a.name.compareTo(b.name);
-        }
-      }
-    });
-
-    var element =
-        autoComplitDataLocal.firstWhere((element) => element.name == toSearch);
-    searchCache[toSearch] = autoComplitDataLocal.toList();
+    // var element =
+    //     autoComplitDataLocal.firstWhere((element) => element.name == toSearch);
+    // searchCache[toSearch] = autoComplitDataLocal.toList();
 
     widget.talker.verbose(
         "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitData.length}");
@@ -305,6 +314,10 @@ fieldViewBuilder contains + ${textEditingController.text}""");
         }
       },
     );
+
+    var autoComplitDataDB = await leipzig.getAutocompleteLocal(toSearch);
+    toReturn.addAll(autoComplitDataDB);
+    toReturn = sortAutocomplit(toReturn, toSearch);
 
     toReturn.map((element) {
       searchCache[element.name] = toReturn;

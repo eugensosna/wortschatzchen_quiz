@@ -162,14 +162,14 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       var dbToImport = DbHelper(pathToFile: file.path);
       var lwords = await dbToImport.getOrdersWordList();
       for (var item in lwords) {
-        await db.into(db.words).insert(WordsCompanion.insert(
-            name: item.name,
-            important: item.important,
-            description: item.description,
-            mean: item.mean,
-            baseForm: item.baseForm,
-            baseLang: item.baseLang,
-            rootWordID: item.rootWordID));
+        // await db.into(db.words).insert(WordsCompanion.insert(
+        //     name: item.name,
+        //     important: item.important,
+        //     description: item.description,
+        //     mean: item.mean,
+        //     baseForm: item.baseForm,
+        //     baseLang: item.baseLang,
+        //     rootWordID: item.rootWordID));
       }
     }
   }
