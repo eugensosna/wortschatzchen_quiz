@@ -29,35 +29,66 @@ class _DeckViewState extends State<DeckView> {
 
   Widget? _itemBuilder(BuildContext context, int index, List<Deck> decks) {
     Deck currentDeck = decks[index];
-    String deckCardCount = currentDeck.cards.length != null
+    String deckCardCount =
+        currentDeck.cards.isNotEmpty
         ? "${currentDeck.cards.length} cards"
         : "0 cards";
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black54)),
+    return Dismissible(
+      key: Key(currentDeck.deckTitle),
+      direction: DismissDirection.startToEnd,
+      background: Container(
+        color: Colors.blueAccent,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.redAccent,
+        ),
       ),
-      child: ListTile(
-        onTap: () => _navigateToSelectedDeckEntryScreen(context, currentDeck),
-        title: Center(
-            child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            currentDeck.deckTitle,
-            style: const TextStyle(
-              fontSize: 30,
+      onDismissed: (direction) {
+        //widget.talker.debug("Dismissible delete ${wordItem.name} ");
+        setState(() {
+          decks.removeAt(index);
+          //listWords.removeAt(index);
+        });
+        _delete(
+          currentDeck,
+        );
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.black54)),
+        ),
+        child: ListTile(
+          onTap: () => _navigateToSelectedDeckEntryScreen(context, currentDeck),
+          title: Center(
+              child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              currentDeck.deckTitle,
+              style: const TextStyle(
+                fontSize: 30,
+              ),
             ),
-          ),
-        )),
-        subtitle: Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
-          child: Center(
-              child: Text(
-            deckCardCount,
-            style: const TextStyle(fontSize: 20),
           )),
+          subtitle: Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
+            child: Center(
+                child: Text(
+              deckCardCount,
+              style: const TextStyle(fontSize: 20),
+            )),
+          ),
         ),
       ),
     );
+  }
+  
+  Future<void> _delete(
+    Deck currentDeck,
+  ) async {
+    var appData = Provider.of<AppDataProvider>(context, listen: false);
+    await appData.db.deleteQuestionGroup(currentDeck.id);
+    appData.updateDecks();
   }
 }
 
@@ -67,6 +98,7 @@ _navigateToSelectedDeckEntryScreen(
       await Provider.of<AppDataProvider>(context, listen: false)
               .getQuizData(currentDeck) ??
           currentDeck;
-  var decks = await Navigator.push(context,
+  var decks = Navigator.push(
+      context,
       MaterialPageRoute(builder: (context) => DeckEntryView(currentDeckLoc)));
 }

@@ -228,6 +228,15 @@ class DbHelper extends AppDatabase {
     return 0;
   }
 
+  Future<int> deleteQuestionGroup(int id) async {
+    await (delete(question)..where((tbl) => tbl.refQuizGroup.equals(id))).go();
+
+    await customStatement('PRAGMA foreign_keys = OFF');
+
+    (delete(quizGroup)..where((tbl) => tbl.id.equals(id))).go();
+    return 0;
+  }
+
   Future deleteSession(Session item) async {
     return (delete(sessions)..where((tbl) => tbl.id.equals(item.id))).go();
   }

@@ -181,6 +181,7 @@ class LeipzigWord {
   Future<LeipzigWord> parseDataLeipzigWord(LeipzigWord word) async {
     talker.info("start html parse ");
     if (word.rawHTML.isNotEmpty) {
+      // ignore: unused_local_variable
       var temp = await parseHtml(word.rawHTML, word);
     }
     if (word.rawHTMLOpen.isNotEmpty) {
@@ -287,7 +288,6 @@ class LeipzigWord {
   }
 
   Future<LeipzigWord> parseRawHtmlData(String name, Word editWord) async {
-    var timeStart = DateTime.now().microsecond;
 
     if (rawHTML.isEmpty) {
       talker.info("1. parseRawHtmlData start ");
