@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:talker/talker.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
@@ -64,6 +65,7 @@ class WordsListState extends State<WordsList> {
           autoCompliteWidget(),
           Consumer<AppDataProvider>(
             builder: (context, value, child) {
+              listWords = value.listWords;
               return Expanded(
                 child: Container(
                   color: Colors.green.shade100,
@@ -95,8 +97,15 @@ class WordsListState extends State<WordsList> {
       //     border: Border.all(color: Colors.redAccent)),
       child: Autocomplete<AutocompleteDataHelper>(
         optionsBuilder: (textEditingValue) async {
+          autocompleteController.text = textEditingValue.text;
           final textToSearch = textEditingValue.text.trim();
           List<AutocompleteDataHelper> autoComplitDataLoc = [];
+          for (var (index, element) in listWords.indexed) {
+            if (element.name.toLowerCase().startsWith(textToSearch.toLowerCase())) {
+              _scrollController.scrollTo(index: index, duration: const Duration(milliseconds: 50));
+              break;
+            }
+          }
 
           if (textToSearch.isEmpty || textToSearch.length <= 1) {
             autoComplitData.clear();
@@ -109,24 +118,18 @@ class WordsListState extends State<WordsList> {
             fillAutocompliteDelayed(textToSearch);
           } else {
             autoComplitData = await getAutoCompliteForKindeOfWord(textToSearch);
+
           }
+         
 
           return autoComplitData;
         },
         onSelected: (AutocompleteDataHelper item) async {
           // widget.talker.debug("onSelected ${item.name}");
-          stateAutocomplit = true;
-          autoComplitData.clear();
-          searchCache.clear();
-          searchCache = {};
-          // debugPrint(item.name);
-          autocompleteController.clear();
+
           var currentName = item.name;
           item.name = "";
-
-          setState(() {
-            stateAutocomplit = true;
-          });
+          clearAutoComplite();
           if (item.isIntern) {
             Word? wordItem = await widget.db.getWordByName(currentName);
 
@@ -162,10 +165,20 @@ class WordsListState extends State<WordsList> {
         },
         fieldViewBuilder:
             (context, textEditingController, focusNode, onFieldSubmitted) {
+          // if (autocompleteController.text.isNotEmpty && textEditingController.text.isEmpty) {
+          //   textEditingController = autocompleteController;
+          // } else {
+          //   autocompleteController = textEditingController;
+          // }
+          // autocompleteController = textEditingController;
           // widget.talker.debug(
           //     "fieldViewBuilder ${textEditingController.text}:$stateAutocomplit");
           if (stateAutocomplit) {
             textEditingController.text = "";
+            textEditingController = TextEditingController();
+
+            //textEditingController = autocompleteController;
+
             stateAutocomplit = false;
             _listViewFocusNode.requestFocus();
             // textEditingController.value = AutocompleteDataHelper(
@@ -184,17 +197,35 @@ fieldViewBuilder contains + ${textEditingController.text}""");
             onFieldSubmitted: (value) {
               onFieldSubmitted();
             },
-            decoration: const InputDecoration(
+              decoration: InputDecoration(
                 suffixIcon: Padding(
-              padding: EdgeInsetsDirectional.only(end: 12.0),
-              child: Icon(Icons.refresh),
-            )
+                  padding: const EdgeInsetsDirectional.only(end: 12.0),
+                  child: IconButton(
+                    onPressed: () {
+                      widget.talker.verbose("on refresh");
+                      clearAutoComplite();
+                    },
+                    icon: const Icon(Icons.refresh),
+                  ),
                 // hoverColor: Colors.black38,
                 ),
-          );
+              ));
         },
       ),
     );
+  }
+
+  void clearAutoComplite() {
+    stateAutocomplit = true;
+    autoComplitData.clear();
+    searchCache.clear();
+    searchCache = {};
+    // debugPrint(item.name);
+    autocompleteController.clear();
+
+    setState(() {
+      stateAutocomplit = true;
+    });
   }
 
   Widget getAzWordListView() {
@@ -243,9 +274,9 @@ fieldViewBuilder contains + ${textEditingController.text}""");
               "start delay fillAutocompliteDelayed $textToSearch current $currentSearch");
 
           autoComplitData = await getAutoCompliteForKindeOfWord(currentSearch);
-          setState(() {
-            autoComplitData = autoComplitData;
-          });
+          // setState(() {
+          //   autoComplitData = autoComplitData;
+          // });
         });
       }
     }
@@ -489,7 +520,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
   void _delete(Word itemWord) async {
     await widget.db.deleteWord(itemWord);
     for (var (index, item) in listWords.indexed) {
-      if (item.id == itemWord) {
+      if (item.id == itemWord.id) {
         listWords.removeAt(index);
         break;
       }

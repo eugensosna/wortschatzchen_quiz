@@ -82,7 +82,7 @@ class LeipzigWord {
   Future<List<AutocompleteDataHelper>> getAutocomplete(
       String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
-    BaseOptions options = new BaseOptions(
+    BaseOptions options = BaseOptions(
         receiveDataWhenStatusError: true,
         connectTimeout: const Duration(seconds: 2), // 60 seconds
         receiveTimeout: const Duration(seconds: 4) //
@@ -118,7 +118,7 @@ class LeipzigWord {
   Future<List<AutocompleteDataHelper>> getAutocompleteVerbForm(
       String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
-    BaseOptions options = new BaseOptions(
+    BaseOptions options = BaseOptions(
         receiveDataWhenStatusError: true,
         connectTimeout: const Duration(seconds: 2), // 60 seconds
         receiveTimeout: const Duration(seconds: 4) // 6
@@ -393,6 +393,7 @@ class LeipzigWord {
   }
 
   Future<LeipzigWord> getOpenthesaurusFromInternet() async {
+    // ignore: unused_local_variable
     LeipzigWord result = LeipzigWord(name, db, talker);
     var dio = Dio();
 
@@ -711,7 +712,9 @@ class LeipzigWord {
     }
     try {
       await saveRelationsDataDB(word, db, editWord);
-    } catch (e) {}
+    } catch (e) {
+      talker.error("saveBaseDataDB", e);
+    }
     return true;
   }
 
@@ -794,9 +797,7 @@ class LeipzigTranslator {
 
   Future<String> translate(String inputText, {bool addtoBase = true}) async {
     var result = "";
-    const int countMillisecondsForGoogle = 270;
 
-    var timeStart = DateTime.now().millisecond;
     Language? baseLangLocal =
         baseLang ?? await db.getLangByShortName(inputLanguage);
     Language? targetLanguageLocal =
