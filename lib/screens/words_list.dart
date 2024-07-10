@@ -100,12 +100,17 @@ class WordsListState extends State<WordsList> {
           autocompleteController.text = textEditingValue.text;
           final textToSearch = textEditingValue.text.trim();
           List<AutocompleteDataHelper> autoComplitDataLoc = [];
-          for (var (index, element) in listWords.indexed) {
-            if (element.name.toLowerCase().startsWith(textToSearch.toLowerCase())) {
-              _scrollController.scrollTo(index: index, duration: const Duration(milliseconds: 50));
-              break;
+
+          if (textToSearch.isNotEmpty) {
+            for (var (index, element) in listWords.indexed) {
+              if (element.name.toLowerCase().startsWith(textToSearch.toLowerCase())) {
+                var indexToScroll = index - 2 > 0 ? index - 2 : index;
+                _scrollController.scrollTo(
+                    index: indexToScroll, duration: const Duration(milliseconds: 50));
+                break;
+              }
             }
-          }
+}
 
           if (textToSearch.isEmpty || textToSearch.length <= 1) {
             autoComplitData.clear();
@@ -114,15 +119,17 @@ class WordsListState extends State<WordsList> {
           }
           widget.talker.verbose("on Autocomplete $textToSearch");
 
-          if (textToSearch.isNotEmpty && textToSearch.length <= 4) {
-            fillAutocompliteDelayed(textToSearch);
-          } else {
-            autoComplitData = await getAutoCompliteForKindeOfWord(textToSearch);
+          // if (textToSearch.isNotEmpty && textToSearch.length <= 4) {
+          fillAutocompleteDelayed(textToSearch);
 
-          }
-         
+          var autoComplitDataLocal = await getAutoCompliteFromCache(textToSearch);
 
-          return autoComplitData;
+          // } else {
+          // autoComplitData = await getAutoCompliteForKindeOfWord(textToSearch);
+
+          //}
+
+          return autoComplitDataLocal;
         },
         onSelected: (AutocompleteDataHelper item) async {
           // widget.talker.debug("onSelected ${item.name}");
@@ -255,7 +262,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     return autoComplite;
   }
 
-  void fillAutocompliteDelayed(String textToSearch) {
+  void fillAutocompleteDelayed(String textToSearch) {
     if (searchCache.containsKey(textToSearch)) {
       autoComplitData = searchCache[textToSearch];
       return;
@@ -271,9 +278,9 @@ fieldViewBuilder contains + ${textEditingController.text}""");
 
         Future.delayed(const Duration(microseconds: 500), () async {
           widget.talker.verbose(
-              "start delay fillAutocompliteDelayed $textToSearch current $currentSearch");
+              "start delay fillAutocompleteDelayed $textToSearch current $currentSearch");
 
-          autoComplitData = await getAutoCompliteForKindeOfWord(currentSearch);
+          autoComplitData = await getAutoCompliteForKindOfWord(currentSearch);
           // setState(() {
           //   autoComplitData = autoComplitData;
           // });
@@ -281,11 +288,35 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       }
     }
   }
+  Future<List<AutocompleteDataHelper>> getAutoCompliteFromCache(String textToSearch) async {
+    List<AutocompleteDataHelper> autoComplitDataLocal = [];
+    if (textToSearch.trim().isEmpty) {
+      autoComplitDataLocal.clear();
 
-  Future<List<AutocompleteDataHelper>> getAutoCompliteForKindeOfWord(
+      return autoComplitDataLocal;
+    }
+    if (searchCache.containsKey(textToSearch)) {
+      autoComplitDataLocal = searchCache[textToSearch];
+    }
+
+    //var toReturn = autoComplitDataLocal.toList();
+    var toReturn = autoComplitDataLocal.toList();
+    toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
+      var newElement =
+          AutocompleteDataHelper(name: textToSearch, isIntern: false, uuid: const Uuid().v4());
+      toReturn.insert(0, newElement);
+      return newElement;
+    });
+
+    widget.talker.verbose(
+        "CACHE fillAutocompliteDelayed  found $textToSearch in cache ${autoComplitData.length}");
+    return toReturn;
+  }
+
+  Future<List<AutocompleteDataHelper>> getAutoCompliteForKindOfWord(
       String textToSearch) async {
     widget.talker.verbose(
-        "start getAutoCompliteForKindeOfWord $textToSearch current $textToSearch");
+        "start getAutoCompliteForKindOfWord $textToSearch current $textToSearch");
 
     List<AutocompleteDataHelper> autoComplitDataLocal = [];
     if (textToSearch.isEmpty) {
@@ -331,8 +362,8 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     // searchCache[toSearch] = autoComplitDataLocal.toList();
 
     widget.talker.verbose(
-        "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitData.length}");
-    var toReturn = autoComplitDataLocal.toList();
+        "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitDataLoc.length}");
+    var toReturn = autoComplitDataLoc.toList();
 
     final ids = toReturn.map((toElement) => toElement.name).toSet();
     toReturn.retainWhere(
