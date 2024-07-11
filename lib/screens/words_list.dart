@@ -122,7 +122,7 @@ class WordsListState extends State<WordsList> {
           // if (textToSearch.isNotEmpty && textToSearch.length <= 4) {
           fillAutocompleteDelayed(textToSearch);
 
-          var autoComplitDataLocal = await getAutoCompliteFromCache(textToSearch);
+          var autoComplitDataLocal = getAutoCompliteFromCache(textToSearch, recursion: true);
 
           // } else {
           // autoComplitData = await getAutoCompliteForKindeOfWord(textToSearch);
@@ -288,7 +288,8 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       }
     }
   }
-  Future<List<AutocompleteDataHelper>> getAutoCompliteFromCache(String textToSearch) async {
+  List<AutocompleteDataHelper> getAutoCompliteFromCache(String textToSearch,
+      {bool recursion = false}) {
     List<AutocompleteDataHelper> autoComplitDataLocal = [];
     if (textToSearch.trim().isEmpty) {
       autoComplitDataLocal.clear();
@@ -300,13 +301,23 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     }
 
     //var toReturn = autoComplitDataLocal.toList();
+
+    if (autoComplitDataLocal.isEmpty && textToSearch.isNotEmpty) {
+      var newSearch = textToSearch.substring(0, textToSearch.length - 1);
+      widget.talker.verbose(
+          "CACHE recursion found $textToSearch in cache $newSearch ${autoComplitData.length}");
+
+      autoComplitDataLocal = getAutoCompliteFromCache(newSearch, recursion: true);
+    } 
     var toReturn = autoComplitDataLocal.toList();
-    toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
-      var newElement =
-          AutocompleteDataHelper(name: textToSearch, isIntern: false, uuid: const Uuid().v4());
-      toReturn.insert(0, newElement);
-      return newElement;
-    });
+    if (!recursion) {
+      toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
+        var newElement =
+            AutocompleteDataHelper(name: textToSearch, isIntern: false, uuid: const Uuid().v4());
+        toReturn.insert(0, newElement);
+        return newElement;
+      });
+    }
 
     widget.talker.verbose(
         "CACHE fillAutocompliteDelayed  found $textToSearch in cache ${autoComplitData.length}");
@@ -346,7 +357,6 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     }
 
     var leipzig = LeipzigWord(toSearch, widget.db, widget.talker);
-     
     List<AutocompleteDataHelper> autoComplitDataLoc = [];
 
     autoComplitDataLoc = [];
@@ -362,7 +372,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     // searchCache[toSearch] = autoComplitDataLocal.toList();
 
     widget.talker.verbose(
-        "fillAutocompliteDelayed  save $textToSearch in cache ${autoComplitDataLoc.length}");
+        "fillAutocomplitDelayed  save $textToSearch in cache ${autoComplitDataLoc.length}");
     var toReturn = autoComplitDataLoc.toList();
 
     final ids = toReturn.map((toElement) => toElement.name).toSet();
@@ -370,9 +380,9 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       (element) {
         if (ids.contains(element.name)) {
           ids.remove(element.name);
-          return false;
-        } else {
           return true;
+        } else {
+          return false;
         }
       },
     );
@@ -380,18 +390,19 @@ fieldViewBuilder contains + ${textEditingController.text}""");
     var autoComplitDataDB = await leipzig.getAutocompleteLocal(toSearch);
     toReturn.addAll(autoComplitDataDB);
     toReturn = sortAutocomplit(toReturn, toSearch);
+    //update cache
+    toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
+      var newElement =
+          AutocompleteDataHelper(name: toSearch, isIntern: false, uuid: const Uuid().v4());
+      toReturn.insert(0, newElement);
+      return newElement;
+    });
 
     toReturn.map((element) {
       searchCache[element.name] = toReturn;
       return element;
     }).toList();
 
-    toReturn.firstWhere((element) => element.name == textToSearch, orElse: () {
-      var newElement = AutocompleteDataHelper(
-          name: toSearch, isIntern: false, uuid: const Uuid().v4());
-      toReturn.insert(0, newElement);
-      return newElement;
-    });
     return toReturn;
   }
 

@@ -19,7 +19,6 @@ class QuizPage extends StatefulWidget {
 }
 
 class QuizPageState extends State<QuizPage> {
-  List<Question> _questions = [];
   final pageController = PageController();
   List<Deck> decks = []; //MockDecks.fetchDecks();
 
@@ -28,15 +27,6 @@ class QuizPageState extends State<QuizPage> {
     super.initState();
     Provider.of<AppDataProvider>(context, listen: false).updateDecks();
     if (decks.isEmpty) {}
-    _questions = sample_data
-        .map(
-          (question) => Question(
-              id: question['id'],
-              question: question['question'],
-              options: question['options'],
-              answer: question['answer_index']),
-        )
-        .toList();
   }
 
   @override
