@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/io.dart';
+import 'package:drift/drift.dart';
 import 'package:simplytranslate/simplytranslate.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -544,14 +545,13 @@ class LeipzigWord {
         if (exampleText != null) {
           await translator.translate(exampleText);
 
-          // translator.translate(item.value!).then((onValue){
-          // talker.log("translated string for $item is $onValue");
-          // });
           await db.into(db.examples).insert(ExamplesCompanion.insert(
               baseWord: editWord.id, name: item.value!));
         }
-        // translator.addToBase(item.value!, "");
       }
+
+      await updateRawData(db, editWord, word);
+
     }
     return true;
   }
@@ -572,17 +572,11 @@ class LeipzigWord {
       }
       await db.deleteMeansByWord(editWord);
       for (var item in word.definitions) {
-        // var mean = await db.getMeanByNameAndWord(item, editWord.id);
-        // if (mean != null) {
         await translator.translate(item);
         db
             .into(db.means)
             .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
-        // translator.addToBase(item, "");
-        // translator.translate(item).then((onValue){
-        // talker.log("translated string for $item is $onValue");
-        // });
-        // }
+
       }
     }
 
@@ -591,6 +585,8 @@ class LeipzigWord {
     } catch (e) {
       talker.error("saveExamplesDataDB", e);
     }
+    
+    await updateRawData(db, editWord, word);
 
     try {
       if (word.synonyms.isNotEmpty) {
@@ -726,37 +722,53 @@ class LeipzigWord {
     await saveBaseDataDB(word, db, editWord);
     await saveRelationsDataDB(word, db, editWord);
 
-    // if (word.article.isNotEmpty && wordToUpdate.baseForm.isEmpty) {
-    //   wordToUpdate =
-    //       wordToUpdate.copyWith(baseForm: "${word.article}  ${word.baseWord}");
-    //   await db.updateWord(wordToUpdate);
-    // }
+    await updateRawData(db, editWord, word);
 
+    talker.info("end  updateDateDB $name");
+    // translateNeededWords();
+    return true;
+  }
+
+  Future<void> updateRawData(DbHelper db, Word editWord, LeipzigWord word) async {
     var leipzigEntry = await db.getLeipzigDataByWord(editWord);
     if (leipzigEntry != null) {
-      var updatedEntry = leipzigEntry.copyWith(
-          url: url,
-          html: rawHTML,
-          article: article,
-          KindOfWort: kindOfWort,
-          wordOfBase: baseWord);
-      await db.updateLeipzigData(updatedEntry);
+      var toUpdate = leipzigEntry.copyWith();
+
+      if (word.rawHTML.isNotEmpty) {
+        var updatedEntry = leipzigEntry.copyWith(
+            url: word.url,
+            html: word.rawHTML,
+            article: word.article,
+            KindOfWort: word.kindOfWort,
+            wordOfBase: word.baseWord);
+        toUpdate = updatedEntry.copyWith();
+      }
+      if (word.rawHTMLOpen.isNotEmpty) {
+        var updatedEntry = toUpdate.copyWith(htmlOpen: Value<String>(word.rawHTMLOpen));
+        toUpdate = updatedEntry.copyWith();
+      }
+
+      if (word.rawHTMLExamples.isNotEmpty) {
+        var updatedEntry = toUpdate.copyWith(
+          htmlExamples: Value<String>(word.rawHTMLExamples),
+        );
+        toUpdate = updatedEntry.copyWith();
+      }
+      await db.updateLeipzigData(toUpdate);
     } else {
       await db
           .into(db.leipzigDataFromIntranet)
           .insert(LeipzigDataFromIntranetCompanion.insert(
             baseWord: editWord.id,
-            url: url,
-            html: rawHTML,
-            article: article,
-            KindOfWort: kindOfWort,
-            wordOfBase: baseWord,
+            url: word.url,
+            html: word.rawHTML,
+            htmlOpen: Value<String>(word.rawHTMLOpen),
+            htmlExamples: Value<String>(word.rawHTMLExamples),
+            article: word.article,
+            KindOfWort: word.kindOfWort,
+            wordOfBase: word.baseWord,
           ));
     }
-
-    talker.info("end  updateDateDB $name");
-    // translateNeededWords();
-    return true;
   }
 }
 

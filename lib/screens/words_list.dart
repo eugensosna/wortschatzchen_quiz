@@ -68,7 +68,8 @@ class WordsListState extends State<WordsList> {
               scrollController: _scrollController,
               listWords: listWords,
               navigateToDetail: navigateToDetail,
-              listViewFocusNode: _listViewFocusNode),
+              listViewFocusNode: _listViewFocusNode,
+              autocompleteController: autocompleteController),
           Consumer<AppDataProvider>(
             builder: (context, value, child) {
               listWords = value.listWords;
@@ -292,12 +293,16 @@ class WordsListState extends State<WordsList> {
   }
 
   void addNewWord() {
+    String name = "";
+    if (autocompleteController.text.isNotEmpty) {
+      name = autocompleteController.text;
+    }
     //widget.db.getGroupedSessionsByName().then((onValue) {});
     navigateToDetail(
-        const Word(
+        Word(
             id: -99,
             uuid: "",
-            name: "",
+            name: name,
             description: "",
             important: "",
             mean: "",

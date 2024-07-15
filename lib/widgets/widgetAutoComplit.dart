@@ -15,13 +15,15 @@ class WidgetAutoComplit extends StatefulWidget {
   Talker talker = Talker();
   final Function navigateToDetail;
   final FocusNode listViewFocusNode;
+  final TextEditingController autocompleteController;
 
   WidgetAutoComplit(
       {super.key,
       required this.scrollController,
       required this.listWords,
       required this.navigateToDetail,
-      required this.listViewFocusNode}) {
+      required this.listViewFocusNode,
+      required this.autocompleteController}) {
     // TODO: implement WidgetAutoComplit
     return;
   }
@@ -67,6 +69,7 @@ class _WidgetAutoComplitState extends State<WidgetAutoComplit> {
           autocompleteController.text = textEditingValue.text;
           final textToSearch = textEditingValue.text.trim();
           List<AutocompleteDataHelper> autoComplitDataLoc = [];
+          widget.autocompleteController.text = textEditingValue.text;
 
           if (textToSearch.isNotEmpty) {
             for (var (index, element) in widget.listWords.indexed) {
@@ -184,7 +187,7 @@ fieldViewBuilder contains + ${textEditingController.text}""");
       } else {
         currentSearch = textToSearch;
 
-        Future.delayed(const Duration(microseconds: 2), () async {
+        Future.delayed(const Duration(microseconds: 1), () async {
           var autoComplitData = await getAutoCompliteForKindOfWord(currentSearch);
         });
       }
@@ -245,10 +248,10 @@ fieldViewBuilder contains + ${textEditingController.text}""");
 
     autoComplitDataLoc = [];
 
-    var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
+    // var autoComplitDataExt = await leipzig.getAutocomplete(toSearch);
     var autoComplitDataVerb = await leipzig.getAutocompleteVerbForm(toSearch);
 
-    autoComplitDataLoc.addAll(autoComplitDataExt);
+    // autoComplitDataLoc.addAll(autoComplitDataExt);
     autoComplitDataLoc.addAll(autoComplitDataVerb);
 
     // var element =
