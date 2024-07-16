@@ -249,6 +249,24 @@ Map<int, List<String>> parseHtmlExamples(String text) {
           if (listItem.text != null &&
               listItem.text!.trim().isNotEmpty &&
               listItem.text!.trim().length > 1) {
+            var prefix = "";
+            var suffix = "";
+            var word = "";
+            if (listItem.nodes.length == 3) {
+              for (var (index, nodeItem) in listItem.nodes.indexed) {
+                if (index == 0) {
+                  prefix = nodeItem.text!;
+                }
+                if (index == 1) {
+                  word = nodeItem.text!;
+                }
+                if (index == 2) {
+                  suffix = nodeItem.text!;
+                }
+              }
+            }
+            // ignore: unused_local_variable
+            String resultString = prefix + word + suffix;
             line.add(listItem.text!.trim());
             break;
           }

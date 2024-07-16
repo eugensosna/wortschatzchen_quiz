@@ -1,3 +1,4 @@
+
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
@@ -18,9 +19,11 @@ class AppDataProvider extends ChangeNotifier {
   List<SessionsGroupedByName> _sessions = [];
   List<SessionsGroupedByName> get sessionsByName => _sessions;
   String currentSession = "";
-  List<Word> sessionByFilter = [];
+  List<Word> _sessionByFilter = [];
   List<Deck> _decks = [];
   List<Word> get listWords => _listWords;
+  List<Word> get sessionByFilter => _sessionByFilter;
+
 
   List<Deck> get decks => _decks;
 
@@ -37,13 +40,17 @@ class AppDataProvider extends ChangeNotifier {
 
   Future<List<Word>> updateSessionByFilter({String current = ""}) async {
     String filter = current.isEmpty ? currentSession : current;
-    sessionByFilter = await db.getWordsBySession(filter);
+    
+    _sessionByFilter = await db.getWordsBySession(filter);
     if (current.isNotEmpty) {
       currentSession = current;
     }
+    _sessionByFilter.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
 
     notifyListeners();
-    return sessionByFilter;
+    return _sessionByFilter;
   }
 
   Future<List<Word>> updateListWords() async {

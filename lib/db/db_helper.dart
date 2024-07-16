@@ -359,7 +359,8 @@ class DbHelper extends AppDatabase {
   Future<List<SessionsGroupedByName>> getGroupedSessionsByName() async {
     List<SessionsGroupedByName> result = [];
     var customQuery = customSelect(
-        ' SELECT max(s.id), Count(*) as count, s.typesession FROM sessions as s group by s.typesession ',
+        ''' SELECT max(s.id), Count(*) as count, s.typesession FROM sessions as s group by s.typesession 
+        Order by  s.typesession DESC''',
         readsFrom: {sessions});
     var cResult = await customQuery.get();
     for (var item in cResult) {
@@ -379,7 +380,7 @@ LEFT join  words
 on sessions.base_word=words.id
 WHERE sessions.typesession=?
 and words.id not null
-ORDER by words.name ; ''',
+ORDER by words.name  ; ''',
         readsFrom: {words}, variables: [Variable.withString(typesession)]);
 
     var cResult = await customQuery.get();

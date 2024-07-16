@@ -39,13 +39,12 @@ class SessionsDatesState extends State<SessionsDates> {
     List<SessionHeader> result = [];
     final sessions = await widget.db.getGroupedSessionsByName();
     for (var item in sessions) {
-      // if (item.typesession.contains(todaySession)) {
-      //   defaultSession = "${item.typesession} (${item.count})";
-      // }
+    
       result.add(SessionHeader(
           typesession: item.typesession,
           description: "${item.typesession} (${item.count})"));
     }
+    //sessions.sort((a, b) => a.typesession.toLowerCase().compareTo(b.typesession.toLowerCase()));
 
     return result;
   }
@@ -126,7 +125,7 @@ class SessionsDatesState extends State<SessionsDates> {
                         ? Colors.red.shade300
                         : Colors.amber.shade400,
                     child: Text(
-                      item.typesession,
+                      "${item.typesession} (${item.count})",
                     ),
                   ),
                 ),

@@ -7,7 +7,10 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
+import 'package:wortschatzchen_quiz/screens/words_list.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import 'package:wortschatzchen_quiz/widgets/animated_Card.dart';
 
@@ -55,7 +58,10 @@ class SessionWordListState extends State<SessionWordList> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<AppDataProvider>(
-          builder: (context, AppDataProvider, child) => CustomScrollView(
+          builder: (context, AppDataProvider, child) {
+        listWords = AppDataProvider.sessionByFilter;
+        return CustomScrollView(
+          
               slivers: [
                 SliverAppBar(
                   centerTitle: true,
@@ -66,19 +72,15 @@ class SessionWordListState extends State<SessionWordList> {
             title: isLoad
                 ? const Center(child: CircularProgressIndicator())
                 : Text(widget.currentSession),
-
-
+          
+          
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () async {
                       moveToLastScreen();
                     },
                   ),
-                  surfaceTintColor: Colors.transparent,
-                  // bottom: PreferredSize(
-                  //     preferredSize: const Size.fromHeight(70),
-                  //   // child: searchWordsButton()
-                  // ),
+              surfaceTintColor: Colors.transparent,
                 ),
                 SliverGrid.builder(
                   itemCount: listWords.length,
@@ -118,10 +120,11 @@ class SessionWordListState extends State<SessionWordList> {
                       ),
                     );
                   },
-                    itemCount: AppDataProvider.sessionByFilter.length,
+              itemCount: AppDataProvider.sessionByFilter.length,
                 )
               ],
-              )),
+        );
+      }),
       floatingActionButton: FloatingActionButton(
         onPressed: () => addWord(""),
         tooltip: "Add new",
@@ -258,18 +261,10 @@ class SessionWordListState extends State<SessionWordList> {
 
   Future<List<Word>> _updateWordsList() async {
     
-    setState(() {
-      isLoad = true;
-    });
-
-    List<Word> result =
-        await widget.db.getWordsBySession(widget.currentSession);
-
-    setState(() {
-      isLoad = false;
-      listWords = result;
-    });
-    return result;
+    listWords = await Provider.of<AppDataProvider>(context, listen: false)
+        .updateSessionByFilter(current: widget.currentSession);
+    return listWords;
+    
   }
 
   Future<void> addWord(String name) async {

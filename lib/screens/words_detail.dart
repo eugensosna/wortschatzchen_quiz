@@ -76,10 +76,7 @@ class WordsDetailState extends State<WordsDetail> {
     editWord = await saveWord();
 
     final st = SimplyTranslator(EngineType.google);
-    // final st = SimplyTranslator();
-
-    /// find other instances under https://simple-web.org/projects/simplytranslate.html
-    ///change instance (defaut is simplytranslate.org)
+ 
     st.setSimplyInstance = "simplytranslate.pussthecat.org";
     var eipzTranslator = LeipzigTranslator(db: db);
     eipzTranslator.updateLanguagesData();
@@ -151,6 +148,7 @@ class WordsDetailState extends State<WordsDetail> {
       isLoadFast = false;
       _progress = 0;
     });
+    _fillData();
   }
 
   Future<String> translateText(String inputText) async {
@@ -418,12 +416,7 @@ class WordsDetailState extends State<WordsDetail> {
                             onPressed: _fillData,
                             child: const Text("Full"),
                           ),
-                    // icon: const Icon(Icons.downloading)),
-                    TextButton.icon(
-                      onPressed: saveWord,
-                      label: const Text("Save"),
-                      icon: const Icon(Icons.save),
-                    ),
+                    IconButton(onPressed: saveWord, icon: const Icon(Icons.save)), //Save button
                     IconButton(
                         onPressed: goToVerbForm,
                         icon: const Icon(Icons.add_task)),
@@ -926,17 +919,8 @@ class WordsDetailState extends State<WordsDetail> {
 
       leipzigSynonyms = await leipzigSynonyms.getParseAllDataSpeed(
           leipzigSynonyms, editWord, _progressbar);
-      // await leipzigSynonyms
-      //     .getOpenthesaurusFromInternet()
-      //     .then((onValue) async {
-      //   var wort = await leipzigSynonyms.parseOpenthesaurus(onValue);
-      //   await leipzigSynonyms.saveRelationsDataDB(wort, db, editWord);
-      // });
-
-      // await leipzigSynonyms.parseRawHtmlData(leipzigSynonyms.name, editWord);
-      // await leipzigSynonyms.updateDataDB(leipzigSynonyms, db, newWord);
+      
       leipzigSynonyms.translateNeededWords();
-      // await setBaseSettings();
       await setBaseSettings(newWord);
       setState(() {});
     }
