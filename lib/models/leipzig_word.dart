@@ -521,6 +521,8 @@ class LeipzigWord {
         .into(db.sessions)
         .insert(SessionsCompanion.insert(baseWord: id, typesession: formatted));
 
+    try {
+
     Word? word = await db.getWordById(id);
     if (word != null) {
       QuizGroupData? quiz = await db.getQuizByName(formatted);
@@ -537,6 +539,10 @@ class LeipzigWord {
         } else {}
       }
     }
+    } catch (e) {
+      talker.error("addToSession", e);
+    }
+
 
   }
 
