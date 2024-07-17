@@ -493,6 +493,20 @@ ORDER by words.name  ; ''',
     }
   }
 
+
+Future<QuizGroupData?> getQuizByName(String name) async {
+    Deck result;
+    var quizGroupLoc = await (select(quizGroup)
+          ..where((tbl) => tbl.name.equals(name))
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: (tbl.name)),
+            // ((tbl) => OrderingTerm(expression: tbl.id))
+          ]))
+        .getSingleOrNull();
+    return quizGroupLoc;
+  }
+
+
   Future<String> getTranslateString(
       String input, int baseLangID, int targetLangID) async {
     String result = "";

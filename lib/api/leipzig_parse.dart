@@ -267,6 +267,7 @@ Map<int, List<String>> parseHtmlExamples(String text) {
             }
             // ignore: unused_local_variable
             String resultString = prefix + word + suffix;
+            if (resultString.trim() == listItem.text!.trim()) {}
             line.add(listItem.text!.trim());
             break;
           }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/io.dart';
@@ -10,6 +11,8 @@ import 'package:uuid/uuid.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:dio/dio.dart';
+import 'package:wortschatzchen_quiz/models/open_thesaurus_model.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 import '../api/leipzig_parse.dart';
@@ -224,36 +227,37 @@ class LeipzigWord {
     return word;
   }
 
-  Future<LeipzigWord> getParseAllData(LeipzigWord wort, Word editWord) async {
+  Future<LeipzigWord> getParseAllData(
+      LeipzigWord wort, Word editWord, AppDataProvider appProvider) async {
     talker.info("start then getLeipzigBaseFromInternet");
     wort = await getLeipzigBaseFromInternet(wort);
     wort = await wort.parseDataLeipzigWord(wort);
-    await wort.saveBaseDataDB(wort, db, editWord);
+    await wort.saveBaseDataDB(wort, db, editWord, appProvider);
     talker.info("end then getLeipzigBaseFromInternet");
 
     talker.info("start getOpenthesaurusFromInternet");
 
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
-    await wort.saveRelationsDataDB(wort, db, editWord);
+    await wort.saveRelationsDataDB(wort, db, editWord, appProvider);
     talker.info("end getOpenthesaurusFromInternet");
 
     talker.info("start then getLeipzigExamplesFromInternet");
 
     wort = await wort.parseDataExamplesWord(wort, editWord);
 
-    await wort.saveRelationsDataDB(wort, db, editWord);
+    await wort.saveRelationsDataDB(wort, db, editWord, appProvider);
     talker.info("end then getLeipzigExamplesFromInternet");
 
     return wort;
   }
 
   Future<LeipzigWord> getParseAllDataSpeed(
-      LeipzigWord wort, Word editWord, Function onProgress) async {
+      LeipzigWord wort, Word editWord, Function onProgress, AppDataProvider appProvider) async {
     talker.info("start sync getLeipzigBaseFromInternet");
     wort.getLeipzigBaseFromInternet(wort).then((onValue) async {
       var wortL = await wort.parseDataLeipzigWord(onValue);
-      await wortL.saveBaseDataDB(wortL, db, editWord);
+      await wortL.saveBaseDataDB(wortL, db, editWord, appProvider);
       talker.info("end then getLeipzigBaseFromInternet");
       onProgress(0.5);
     });
@@ -262,15 +266,16 @@ class LeipzigWord {
     onProgress(0.7);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
+    wort = await wort.getOpenThesaurusSynonyms(wort);
     onProgress(0.8);
-    await wort.saveRelationsDataDB(wort, db, editWord);
+    await wort.saveRelationsDataDB(wort, db, editWord, appProvider);
     talker.info("end getOpenthesaurusFromInternet");
 
     talker.info("start then getLeipzigExamplesFromInternet");
     onProgress(0.8);
     wort.getLeipzigExamplesFromInternet().then((onValue) {
       onValue.parseDataExamplesWord(onValue, editWord).then((onValue) async {
-        await onValue.saveRelationsDataDB(onValue, db, editWord);
+        await onValue.saveRelationsDataDB(onValue, db, editWord, appProvider);
         onProgress(0.95);
         talker.info("end then getLeipzigExamplesFromInternet");
       });
@@ -288,7 +293,31 @@ class LeipzigWord {
     return wort;
   }
 
-  Future<LeipzigWord> parseRawHtmlData(String name, Word editWord) async {
+
+  Future<LeipzigWord> getOpenThesaurusSynonyms(LeipzigWord wort) async {
+    var dio = getDio();
+
+    try {
+      final response = await dio.getUri(Uri.parse(
+          'https://www.openthesaurus.de/synonyme/search?q=${wort.name}&format=application/json'));
+      if (response.statusCode == 200) {
+        var openData = OpenThesaurusResponse.fromJson(response.data);
+        if (openData.synsets.length > 0) {
+          for (var element in openData.synsets[0].terms) {
+            wort.synonyms.add(LeipzigSynonym(
+                element.term, "", "'https://www.openthesaurus.de/synonyme/${wort.name}"));
+          }
+        }
+      }
+    } catch (e) {
+      talker.error("getOpenThesaurusSynonyms", e);
+    }
+
+    return wort;
+  }
+
+  Future<LeipzigWord> parseRawHtmlData(
+      String name, Word editWord, AppDataProvider appProvider) async {
 
     if (rawHTML.isEmpty) {
       talker.info("1. parseRawHtmlData start ");
@@ -313,13 +342,13 @@ class LeipzigWord {
           (value) {
             talker.info("3. parseRawHtmlData parseDataLeipzigWord ");
 
-            updateDataDB(tempWort, db, editWord).then((onValue) {
+            updateDataDB(tempWort, db, editWord, appProvider).then((onValue) {
               talker.info("1. parseRawHtmlData END updateDataDB ");
             });
           },
         );
         parseOpenthesaurus(tempWortForBase).then((onValue) {
-          updateDataDB(onValue, db, editWord);
+          updateDataDB(onValue, db, editWord, appProvider);
         });
       });
     }
@@ -491,6 +520,24 @@ class LeipzigWord {
     await db
         .into(db.sessions)
         .insert(SessionsCompanion.insert(baseWord: id, typesession: formatted));
+
+    Word? word = await db.getWordById(id);
+    if (word != null) {
+      QuizGroupData? quiz = await db.getQuizByName(formatted);
+      if (quiz == null) {
+        var id = await db.into(db.quizGroup).insert(QuizGroupCompanion.insert(name: formatted));
+        quiz = await db.getQuizByName(formatted);
+      }
+
+      if (quiz != null) {
+        var question = db.getQuestionByName(word.name, quiz.id, wordId: id);
+        if (question != null) {
+          db.into(db.question).insert(QuestionCompanion.insert(
+              name: word.name, answer: word.description, example: "", refQuizGroup: quiz.id));
+        } else {}
+      }
+    }
+
   }
 
   Future<Word?> addNewWord(
@@ -557,7 +604,7 @@ class LeipzigWord {
   }
 
   Future<bool> saveRelationsDataDB(
-      LeipzigWord word, DbHelper db, Word editWord) async {
+      LeipzigWord word, DbHelper db, Word editWord, AppDataProvider appProvider) async {
     editWord = await db.getWordById(editWord.id) ?? editWord;
 
     var wordToUpdate = editWord.copyWith();
@@ -570,14 +617,17 @@ class LeipzigWord {
         wordToUpdate = editWord.copyWith(mean: mean);
         editWord = await db.updateWord(wordToUpdate);
       }
-      await db.deleteMeansByWord(editWord);
-      for (var item in word.definitions) {
-        await translator.translate(item);
-        db
-            .into(db.means)
-            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
 
-      }
+      appProvider.addMeansToBase(word.definitions, wordToUpdate);
+
+      // await db.deleteMeansByWord(editWord);
+      //   for (var item in word.definitions) {
+      //     await translator.translate(item);
+      //     db
+      //         .into(db.means)
+      //         .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+
+      //   }
     }
 
     try {
@@ -637,7 +687,7 @@ class LeipzigWord {
   }
 
   Future<bool> saveBaseDataDB(
-      LeipzigWord word, DbHelper db, Word editWord) async {
+      LeipzigWord word, DbHelper db, Word editWord, AppDataProvider appProvider) async {
     talker.info("start saveBaseDataDB $name");
     translator = LeipzigTranslator(db: db);
     editWord = await db.getWordById(editWord.id) ?? editWord;
@@ -699,7 +749,7 @@ class LeipzigWord {
 
         talker.info(
             "start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
-        leipzigRecursWord.parseRawHtmlData(name, baseFormWord).then((onValue) {
+        leipzigRecursWord.parseRawHtmlData(name, baseFormWord, appProvider).then((onValue) {
           talker.info(
               "end parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
         });
@@ -707,7 +757,7 @@ class LeipzigWord {
       // parseRawHtmlData(onValue.name, toUpdate);
     }
     try {
-      await saveRelationsDataDB(word, db, editWord);
+      await saveRelationsDataDB(word, db, editWord, appProvider);
     } catch (e) {
       talker.error("saveBaseDataDB", e);
     }
@@ -715,12 +765,12 @@ class LeipzigWord {
   }
 
   Future<bool> updateDataDB(
-      LeipzigWord word, DbHelper db, Word editWord) async {
+      LeipzigWord word, DbHelper db, Word editWord, AppDataProvider appProvider) async {
     talker.info("start updateDataDB $name");
     editWord = await db.getWordById(editWord.id) ?? editWord;
 
-    await saveBaseDataDB(word, db, editWord);
-    await saveRelationsDataDB(word, db, editWord);
+    await saveBaseDataDB(word, db, editWord, appProvider);
+    await saveRelationsDataDB(word, db, editWord, appProvider);
 
     await updateRawData(db, editWord, word);
 

@@ -845,7 +845,8 @@ class WordsDetailState extends State<WordsDetail> {
 
     try {
       var leipzigTempWord = await leipzigSynonyms.getParseAllDataSpeed(
-          leipzigSynonyms, editWord, _progressbar);
+          leipzigSynonyms, editWord,
+          _progressbar, Provider.of<AppDataProvider>(context, listen: false));
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
       leipzigSynonyms.talker
           .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
@@ -918,7 +919,8 @@ class WordsDetailState extends State<WordsDetail> {
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
 
       leipzigSynonyms = await leipzigSynonyms.getParseAllDataSpeed(
-          leipzigSynonyms, editWord, _progressbar);
+          leipzigSynonyms, editWord,
+          _progressbar, Provider.of<AppDataProvider>(context, listen: false));
       
       leipzigSynonyms.translateNeededWords();
       await setBaseSettings(newWord);

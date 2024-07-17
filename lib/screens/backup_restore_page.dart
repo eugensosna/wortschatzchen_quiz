@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
@@ -19,7 +18,6 @@ class BackupRestorePage extends StatefulWidget {
 }
 
 class _BackupRestorePageState extends State<BackupRestorePage> {
-  final _formKey = GlobalKey<FormState>();
   late DbHelper db;
 
   @override
@@ -136,7 +134,11 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       leipzigSynonyms.serviceMode = true;
       try {
         var leipzigTempWord =
-            await leipzigSynonyms.getParseAllData(leipzigSynonyms, editWord);
+            await leipzigSynonyms.getParseAllData(
+          leipzigSynonyms,
+          editWord,
+          Provider.of<AppDataProvider>(context, listen: false),
+        );
         talker.info(" parsed ${editWord.name}");
       } catch (e) {
         talker.error("error parse ${editWord.name}", e);
