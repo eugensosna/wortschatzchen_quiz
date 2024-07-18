@@ -264,9 +264,10 @@ class LeipzigWord {
 
     talker.info("start getOpenthesaurusFromInternet");
     onProgress(0.7);
+     wort = await wort.getOpenThesaurusSynonyms(wort);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
-    wort = await wort.getOpenThesaurusSynonyms(wort);
+   
     onProgress(0.8);
     await wort.saveRelationsDataDB(wort, db, editWord, appProvider);
     talker.info("end getOpenthesaurusFromInternet");

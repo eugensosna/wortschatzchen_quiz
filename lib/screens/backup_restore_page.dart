@@ -7,6 +7,7 @@ import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
+import 'package:wortschatzchen_quiz/models/WordMvc.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 
@@ -47,15 +48,15 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             width: 40,
           ),
           ElevatedButton(
-            child: const Text("Save"),
+            child: const Text("Save DB"),
             onPressed: () {
-              save();
+              saveDB();
             },
           ),
           ElevatedButton(
-            child: const Text("Load"),
+            child: const Text("Load DB"),
             onPressed: () {
-              load();
+              loadDB();
             },
           ),
           Container(
@@ -71,9 +72,9 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             },
           ),
           ElevatedButton(
-            child: const Text("Export words to json "),
+            child: const Text("Import words from json "),
             onPressed: () {
-              exportToJson();
+              exportToJson(context);
             },
           ),
         ],
@@ -81,7 +82,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     );
   }
 
-  load() async {
+  loadDB() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       File file = File(result.files.single.path!);
@@ -93,7 +94,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     }
   }
 
-  save() async {
+  saveDB() async {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory == null) {
       showMessage("need select directory to save ");
@@ -150,29 +151,30 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     showMessage("refill data");
   }
 
+  
   showMessage(String message) async {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void exportToJson() async {
+  void exportToJson(BuildContext context) async {
+    Map<String, dynamic> resultJson = {}; 
     Map<String, dynamic> resultExport = {};
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
+      var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
       File file = File(result.files.single.path!);
       var dbToImport = DbHelper(pathToFile: file.path);
-      var lwords = await dbToImport.getOrdersWordList();
+      var lwords = await dbInto.getOrdersWordList();
+      List<dynamic> words = [];
       for (var item in lwords) {
-        // await db.into(db.words).insert(WordsCompanion.insert(
-        //     name: item.name,
-        //     important: item.important,
-        //     description: item.description,
-        //     mean: item.mean,
-        //     baseForm: item.baseForm,
-        //     baseLang: item.baseLang,
-        //     rootWordID: item.rootWordID));
+        var elem = await WordMvc.read(db, Provider.of<AppDataProvider>(context, listen: false),
+            uuid: item.uuid);
+        words.add(elem.toJson());
       }
+      resultJson["words"] = words;
     }
+    
   }
 }

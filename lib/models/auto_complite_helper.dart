@@ -50,13 +50,22 @@ class ReordableElement {
       required this.translate,
       required this.orderId,
       required this.uuid});
-  static ReordableElement map(Map<String, dynamic> data) {
+  static ReordableElement fromJson(Map<String, dynamic> data) {
     return ReordableElement(
         id: data["id"],
         name: data["name"],
         translate: data["translate"] ?? "",
         orderId: data["orderid"],
         uuid: data["uuid"]);
+  }
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'name': name.toString(),
+      'translate': translate,
+      'orderId': orderId,
+      'uuid': uuid
+    };
   }
 }
 

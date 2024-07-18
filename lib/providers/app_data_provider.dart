@@ -145,6 +145,71 @@ class AppDataProvider extends ChangeNotifier {
     updateAll();
   }
 
+addExamplesToBase(List<String> examples, Word editWord) async {
+    // if (editWord.mean.isEmpty && means.isNotEmpty) {
+    //   var toUpdate = editWord.copyWith(mean: means[0]);
+    //   db.updateWord(toUpdate);
+    //   editWord = toUpdate;
+    // }
+    var listOfBaseExamples = await db.getExamplesByWord(editWord.id);
+    // first filter list of Reordable element in list<Reordable> what in base it
+    // List<Reordable> convert to list<String> to check and remove from mens
+    // result means insert in the base
+    var toSkip = listOfBaseExamples
+        .where((e) => examples.contains(e.name))
+        .map((toElement) => toElement.name)
+        .toList();
+    examples.removeWhere((e) => toSkip.contains(e));
+
+    for (var (index, item) in examples.indexed) {
+      if (index < 3) {
+        await translate(item);
+      } else {
+        await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+            baseLang: translator.baseLang!.id,
+            targetLang: translator.targetLanguage!.id,
+            name: item,
+            translatedName: ""));
+      }
+      await db
+          .into(db.examples)
+          .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: item));
+    }
+    updateAll();
+  }
+
+  addSynonymsToBase(List<String> itemsToAdd, Word editWord) async {
+    var listOfBaseSynonyms = await db.getSynonymsByWord(editWord.id);
+    // first filter list of Reordable element in list<Reordable> what in base it
+    // List<Reordable> convert to list<String> to check and remove from mens
+    // result means insert in the base
+    var toSkip = listOfBaseSynonyms
+        .where((e) => itemsToAdd.contains(e.name))
+        .map((toElement) => toElement.name)
+        .toList();
+    itemsToAdd.removeWhere((e) => toSkip.contains(e));
+
+    for (var (index, item) in itemsToAdd.indexed) {
+      if (index < 3) {
+        await translate(item);
+      } else {
+        await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+            baseLang: translator.baseLang!.id,
+            targetLang: translator.targetLanguage!.id,
+            name: item,
+            translatedName: ""));
+      }
+      await db.into(db.synonyms).insert(SynonymsCompanion.insert(
+          baseWord: editWord.id,
+          synonymWord: 0,
+          name: item,
+          baseLang: editWord.baseLang,
+          translatedName: ""));
+    }
+    updateAll();
+  }
+
+
   Future<Deck> addQuizGroup(String name) async {
     var newId = await db
         .into(db.quizGroup)

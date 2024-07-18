@@ -26,14 +26,6 @@ class DbHelper extends AppDatabase {
 
   Future<List<ReordableElement>> getSynonymsByWord(int wordId) async {
     List<ReordableElement> result = [];
-    // final list = await (select(synonyms)
-    //       ..where((tbl) => tbl.baseWord.equals(wordId))
-    //       ..orderBy([(u) => OrderingTerm(expression: u.id)]))
-    //     .get();
-    // list.map(
-    //   (e) => result.add(ReordableElement.map(e.toColumns(false))),
-    // );
-    // return result;
 
     var customQuery = customSelect('''
         select synonyms.id as id,Max(synonyms.uuid) as uuid, Max( translated_words.translated_name) as translate, max(words.description) as word_translate,  Max(synonyms.name) as name, max(synonyms.id) as orderid from synonyms
@@ -50,7 +42,7 @@ class DbHelper extends AppDatabase {
         readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
     var listExamples = await customQuery.get();
     for (var item in listExamples) {
-      var element = ReordableElement.map(item.data);
+      var element = ReordableElement.fromJson(item.data);
       if (item.data["word_translate"] != null) {
         element.translate = item.data["word_translate"];
       }
@@ -81,7 +73,7 @@ class DbHelper extends AppDatabase {
         readsFrom: {sessions}, variables: [Variable.withInt(wordId)]);
     var listExamples = await customQuery.get();
     for (var item in listExamples) {
-      var element = ReordableElement.map(item.data);
+      var element = ReordableElement.fromJson(item.data);
       result.add(element);
     }
     //print(item.data.toString());
@@ -109,7 +101,7 @@ class DbHelper extends AppDatabase {
         readsFrom: {means}, variables: [Variable.withInt(wordId)]);
     var listExamples = await customQuery.get();
     for (var item in listExamples) {
-      var element = ReordableElement.map(item.data);
+      var element = ReordableElement.fromJson(item.data);
       result.add(element);
     }
     //print(item.data.toString());
@@ -164,9 +156,9 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<translatedwords?> getTranslatedWordById(int id) {
+  Future<translatedwords?> getTranslatedWordById(int id, {String uuid = ""}) {
     return (select(translatedWords)
-          ..where((tbl) => tbl.id.equals(id))
+          ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
           ..limit(1))
         .getSingleOrNull();
   }
@@ -197,16 +189,16 @@ class DbHelper extends AppDatabase {
     return (select(words)..where((tbl) => tbl.name.contains(name))).get();
   }
 
-  Future<Word?> getWordById(int id) async {
+  Future<Word?> getWordById(int id, {String uuid = ""}) async {
     return (select(words)
-          ..where((tbl) => tbl.id.equals(id))
+          ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
           ..limit(1))
         .getSingleOrNull();
   }
 
-  Future<QuestionData?> getQuestionById(int id) async {
+  Future<QuestionData?> getQuestionById(int id, {String uuid = ""}) async {
     return (select(question)
-          ..where((tbl) => tbl.id.equals(id))
+          ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
           ..limit(1))
         .getSingleOrNull();
   }
@@ -447,10 +439,10 @@ ORDER by words.name  ; ''',
     return result;
   }
 
-  Future<Deck?> getQuizById(int id, int baseLangID, int targetLangID) async {
+  Future<Deck?> getQuizById(int id, int baseLangID, int targetLangID, {String uuid = ""}) async {
     Deck result;
     var quizGroupLoc = await (select(quizGroup)
-          ..where((tbl) => tbl.id.equals(id))
+          ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
           ..orderBy([
             (tbl) => OrderingTerm(expression: (tbl.name)),
             // ((tbl) => OrderingTerm(expression: tbl.id))
