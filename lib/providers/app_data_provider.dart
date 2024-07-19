@@ -36,6 +36,7 @@ class AppDataProvider extends ChangeNotifier {
       _sessions = await db.getGroupedSessionsByName();
       notifyListeners();
     });
+    
   }
 
   Future<List<Word>> updateSessionByFilter({String current = ""}) async {

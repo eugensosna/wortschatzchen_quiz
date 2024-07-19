@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -10,6 +11,7 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/WordMvc.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 
 class BackupRestorePage extends StatefulWidget {
   const BackupRestorePage({super.key});
@@ -72,9 +74,14 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             },
           ),
           ElevatedButton(
-            child: const Text("Import words from json "),
+              child: const Text("Export words to json "),
             onPressed: () {
               exportToJson(context);
+              }),
+          ElevatedButton(
+            child: const Text("Import data from json "),
+            onPressed: () {
+              importFromJson(context);
             },
           ),
         ],
@@ -153,28 +160,89 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
 
   
   showMessage(String message) async {
+
+    
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+void importFromJson(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      // Read the file
+      String jsonString = await file.readAsString();
+      Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      var baseWord = WordMvc(Provider.of<AppDataProvider>(context, listen: false).db,
+          Provider.of<AppDataProvider>(context, listen: false), 0, '', '');
+      if (jsonMap.containsKey("words")) {
+        for (var element in jsonMap['words']) {
+          var word = baseWord.fromJson(element, provider);
+          word.save();
+        }
+      }
+      if (jsonMap.containsKey("quiz")) {
+        for (var element in jsonMap['quiz']) {
+          var deck = Deck.fromJson(element);
+          deck.save(provider);
+        }
+      }
+
+      showMessage("Loaded ");
+    }
   }
 
   void exportToJson(BuildContext context) async {
     Map<String, dynamic> resultJson = {}; 
     Map<String, dynamic> resultExport = {};
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    String? result = await FilePicker.platform.saveFile();
     if (result != null) {
-      var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
-      File file = File(result.files.single.path!);
-      var dbToImport = DbHelper(pathToFile: file.path);
-      var lwords = await dbInto.getOrdersWordList();
-      List<dynamic> words = [];
-      for (var item in lwords) {
-        var elem = await WordMvc.read(db, Provider.of<AppDataProvider>(context, listen: false),
-            uuid: item.uuid);
-        words.add(elem.toJson());
-      }
-      resultJson["words"] = words;
+      await exportWords(context, resultJson);
+      await exportQuiz(context, resultJson);
+
+      await writeJsonToFile(resultJson, result);
+      showMessage("Saved to ${result}");
     }
-    
+  }
+
+  Future<void> exportQuiz(BuildContext context, Map<String, dynamic> resultJson) async {
+    var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    // File file = File(result);
+    // var dbToImport = DbHelper(pathToFile: file.path);
+    var quizGroups = await db.getQuestions();
+    var lwords = await dbInto.getOrdersWordList();
+    List<dynamic> resultList = [];
+    for (var item in quizGroups) {
+      resultList.add(item.toJson());
+    }
+    resultJson["quiz"] = resultList;
+  }
+
+  Future<void> exportWords(BuildContext context, Map<String, dynamic> resultJson) async {
+    var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
+    // File file = File(result);
+    // var dbToImport = DbHelper(pathToFile: file.path);
+    var lwords = await dbInto.getOrdersWordList();
+    List<dynamic> words = [];
+    for (var item in lwords) {
+      var elem = await WordMvc.read(provider, uuid: item.uuid);
+      words.add(elem.toJson());
+    }
+    resultJson["words"] = words;
+  }
+
+  Future<void> writeJsonToFile(Map<String, dynamic> jsonMap, String filePath) async {
+    // Convert the map to a JSON string
+    String jsonString = jsonEncode(jsonMap);
+
+    // Get the path to the app's document directory
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File(filePath);
+
+    // Write the JSON string to the file
+    await file.writeAsString(jsonString);
   }
 }

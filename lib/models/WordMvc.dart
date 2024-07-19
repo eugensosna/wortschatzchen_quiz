@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
@@ -15,6 +16,9 @@ class WordMvc {
   String kindOfWord = "";
   String artikel = "";
   String important = "";
+  String baseForm = "";
+  int baseLang = 0;
+  int rootWordID = 0;
   final DbHelper db;
   final AppDataProvider appProvider;
 
@@ -26,33 +30,222 @@ class WordMvc {
     this.uuid,
   );
 
-  static Future<WordMvc> read(DbHelper db, AppDataProvider appProvider,
-      {Word? word, int id = -99, String uuid = "", String name = ""}) async {
+  static Future<WordMvc> read(AppDataProvider appProvider,
+      {Word? word,
+      int id = -99,
+      String uuid = "",
+      String name = "",
+      String baseForm = "",
+      int baseLang = 0,
+      int rootWordID = 0}) async {
+    var db = appProvider.db;
     var result = WordMvc(db, appProvider, id, name, uuid);
     var wordDb = await db.getWordById(id, uuid: uuid);
     if (wordDb != null) {
       result.mean = wordDb.mean;
+      result.id = wordDb.id;
       result.name = wordDb.name;
       result.important = wordDb.important;
+      result.baseForm = wordDb.baseForm;
+      result.baseLang = wordDb.baseLang;
+      result.rootWordID = wordDb.rootWordID;
+      result.quicktranslate = wordDb.description;
 
       result.synonyms = await db.getSynonymsByWord(wordDb.id);
       result.means = await db.getMeansByWord(wordDb.id);
       result.examples = await db.getExamplesByWord(wordDb.id);
       // result
+    } else {
+
     }
     return result;
   }
 
   void save() async {
+
+    Word? editWordDB;
     if (id<=0){
-      db.into(db.words).insert(WordsCompanion.insert(name: name, important: important, description: quicktranslate, mean: mean, baseForm: baseForm, baseLang: baseLang, rootWordID: rootWordID))
+      var idLocal = await db.into(db.words).insert(WordsCompanion.insert(
+          name: name,
+          important: important,
+          description: quicktranslate,
+          mean: mean,
+          baseForm: baseForm,
+          baseLang: baseLang,
+          rootWordID: rootWordID));
+
+      editWordDB = await db.getWordById(idLocal);
+    } else {
+      editWordDB = await db.getWordById(0, uuid: uuid);
     }
 
+    if (editWordDB == null) {
+      Exception("can't found word in db $id uuid:$uuid name $name ");
+    } else {
+      var toUpdate = editWordDB.copyWith(
+          uuid: uuid,
+          name: name,
+          important: important,
+          description: quicktranslate,
+          baseForm: baseForm,
+          baseLang: baseLang,
+          rootWordID: rootWordID);
+      await db.updateWord(toUpdate);
+      await saveMeansToBase(means, toUpdate);
+      await saveSynonymsToBase(synonyms, toUpdate);
+      await saveExamplesToBase(examples, toUpdate);
 
+      // appProvider.addExamplesToBase(examples.map((e) => e.name,), editWord)
+    }
   }
 
-  WordMvc fromJson(Map<String, dynamic> json) {
-    var result = WordMvc(db, appProvider, id, name, uuid);
+  saveExamplesToBase(List<ReordableElement> listToWrite, Word editWord,
+      {bool rewrite = false}) async {
+    //await db.deleteExamplesByWord(editWord);
+    for (var element in listToWrite) {
+      if (element.uuid.isNotEmpty) {
+        var foundRow = await db.getExampleByIdOrUuid(0, uuid: element.uuid);
+        if (foundRow == null) {
+          var newId = await db
+              .into(db.examples)
+              .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: element.name));
+          foundRow = await db.getExampleByIdOrUuid(
+            newId,
+          );
+        }
+        if (foundRow != null) {
+          var toUpdate = foundRow.copyWith(
+              baseWord: editWord.id, exampleOrder: element.orderId, name: element.name, uuid: uuid);
+          db.update(db.examples).replace(toUpdate);
+        }
+      }
+      await db
+          .into(db.examples)
+          .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: element.name));
+
+      if (element.translate.isEmpty) {
+        var translated = await db.getTranslateString(element.translate,
+            appProvider.translator.baseLang!.id, appProvider.translator.targetLanguage!.id);
+        if (translated.isEmpty) {
+          await addToTranslate(element);
+        }
+      } else {
+        var list = await db.getTranslatedWord(element.name, appProvider.translator.baseLang!.id,
+            appProvider.translator.targetLanguage!.id);
+        if (list.isNotEmpty) {
+          if (list[0].translatedName != element.translate) {
+            var toUpdate = list[0].copyWith(translatedName: element.translate);
+            await db.update(db.translatedWords).replace(toUpdate);
+          }
+        } else {
+          await addToTranslate(element);
+        }
+      }
+    }
+
+    appProvider.updateAll();
+  }
+
+  saveMeansToBase(List<ReordableElement> listToWrite, Word editWord, {bool rewrite = false}) async {
+    //await db.deleteExamplesByWord(editWord);
+    for (var element in listToWrite) {
+      var foundRow = await db.getMeanByIdOrUuid(0, uuid: element.uuid);
+      await insertUpdateMeans(foundRow, editWord, element);
+
+      await saveTranslate(element);
+    }
+
+    appProvider.updateAll();
+  }
+
+  saveSynonymsToBase(List<ReordableElement> listToWrite, Word editWord,
+      {bool rewrite = false}) async {
+    //await db.deleteExamplesByWord(editWord);
+    for (var element in listToWrite) {
+      var foundRow = await db.getSynonymById(0, uuid: element.uuid);
+      await insertUpdateSynonyms(foundRow, editWord, element);
+
+      await saveTranslate(element);
+    }
+
+    appProvider.updateAll();
+  }
+
+  Future<void> saveTranslate(ReordableElement element) async {
+    if (element.translate.isEmpty) {
+      var translated = await db.getTranslateString(element.translate,
+          appProvider.translator.baseLang!.id, appProvider.translator.targetLanguage!.id);
+      if (translated.isEmpty) {
+        await addToTranslate(element);
+      }
+    } else {
+      var list = await db.getTranslatedWord(element.name, appProvider.translator.baseLang!.id,
+          appProvider.translator.targetLanguage!.id);
+      if (list.isNotEmpty) {
+        if (list[0].translatedName != element.translate) {
+          var toUpdate = list[0].copyWith(translatedName: element.translate);
+          await db.update(db.translatedWords).replace(toUpdate);
+        }
+      } else {
+        await addToTranslate(element);
+      }
+    }
+  }
+
+  Future<void> insertUpdateMeans(Mean? foundRow, Word editWord, ReordableElement element) async {
+    if (foundRow == null) {
+      var newId = await db
+          .into(db.means)
+          .insert(MeansCompanion.insert(baseWord: editWord.id, name: element.name));
+      foundRow = await db.getMeanByIdOrUuid(
+        newId,
+      );
+    }
+    if (foundRow != null) {
+      var toUpdate = foundRow.copyWith(
+          baseWord: editWord.id,
+          meansOrder: element.orderId,
+          name: element.name,
+          uuid: element.uuid);
+      //foundRow.copyWith(
+      //  baseWord: editWord.id, exampleOrder: element.orderId, name: element.name, uuid: uuid);
+      await db.update(db.means).replace(toUpdate);
+    }
+  }
+
+  Future<void> insertUpdateSynonyms(
+      Synonym? foundRow, Word editWord, ReordableElement element) async {
+    if (foundRow == null) {
+      var newId = await db.into(db.synonyms).insert(SynonymsCompanion.insert(
+          baseWord: editWord.id,
+          synonymWord: 0,
+          name: element.name,
+          baseLang: baseLang,
+          translatedName: ""));
+      //.insert(MeansCompanion.insert(baseWord: editWord.id, name: element.name));
+      foundRow = await db.getSynonymById(
+        newId,
+      );
+    }
+    if (foundRow != null) {
+      var toUpdate = foundRow.copyWith(name: element.name, uuid: element.uuid);
+      await db.update(db.synonyms).replace(toUpdate);
+    }
+  }
+
+
+  Future<void> addToTranslate(ReordableElement element) async {
+    await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+        baseLang: appProvider.translator.baseLang!.id,
+        targetLang: appProvider.translator.targetLanguage!.id,
+        name: element.name,
+        translatedName: element.translate));
+  }
+
+
+  WordMvc fromJson(Map<String, dynamic> json, AppDataProvider appProvider) {
+    var db = appProvider.db;
+    var result = WordMvc(db, appProvider, 0, '', '');
     result.id = json["id"];
     result.mean = json["mean"];
     result.name = json["name"];
@@ -67,22 +260,29 @@ class WordMvc {
     result.mean = json["mean"];
     result.artikel = json.containsKey("artikel") ? json["artikel"] : "";
     result.important = json["important"];
-    result.synonyms = json.containsKey("synonyms")
-        ? json["synonyms"].map((e) => ReordableElement.fromJson(e)).toList()
-        : [];
-    result.examples = json.containsKey("examples")
-        ? json["examples"].map((e) => ReordableElement.fromJson(e)).toList()
-        : [];
-    result.means = json.containsKey("means")
-        ? json["means"].map((e) => ReordableElement.fromJson(e)).toList()
-        : [];
+    if (json.containsKey("synonyms")) {
+      for (var element in json["synonyms"]) {
+        result.synonyms.add(ReordableElement.fromJson(element));
+      }
+    }
 
+    if (json.containsKey("examples")) {
+      for (var element in json["synonyms"]) {
+        result.examples.add(ReordableElement.fromJson(element));
+      }
+    }
+    if (json.containsKey("means")) {
+      for (var element in json["synonyms"]) {
+        result.means.add(ReordableElement.fromJson(element));
+      }
+    }
     return result;
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'name': name,
       'mean': mean,
       'kindOfWord': kindOfWord,
       'uuid': uuid,

@@ -163,6 +163,13 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
+  Future<Synonym?> getSynonymById(int id, {String uuid = ""}) {
+    return (select(synonyms)
+          ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
   Future<Word?> getWordByName(String name) async {
     return (select(words)
           ..where((tbl) => tbl.name.equals(name))
@@ -274,9 +281,9 @@ class DbHelper extends AppDatabase {
         .get();
   }
 
-  Future<Word> updateWord(Word item, {bool skipComtrol = false}) async {
+  Future<Word> updateWord(Word item, {bool skipControl = false}) async {
     int? versionToWrite = item.version ?? 0;
-    if (!skipComtrol) {
+    if (!skipControl) {
       var oldItem = await getWordById(item.id);
       if (oldItem != null) {
         var oldVersion = oldItem.version ?? 0;

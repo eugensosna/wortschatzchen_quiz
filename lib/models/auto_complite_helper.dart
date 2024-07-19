@@ -41,8 +41,8 @@ class ReordableElement {
   int id;
   String name;
   String translate;
-  final int orderId;
-  final String uuid;
+  int orderId;
+  String uuid;
 
   ReordableElement(
       {required this.id,
@@ -51,19 +51,20 @@ class ReordableElement {
       required this.orderId,
       required this.uuid});
   static ReordableElement fromJson(Map<String, dynamic> data) {
-    return ReordableElement(
+    var result = ReordableElement(
         id: data["id"],
         name: data["name"],
-        translate: data["translate"] ?? "",
+        translate: data["translate"],
         orderId: data["orderid"],
         uuid: data["uuid"]);
+    return result;
   }
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
       'name': name.toString(),
       'translate': translate,
-      'orderId': orderId,
+      'orderid': orderId,
       'uuid': uuid
     };
   }
