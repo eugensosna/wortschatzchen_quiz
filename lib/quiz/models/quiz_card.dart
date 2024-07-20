@@ -1,4 +1,7 @@
+import 'package:drift/drift.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 
 class QuizCard {
   final int id;
@@ -38,6 +41,29 @@ class QuizCard {
         answer: json['answer'],
         id: json['id'],
         example: json['example']);
+  }
+  Future<void> save(AppDataProvider provider, Deck quiz_group) async {
+    var db = provider.db;
+    var row = await db.getQuestionByName(
+      question,
+      quiz_group.id,
+    );
+    if (row == null) {
+      var id = await db.into(db.question).insert(QuestionCompanion.insert(
+          name: question,
+          answer: answer,
+          example: example,
+          refQuizGroup: quiz_group.id,
+          refWord: Value<int>(word!.id)));
+      row = await db.getQuestionByName(question, quiz_group.id, wordId: word!.id);
+    }
+    if (row != null) {
+      var toUpdate = row.copyWith(
+          name: question, answer: answer, example: example, refWord: word != null ? word!.id : 0);
+      await db.update(db.question).replace(toUpdate);
+    } else {
+      Exception("can't found $question id $id");
+    }
   }
 
 

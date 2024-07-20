@@ -178,10 +178,10 @@ class DbHelper extends AppDatabase {
   }
 
   Future<QuestionData?> getQuestionByName(String name, int quizID,
-      {int wordId = 0}) async {
+      {int wordId = 0, int id = 0}) async {
     return (select(question)
           ..where((tbl) => Expression.and([
-                tbl.name.equals(name),
+                id > 0 ? tbl.id.equals(id) : tbl.name.equals(name),
                 tbl.refQuizGroup.equals(quizID),
                 wordId > 0
                     ? tbl.refWord.equals(wordId)
