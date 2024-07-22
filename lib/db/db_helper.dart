@@ -190,6 +190,18 @@ class DbHelper extends AppDatabase {
           ..limit(1))
         .getSingleOrNull();
   }
+  Future<QuestionData?> getQuestionById(int id, {int wordId = 0, int quizID = 0}) async {
+    return (select(question)
+          ..where((tbl) => Expression.and([
+                tbl.id.equals(id),
+                quizID > 0
+                    ? tbl.refQuizGroup.equals(quizID)
+                    : tbl.refQuizGroup.isBiggerOrEqualValue(quizID),
+                wordId > 0 ? tbl.refWord.equals(wordId) : tbl.refWord.isBiggerThanValue(wordId)
+              ]))
+          ..limit(1))
+        .getSingleOrNull();
+  }
 
 
   Future<List<Word>> getWordsByNameLike(String name) async {
@@ -203,7 +215,7 @@ class DbHelper extends AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<QuestionData?> getQuestionById(int id, {String uuid = ""}) async {
+  Future<QuestionData?> getQuestionByIdOrUuid(int id, {String uuid = ""}) async {
     return (select(question)
           ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
           ..limit(1))
@@ -493,10 +505,10 @@ ORDER by words.name  ; ''',
   }
 
 
-Future<QuizGroupData?> getQuizByName(String name) async {
+Future<QuizGroupData?> getQuizByNameOrId(String name, {int id = 0}) async {
     Deck result;
     var quizGroupLoc = await (select(quizGroup)
-          ..where((tbl) => tbl.name.equals(name))
+          ..where((tbl) => id > 0 ? tbl.id.equals(id) : tbl.name.equals(name))
           ..orderBy([
             (tbl) => OrderingTerm(expression: (tbl.name)),
             // ((tbl) => OrderingTerm(expression: tbl.id))

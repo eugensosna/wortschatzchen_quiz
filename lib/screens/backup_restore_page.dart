@@ -179,13 +179,13 @@ void importFromJson(BuildContext context) async {
       if (jsonMap.containsKey("words")) {
         for (var element in jsonMap['words']) {
           var word = baseWord.fromJson(element, provider);
-          word.save();
+          await word.save();
         }
       }
       if (jsonMap.containsKey("quiz")) {
         for (var element in jsonMap['quiz']) {
           var deck = Deck.fromJson(element);
-          deck.save(provider);
+          await deck.save(provider);
         }
       }
 

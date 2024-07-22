@@ -57,13 +57,17 @@ class WordMvc {
       // result
     } else {
 
+      
+
     }
     return result;
   }
 
-  void save() async {
+  Future<WordMvc?> save() async {
 
     Word? editWordDB;
+
+   
     if (id<=0){
       var idLocal = await db.into(db.words).insert(WordsCompanion.insert(
           name: name,
@@ -77,11 +81,25 @@ class WordMvc {
       editWordDB = await db.getWordById(idLocal);
     } else {
       editWordDB = await db.getWordById(0, uuid: uuid);
+
+      if (editWordDB == null) {
+        var idLocal = await db.into(db.words).insert(WordsCompanion.insert(
+            name: name,
+            important: important,
+            description: quicktranslate,
+            mean: mean,
+            baseForm: baseForm,
+            baseLang: baseLang,
+            rootWordID: rootWordID));
+
+        editWordDB = await db.getWordById(idLocal);
+      }
     }
 
     if (editWordDB == null) {
       Exception("can't found word in db $id uuid:$uuid name $name ");
     } else {
+      id = editWordDB.id;
       var toUpdate = editWordDB.copyWith(
           uuid: uuid,
           name: name,
@@ -97,6 +115,8 @@ class WordMvc {
 
       // appProvider.addExamplesToBase(examples.map((e) => e.name,), editWord)
     }
+    return await WordMvc.read(appProvider, word: editWordDB, id: id, uuid: uuid);
+
   }
 
   saveExamplesToBase(List<ReordableElement> listToWrite, Word editWord,

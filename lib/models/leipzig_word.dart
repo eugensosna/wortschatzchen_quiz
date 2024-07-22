@@ -526,10 +526,10 @@ class LeipzigWord {
 
     Word? word = await db.getWordById(id);
     if (word != null) {
-      QuizGroupData? quiz = await db.getQuizByName(formatted);
+        QuizGroupData? quiz = await db.getQuizByNameOrId(formatted);
       if (quiz == null) {
         var id = await db.into(db.quizGroup).insert(QuizGroupCompanion.insert(name: formatted));
-        quiz = await db.getQuizByName(formatted);
+          quiz = await db.getQuizByNameOrId(formatted);
       }
 
       if (quiz != null) {

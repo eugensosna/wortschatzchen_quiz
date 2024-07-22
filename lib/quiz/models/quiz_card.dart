@@ -4,10 +4,10 @@ import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 
 class QuizCard {
-  final int id;
-  final String question;
-  final String answer;
-  final String example;
+  int id;
+  String question;
+  String answer;
+  String example;
   String translatedQuestions;
   String translatedAnswer;
   String translatedExample;
@@ -36,6 +36,7 @@ class QuizCard {
   }
 
   static QuizCard fromJson(Map<String, dynamic> json) {
+    
     return QuizCard(
         question: json['question'],
         answer: json['answer'],
@@ -44,22 +45,26 @@ class QuizCard {
   }
   Future<void> save(AppDataProvider provider, Deck quiz_group) async {
     var db = provider.db;
-    var row = await db.getQuestionByName(
+    QuestionData? row;
+    row = await db.getQuestionByName(
       question,
       quiz_group.id,
     );
     if (row == null) {
-      var id = await db.into(db.question).insert(QuestionCompanion.insert(
+      var idLocal = await db.into(db.question).insert(QuestionCompanion.insert(
           name: question,
           answer: answer,
           example: example,
-          refQuizGroup: quiz_group.id,
-          refWord: Value<int>(word!.id)));
-      row = await db.getQuestionByName(question, quiz_group.id, wordId: word!.id);
+          refQuizGroup: quiz_group.id));
+      row = await db.getQuestionByIdOrUuid(idLocal);
     }
     if (row != null) {
       var toUpdate = row.copyWith(
-          name: question, answer: answer, example: example, refWord: word != null ? word!.id : 0);
+          name: question,
+          answer: answer,
+          example: example,
+          refWord: word != null ? word!.id : 0,
+          refQuizGroup: quiz_group.id);
       await db.update(db.question).replace(toUpdate);
     } else {
       Exception("can't found $question id $id");
