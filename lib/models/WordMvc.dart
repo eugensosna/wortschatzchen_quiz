@@ -108,6 +108,19 @@ class WordMvc {
           baseForm: baseForm,
           baseLang: baseLang,
           rootWordID: rootWordID);
+
+      if (mean.isNotEmpty) {
+        means.firstWhere(
+          (element) => element.name == mean,
+          orElse: () {
+            var newElement =
+                ReordableElement(id: 0, name: mean, translate: "", orderId: 1, uuid: "");
+            means.insert(0, newElement);
+            return newElement;
+          },
+        );
+      }
+
       await db.updateWord(toUpdate);
       await saveMeansToBase(means, toUpdate);
       await saveSynonymsToBase(synonyms, toUpdate);

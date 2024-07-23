@@ -388,9 +388,15 @@ class WordsDetailState extends State<WordsDetail> {
                 ),
                 TextField(
                   controller: meanController,
-                  decoration: const InputDecoration(label: Text("Mean")),
+                  decoration: InputDecoration(
+                      label: Text("Mean"),
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            _showEditMeans(context, listMeans);
+                          },
+                          icon: Icon(Icons.account_tree_rounded))),
                   onTap: () {
-                    _showEditMeans(context, listMeans);
+                   
                   },
                 ),
                 TextField(
@@ -797,6 +803,9 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<Word> updateWordIfNeed(Word wordToUpdate) async {
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
+
     if (wordToUpdate.id <= 0) {
       throw "its now existed Word , you shold save befor update ";
     } else {
@@ -805,8 +814,19 @@ class WordsDetailState extends State<WordsDetail> {
       Word toUpdate = wordToUpdate.copyWith();
       if (toUpdate.mean.isNotEmpty) {
         var translator =
-            Provider.of<AppDataProvider>(context, listen: false)
-                .translator;
+            provider.translator;
+        var meanRow = await db.getMeanByNameAndWord(toUpdate.mean, toUpdate.id);
+        if (meanRow == null) {
+          int id = await db
+              .into(db.means)
+              .insert(MeansCompanion.insert(baseWord: toUpdate.id, name: toUpdate.mean));
+          meanRow = await db.getMeanByIdOrUuid(id);
+          if (meanRow != null) {
+            var meanToUpdate = meanRow.copyWith(meansOrder: 1);
+            await db.update(db.means).replace(meanToUpdate);
+          }
+        }
+
 
         var translatedMean = await db.getTranslateString(
             toUpdate.mean, toUpdate.baseLang, translator.targetLanguage!.id);
@@ -817,6 +837,7 @@ class WordsDetailState extends State<WordsDetail> {
                   targetLang: translator.targetLanguage!.id,
                   name: toUpdate.mean,
                   translatedName: ""));
+            
         }
       }
 
@@ -1018,8 +1039,12 @@ class WordsDetailState extends State<WordsDetail> {
         int id = await db.into(db.means).insert(
             MeansCompanion.insert(baseWord: editWord.id, name: item.name));
         element = await db.getMeanByIdOrUuid(id);
+        
+        
         if (element != null) {
           element = element.copyWith(meansOrder: index);
+          item.id = id;
+          item.uuid = element.uuid;
         }
       } else {
         element = Mean(
@@ -1033,9 +1058,11 @@ class WordsDetailState extends State<WordsDetail> {
         await db.update(db.means).replace(element);
       }
     }
-    if (result.isNotEmpty && editWord.mean != result[0].name) {
+    if (result.isNotEmpty && meanController.text != result[0].name) {
+      meanController.text = result[0].name;
       var toUpdate = editWord.copyWith(mean: result[0].name);
       editWord = await db.updateWord(toUpdate);
+      
     }
     // fillControllers(editWord);
     await setBaseSettings(editWord);
