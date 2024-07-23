@@ -54,8 +54,8 @@ class ReordableElement {
     var result = ReordableElement(
         id: data["id"],
         name: data["name"],
-        translate: data["translate"],
-        orderId: data["orderid"],
+        translate: data["translate"] ?? "",
+        orderId: data["orderid"] ?? 0,
         uuid: data["uuid"]);
     return result;
   }
