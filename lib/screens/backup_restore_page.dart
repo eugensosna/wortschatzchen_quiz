@@ -7,11 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as ppath;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/WordMvc.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 class BackupRestorePage extends StatefulWidget {
   const BackupRestorePage({super.key});
@@ -179,7 +181,17 @@ void importFromJson(BuildContext context) async {
       if (jsonMap.containsKey("words")) {
         for (var element in jsonMap['words']) {
           var word = baseWord.fromJson(element, provider);
-          await word.save();
+          var savedword = await word.save();
+          String formatted = getDefaultSessionName();
+
+          if (savedword != null) {
+            await db
+                .into(db.sessions)
+                .insert(SessionsCompanion.insert(baseWord: savedword.id, typesession: formatted));
+          }
+
+    
+
         }
       }
       if (jsonMap.containsKey("quiz")) {
@@ -199,9 +211,12 @@ void importFromJson(BuildContext context) async {
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     String? result = await FilePicker.platform.saveFile();
     if (result != null) {
+
+      List<Word> wordsToExport = [];
+      if (context.mounted) {
       await exportWords(context, resultJson);
       await exportQuiz(context, resultJson);
-
+      }
       await writeJsonToFile(resultJson, result);
       showMessage("Saved to ${result}");
     }
@@ -212,9 +227,9 @@ void importFromJson(BuildContext context) async {
     // File file = File(result);
     // var dbToImport = DbHelper(pathToFile: file.path);
     var quizGroups = await db.getQuestions();
-    var lwords = await dbInto.getOrdersWordList();
     List<dynamic> resultList = [];
     for (var item in quizGroups) {
+      
       resultList.add(item.toJson());
     }
     resultJson["quiz"] = resultList;

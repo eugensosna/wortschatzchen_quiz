@@ -883,7 +883,7 @@ class WordsDetailState extends State<WordsDetail> {
         await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, db, talker: widget.talker);
     }));
-    if (result) {}
+    if (result != null) {}
   }
 
   viewWord(String item) async {

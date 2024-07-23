@@ -126,7 +126,12 @@ class _QuestionListViewState extends State<QuestionListView> {
                 // deck: deck,
               )),
     );
-    card = result;
+    if (result != null) {
+      card = result;
+
+    }
+    ;
+
   }
 
   void _delete(QuizCard card) async {
