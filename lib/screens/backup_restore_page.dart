@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+// import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart' as nativewrappers;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,8 @@ class BackupRestorePage extends StatefulWidget {
 class _BackupRestorePageState extends State<BackupRestorePage> {
   late DbHelper db;
 
+  bool isLoading = false;
+  double _progress = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -80,7 +83,12 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             onPressed: () {
               exportToJson(context);
               }),
-          ElevatedButton(
+
+          isLoading
+              ? LinearProgressIndicator(
+                  value: _progress,
+                )
+              : ElevatedButton(
             child: const Text("Import data from json "),
             onPressed: () {
               importFromJson(context);
@@ -169,6 +177,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   }
 
 void importFromJson(BuildContext context) async {
+    isLoading = true;
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     var provider = Provider.of<AppDataProvider>(context, listen: false);
     if (result != null) {
@@ -179,27 +188,48 @@ void importFromJson(BuildContext context) async {
       var baseWord = WordMvc(Provider.of<AppDataProvider>(context, listen: false).db,
           Provider.of<AppDataProvider>(context, listen: false), 0, '', '');
       if (jsonMap.containsKey("words")) {
+        int sumLength = jsonMap['words'].length;
+        var index = 0;
+        sumLength = sumLength * 2;
         for (var element in jsonMap['words']) {
-          var word = baseWord.fromJson(element, provider);
-          var savedword = await word.save();
-          String formatted = getDefaultSessionName();
+          index += 1;
+          try {
+            var word = baseWord.fromJson(element, provider);
+            var savedword = await word.save();
+            String formatted = getDefaultSessionName();
 
-          if (savedword != null) {
-            await db
-                .into(db.sessions)
-                .insert(SessionsCompanion.insert(baseWord: savedword.id, typesession: formatted));
+            if (savedword != null) {
+              await db
+                  .into(db.sessions)
+                  .insert(SessionsCompanion.insert(baseWord: savedword.id, typesession: formatted));
+            }
+} on Exception catch (e) {
+            print(e);
+            // TODO
           }
-
-    
-
+          _progress = index / sumLength;
+          setState(() {
+            _progress = index / sumLength;
+          });
         }
       }
       if (jsonMap.containsKey("quiz")) {
+        int sumLength = jsonMap['words'].length * 2;
+        var index = sumLength;
+        sumLength = sumLength * 2;
         for (var element in jsonMap['quiz']) {
           var deck = Deck.fromJson(element);
           await deck.save(provider);
+          index += 1;
+          _progress = index / sumLength;
+          setState(() {
+            _progress = index / sumLength;
+          });
         }
       }
+      setState(() {
+        isLoading = false;
+      });
 
       showMessage("Loaded ");
     }
