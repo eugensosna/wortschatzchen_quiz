@@ -49,6 +49,7 @@ class Deck {
       );
     }
     if (quiz_group != null) {
+      id = quiz_group.id;
       var toUpdate = quiz_group.copyWith(name: deckTitle);
       await db.update(db.quizGroup).replace(toUpdate);
       for (var element in cards) {

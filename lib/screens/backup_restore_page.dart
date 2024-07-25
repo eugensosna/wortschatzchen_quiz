@@ -28,16 +28,14 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
 
   bool isLoading = false;
   double _progress = 0;
+  String semanticValue = "";
   @override
   void initState() {
-    // TODO: implement initState
-
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     db = Provider.of<AppDataProvider>(context, listen: false).db;
   }
@@ -80,20 +78,33 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
           ),
           ElevatedButton(
               child: const Text("Export words to json "),
-            onPressed: () {
-              exportToJson(context);
+              onPressed: () {
+                exportToJson(context);
               }),
-
           isLoading
-              ? LinearProgressIndicator(
-                  value: _progress,
+              ? Stack(
+                  children: [
+                    Container(
+                      height: 20,
+                      child: LinearProgressIndicator(
+                        value: _progress,
+                        semanticsValue: semanticValue,
+                        backgroundColor: Colors.white,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      ),
+                    ),
+                    Align(
+                      child: Text(semanticValue),
+                      alignment: Alignment.topCenter,
+                    )
+                  ],
                 )
               : ElevatedButton(
-            child: const Text("Import data from json "),
-            onPressed: () {
-              importFromJson(context);
-            },
-          ),
+                  child: const Text("Import data from json "),
+                  onPressed: () {
+                    importFromJson(context);
+                  },
+                ),
         ],
       ),
     );
@@ -151,8 +162,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       var leipzigSynonyms = LeipzigWord(editWord.name, db, talker);
       leipzigSynonyms.serviceMode = true;
       try {
-        var leipzigTempWord =
-            await leipzigSynonyms.getParseAllData(
+        var leipzigTempWord = await leipzigSynonyms.getParseAllData(
           leipzigSynonyms,
           editWord,
           Provider.of<AppDataProvider>(context, listen: false),
@@ -168,25 +178,22 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     showMessage("refill data");
   }
 
-  
   showMessage(String message) async {
-
-    
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-void importFromJson(BuildContext context) async {
+  void importFromJson(BuildContext context) async {
     isLoading = true;
+    var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     var provider = Provider.of<AppDataProvider>(context, listen: false);
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
     if (result != null) {
       File file = File(result.files.single.path!);
       // Read the file
       String jsonString = await file.readAsString();
       Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      var baseWord = WordMvc(Provider.of<AppDataProvider>(context, listen: false).db,
-          Provider.of<AppDataProvider>(context, listen: false), 0, '', '');
+      var baseWord = WordMvc(db, provider, 0, '', '');
       if (jsonMap.containsKey("words")) {
         int sumLength = jsonMap['words'].length;
         var index = 0;
@@ -194,7 +201,9 @@ void importFromJson(BuildContext context) async {
         for (var element in jsonMap['words']) {
           index += 1;
           try {
+            talker.verbose("start ${element["name"]}");
             var word = baseWord.fromJson(element, provider);
+            semanticValue = word.name;
             var savedword = await word.save();
             String formatted = getDefaultSessionName();
 
@@ -203,7 +212,9 @@ void importFromJson(BuildContext context) async {
                   .into(db.sessions)
                   .insert(SessionsCompanion.insert(baseWord: savedword.id, typesession: formatted));
             }
-} on Exception catch (e) {
+            talker.verbose("end ${element["name"]}");
+
+          } on Exception catch (e) {
             print(e);
             // TODO
           }
@@ -214,13 +225,15 @@ void importFromJson(BuildContext context) async {
         }
       }
       if (jsonMap.containsKey("quiz")) {
-        int sumLength = jsonMap['words'].length * 2;
+        int sumLength = jsonMap['quiz'].length;
         var index = sumLength;
         sumLength = sumLength * 2;
         for (var element in jsonMap['quiz']) {
           var deck = Deck.fromJson(element);
           await deck.save(provider);
           index += 1;
+
+          semanticValue = element["deckTitle"];
           _progress = index / sumLength;
           setState(() {
             _progress = index / sumLength;
@@ -231,21 +244,20 @@ void importFromJson(BuildContext context) async {
         isLoading = false;
       });
 
-      showMessage("Loaded ");
+      showMessage("Load endet  ");
     }
   }
 
   void exportToJson(BuildContext context) async {
-    Map<String, dynamic> resultJson = {}; 
+    Map<String, dynamic> resultJson = {};
     Map<String, dynamic> resultExport = {};
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     String? result = await FilePicker.platform.saveFile();
     if (result != null) {
-
       List<Word> wordsToExport = [];
       if (context.mounted) {
-      await exportWords(context, resultJson);
-      await exportQuiz(context, resultJson);
+        await exportWords(context, resultJson);
+        await exportQuiz(context, resultJson);
       }
       await writeJsonToFile(resultJson, result);
       showMessage("Saved to ${result}");
@@ -259,7 +271,6 @@ void importFromJson(BuildContext context) async {
     var quizGroups = await db.getQuestions();
     List<dynamic> resultList = [];
     for (var item in quizGroups) {
-      
       resultList.add(item.toJson());
     }
     resultJson["quiz"] = resultList;
@@ -284,7 +295,7 @@ void importFromJson(BuildContext context) async {
     String jsonString = jsonEncode(jsonMap);
 
     // Get the path to the app's document directory
-    final directory = await getApplicationDocumentsDirectory();
+    // final directory = await getApplicationDocumentsDirectory();
     final file = File(filePath);
 
     // Write the JSON string to the file

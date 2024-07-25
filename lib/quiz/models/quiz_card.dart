@@ -57,6 +57,7 @@ class QuizCard {
           example: example,
           refQuizGroup: quiz_group.id));
       row = await db.getQuestionByIdOrUuid(idLocal);
+      id = idLocal;
     }
     if (row != null) {
       var toUpdate = row.copyWith(
