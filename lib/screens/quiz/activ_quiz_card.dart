@@ -66,7 +66,6 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
       });
 
     slideOutController = AnimationController(
-      // vsync: this,
       duration: const Duration(milliseconds: 500), vsync: this,
     )
       ..addListener(() => setState(() {
@@ -153,7 +152,9 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
                       ),
                       textAlign: TextAlign.center,
                       softWrap: true,
+
                     ),
+                    
                     needTranslate
                         ? Text(
                             isShowingAnswer
@@ -161,6 +162,22 @@ class _ActiveQuizCardState extends State<ActiveQuizCard>
                                 : card.translatedQuestions,
                             style: const TextStyle(
                               fontSize: 20.0,
+                              color: Colors.white,
+                            ))
+                        : Container(),
+                    Text(
+                      isShowingAnswer ? "" : "Exampl: ${card.example}",
+                      style: const TextStyle(
+                        fontSize: 19.0,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                    ),
+                    needTranslate
+                        ? Text(isShowingAnswer ? "" : card.translatedExample,
+                            style: const TextStyle(
+                              fontSize: 14.0,
                               color: Colors.white,
                             ))
                         : Container(),

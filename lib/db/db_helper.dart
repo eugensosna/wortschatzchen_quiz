@@ -506,7 +506,6 @@ ORDER by words.name  ; ''',
 
 
 Future<QuizGroupData?> getQuizByNameOrId(String name, {int id = 0}) async {
-    Deck result;
     var quizGroupLoc = await (select(quizGroup)
           ..where((tbl) => id > 0 ? tbl.id.equals(id) : tbl.name.equals(name))
           ..orderBy([

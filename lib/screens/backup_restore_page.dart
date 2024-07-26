@@ -215,7 +215,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             talker.verbose("end ${element["name"]}");
 
           } on Exception catch (e) {
-            print(e);
+            talker.error("import from json $element", e);
             // TODO
           }
           _progress = index / sumLength;

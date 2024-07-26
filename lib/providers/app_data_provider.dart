@@ -227,14 +227,29 @@ addExamplesToBase(List<String> examples, Word editWord) async {
     return result;
   }
 
+
+  Future<Deck> getQuizGroup(String name) async {
+    updateDecks();
+
+    // var resultDB
+    var result = _decks.firstWhere(
+      (element) => element.deckTitle == name,
+      orElse: () => Deck(deckTitle: name, cards: [], id: -99),
+    );
+    // result ??= ;
+    notifyListeners();
+    return result;
+  }
+
   Future<QuizCard> updateQuestion(
-      QuizCard card, String answer, Deck deck, String question) async {
+      QuizCard card, String answer, Deck deck, String question,
+      {String example = ""}) async {
     QuizCard toReturn =
         QuizCard(question: question, answer: answer, id: card.id, example: "");
 
     var questionDb = await db.getQuestionById(card.id);
     if (questionDb != null) {
-      var toupdate = questionDb.copyWith(name: question, answer: answer);
+      var toupdate = questionDb.copyWith(name: question, answer: answer, example: example);
       db.update(db.question).replace(toupdate);
       toReturn = QuizCard(
           question: question,

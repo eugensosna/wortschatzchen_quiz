@@ -17,6 +17,8 @@ class _AddCardViewState extends State<AddCardView> {
   final questionTextController = TextEditingController();
   final answerTextController = TextEditingController();
 
+  final exampleTextController = TextEditingController();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -24,6 +26,7 @@ class _AddCardViewState extends State<AddCardView> {
     if (widget.quizCard != null) {
       questionTextController.text = widget.quizCard!.question;
       answerTextController.text = widget.quizCard!.answer;
+      exampleTextController.text = widget.quizCard!.example;
     }
   }
 
@@ -53,6 +56,10 @@ class _AddCardViewState extends State<AddCardView> {
                     padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
                     child: _answerFieldNewCardScreen(),
                   ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
+                  child: _examplesFieldNewCardScreen(),
+                ),
                   _submitButton(deck)
                 ],
               ),
@@ -72,6 +79,8 @@ class _AddCardViewState extends State<AddCardView> {
       style: const TextStyle(fontSize: 20.0, color: Colors.black),
       decoration: const InputDecoration(
           hintText: "Question",
+          label: Text(" Question"),
+
           border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
@@ -87,6 +96,8 @@ class _AddCardViewState extends State<AddCardView> {
       style: const TextStyle(fontSize: 20.0, color: Colors.black),
       decoration: const InputDecoration(
           hintText: "Answer",
+          label: Text(" Answer"),
+
           border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
@@ -94,28 +105,45 @@ class _AddCardViewState extends State<AddCardView> {
     );
   }
 
+Widget _examplesFieldNewCardScreen() {
+    return TextField(
+      controller: exampleTextController,
+      textAlign: TextAlign.center,
+      autocorrect: true,
+      style: const TextStyle(fontSize: 20.0, color: Colors.black),
+      decoration: const InputDecoration(
+          hintText: "Example",
+          label: Text(" Example"),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(color: Colors.black, width: 2.0, style: BorderStyle.solid))),
+    );
+  }
+
+
   Widget _submitButton(Deck currenDeck) {
     return ElevatedButton(
       // color: Colors.black,
       onPressed: () async {
+        var provider = await Provider.of<AppDataProvider>(context, listen: false);
         var card = QuizCard(
             question: questionTextController.text,
             answer: answerTextController.text,
             id: 0,
             example: "");
         if (widget.quizCard == null) {
-          var card = await Provider.of<AppDataProvider>(context, listen: false)
-              .addQuizQuestion(questionTextController.text,
-                  answerTextController.text, currenDeck);
+          var card = await provider.addQuizQuestion(
+              questionTextController.text, answerTextController.text, currenDeck,
+              example: exampleTextController.text);
 
           // MockDecks.addCard(
           //     questionTextController.text, answerTextController.text, deck);
           questionTextController.text = "";
           answerTextController.text = "";
         } else {
-          card = await Provider.of<AppDataProvider>(context, listen: false)
-              .updateQuestion(widget.quizCard!, answerTextController.text,
-                  currenDeck, questionTextController.text);
+          card = await provider.updateQuestion(
+              widget.quizCard!, answerTextController.text, currenDeck, questionTextController.text,
+              example: exampleTextController.text);
 
           // .addQuizQuestion(questionTextController.text,
           // answerTextController.text, currenDeck);

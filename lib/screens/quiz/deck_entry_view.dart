@@ -7,6 +7,7 @@ import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 // import 'package:wortschatzchen_quiz/quiz/mock/mock_decks.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/add_card_view.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/add_quiz_group.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/question_list_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
@@ -39,6 +40,15 @@ class DeckEntryView extends StatelessWidget {
           ),
           // backgroundColor: Colors.black,
           title: Text(deck.deckTitle),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => AddQuizGroup(deck: deck)));
+                  // AddQuizGroup(deck: deck);
+                },
+                icon: const Icon(Icons.edit))
+          ],
         ),
         body: Consumer<AppDataProvider>(
           builder: (context, value, child) {

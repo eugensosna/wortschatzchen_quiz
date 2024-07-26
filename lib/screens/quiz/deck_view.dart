@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
+import 'package:wortschatzchen_quiz/screens/quiz/add_quiz_group.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/deck_entry_view.dart';
 
 class DeckView extends StatefulWidget {
@@ -58,25 +59,31 @@ class _DeckViewState extends State<DeckView> {
         decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.black54)),
         ),
-        child: ListTile(
+        child: GestureDetector(
+          onDoubleTap: () => AddQuizGroup(
+            deck: currentDeck,
+          ),
           onTap: () => _navigateToSelectedDeckEntryScreen(context, currentDeck),
-          title: Center(
-              child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              currentDeck.deckTitle,
-              style: const TextStyle(
-                fontSize: 30,
+          child: ListTile(
+      
+            title: Center(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                currentDeck.deckTitle,
+                style: const TextStyle(
+                  fontSize: 30,
+                ),
               ),
-            ),
-          )),
-          subtitle: Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
-            child: Center(
-                child: Text(
-              deckCardCount,
-              style: const TextStyle(fontSize: 20),
             )),
+            subtitle: Padding(
+              padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
+              child: Center(
+                  child: Text(
+                deckCardCount,
+                style: const TextStyle(fontSize: 20),
+              )),
+            ),
           ),
         ),
       ),

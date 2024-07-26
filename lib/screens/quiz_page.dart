@@ -49,37 +49,9 @@ class QuizPageState extends State<QuizPage> {
             body: Consumer<AppDataProvider>(
               builder: (context, value, child) => TabBarView(children: <Widget>[
             DeckView(decks),
-            const AddQuizGroup(),
+                AddQuizGroup(),
           ]),
             )));
-          
-    /*return Material(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: PageView.builder(
-                  
-                  
-                  itemBuilder: (context, index) {
-                    var item = _questions.elementAt(index);
-                    return Center(
-                      child: Text(
-                        item.question,
-                      ),
-                    );
-                  },
-                  controller: pageController,
-                  itemCount: _questions.length,
-                ),
-              ),
-              
-            ]),
-      ),
-    );*/
+
   }
 }
