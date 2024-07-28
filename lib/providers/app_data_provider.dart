@@ -282,7 +282,26 @@ addExamplesToBase(List<String> examples, Word editWord) async {
     return deck;
   }
 
-  
+  void saveWordToSession(Word wordToAdd, String sessionName) async {
+    var sessionWord = await db.getSessionEntryByWord(wordToAdd);
+    if (sessionWord != null) {
+      if (sessionWord.typesession != sessionName) {
+        await (db.delete(db.sessions)
+              ..where(
+                (tbl) => tbl.id.equals(sessionWord.id),
+              ))
+            .go();
+      } else {
+        return;
+      }
+    }
+
+      await db
+          .into(db.sessions)
+          .insert(SessionsCompanion.insert(baseWord: wordToAdd.id, typesession: sessionName));
+    updateSessions();
+
+  }
 
   void translateNeededWords() async {
     talker.info("start translateNeededWords");

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
 class WordMvc {
   int id;
@@ -19,6 +21,8 @@ class WordMvc {
   String baseForm = "";
   int baseLang = 0;
   int rootWordID = 0;
+  String currentSession = "";
+  bool isNew = false;
   final DbHelper db;
   final AppDataProvider appProvider;
 
@@ -54,11 +58,19 @@ class WordMvc {
       result.synonyms = await db.getSynonymsByWord(wordDb.id);
       result.means = await db.getMeansByWord(wordDb.id);
       result.examples = await db.getExamplesByWord(wordDb.id);
+      var sessionRow = await db.getSessionEntryByWord(wordDb);
+      if (sessionRow != null) {
+        result.currentSession = sessionRow.typesession;
+      }
       // result
     } else {
 
       
 
+    }
+
+    if (result.currentSession.isEmpty) {
+      result.currentSession = getDefaultSessionName();
     }
     return result;
   }
@@ -77,6 +89,7 @@ class WordMvc {
           baseForm: baseForm,
           baseLang: baseLang,
           rootWordID: rootWordID));
+      isNew = true;
 
       editWordDB = await db.getWordById(idLocal);
     } else {
@@ -124,11 +137,13 @@ class WordMvc {
       await db.updateWord(toUpdate);
       await saveMeansToBase(means, toUpdate);
       await saveSynonymsToBase(synonyms, toUpdate);
+      appProvider.saveWordToSession(toUpdate, currentSession);
       await saveExamplesToBase(examples, toUpdate);
+      
 
       // appProvider.addExamplesToBase(examples.map((e) => e.name,), editWord)
     }
-    return await WordMvc.read(appProvider, word: editWordDB, id: id, uuid: uuid);
+    return this;
 
   }
 
@@ -276,12 +291,13 @@ class WordMvc {
   }
 
 
-  WordMvc fromJson(Map<String, dynamic> json, AppDataProvider appProvider) {
+  static WordMvc fromJson(Map<String, dynamic> json, AppDataProvider appProvider) {
     var db = appProvider.db;
-    var result = WordMvc(db, appProvider, 0, '', '');
+    var result = WordMvc(db, appProvider, -99, '', '');
     result.id = json["id"];
     result.mean = json["mean"];
     result.name = json["name"];
+    result.currentSession = json.containsKey("currentSession") ? json["currentSession"] : "";
 
     result.kindOfWord = json.containsKey("kindOfWord") ? json["kindOfWord"] : "";
     result.uuid = json["uuid"];
@@ -315,10 +331,12 @@ class WordMvc {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      
       'name': name,
       'mean': mean,
       'kindOfWord': kindOfWord,
       'uuid': uuid,
+      'currentSession': currentSession,
       'quicktranslate': quicktranslate,
       'artikel': artikel,
       'important': important,

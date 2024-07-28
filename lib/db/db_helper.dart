@@ -359,7 +359,8 @@ class DbHelper extends AppDatabase {
           ..where((tbl) => Expression.and([
                 tbl.baseWord.equals(item.id),
                 // tbl.baseWord.equals(basedWord.id),
-              ])))
+              ]))
+          ..limit(1))
         .getSingleOrNull();
   }
 

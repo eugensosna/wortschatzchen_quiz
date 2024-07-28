@@ -92,7 +92,8 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration:
+                const BoxDecoration(
                 border: Border(bottom: BorderSide(color: Colors.black))),
             //height: MediaQuery.of(context).size.height / 3,
             child: Row(

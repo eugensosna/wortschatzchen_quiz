@@ -81,6 +81,12 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
               onPressed: () {
                 exportToJson(context);
               }),
+          ElevatedButton(
+            child: const Text("Import data from json "),
+            onPressed: () {
+              importFromJson(context);
+            },
+          ),
           isLoading
               ? Stack(
                   children: [
@@ -99,12 +105,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                     )
                   ],
                 )
-              : ElevatedButton(
-                  child: const Text("Import data from json "),
-                  onPressed: () {
-                    importFromJson(context);
-                  },
-                ),
+              : Container()
         ],
       ),
     );
@@ -193,7 +194,6 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       // Read the file
       String jsonString = await file.readAsString();
       Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      var baseWord = WordMvc(db, provider, 0, '', '');
       if (jsonMap.containsKey("words")) {
         int sumLength = jsonMap['words'].length;
         var index = 0;
@@ -202,7 +202,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
           index += 1;
           try {
             talker.verbose("start ${element["name"]}");
-            var word = baseWord.fromJson(element, provider);
+            var word = WordMvc.fromJson(element, provider);
             semanticValue = word.name;
             var savedword = await word.save();
             String formatted = getDefaultSessionName();
@@ -250,6 +250,9 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
 
   void exportToJson(BuildContext context) async {
     Map<String, dynamic> resultJson = {};
+    setState(() {
+      isLoading = true;
+    });
     Map<String, dynamic> resultExport = {};
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
     String? result = await FilePicker.platform.saveFile();
@@ -260,6 +263,11 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
         await exportQuiz(context, resultJson);
       }
       await writeJsonToFile(resultJson, result);
+      setState(() {
+        isLoading = false;
+        semanticValue = "";
+        _progress = 0;
+      });
       showMessage("Saved to ${result}");
     }
   }
@@ -276,18 +284,49 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     resultJson["quiz"] = resultList;
   }
 
+  Future<void> exportSessions(BuildContext context, Map<String, dynamic> resultJson) async {
+    var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    // File file = File(result);
+    // var dbToImport = DbHelper(pathToFile: file.path);
+    var groupSessions = await db.getGroupedSessionsByName();
+    List<dynamic> resultList = [];
+    for (var item in groupSessions) {
+      var listWords = await db.getWordsBySession(item.typesession);
+      for (var item in listWords) {
+        resultList.add(item.toJson());
+      }
+      // resultList.add(value);
+    }
+    resultJson["quiz"] = resultList;
+  }
+
   Future<void> exportWords(BuildContext context, Map<String, dynamic> resultJson) async {
     var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    isLoading = true;
     var provider = Provider.of<AppDataProvider>(context, listen: false);
     // File file = File(result);
     // var dbToImport = DbHelper(pathToFile: file.path);
-    var lwords = await dbInto.getOrdersWordList();
-    List<dynamic> words = [];
-    for (var item in lwords) {
-      var elem = await WordMvc.read(provider, uuid: item.uuid);
-      words.add(elem.toJson());
+    var words = await dbInto.getOrdersWordList();
+    int sumLength = words.length;
+    var index = 0;
+    sumLength = sumLength;
+    List<dynamic> wordsJson = [];
+    for (var item in words) {
+      index += 1;
+      var progressLoc = index / sumLength;
+      setState(() {
+        _progress = progressLoc;
+      });
+
+      semanticValue = item.name;
+      try {
+        var elem = await WordMvc.read(provider, uuid: item.uuid);
+        wordsJson.add(elem.toJson());
+      } on Exception catch (e) {
+        provider.talker.error("export ${item.id}", e);
+      }
     }
-    resultJson["words"] = words;
+    resultJson["words"] = wordsJson;
   }
 
   Future<void> writeJsonToFile(Map<String, dynamic> jsonMap, String filePath) async {
