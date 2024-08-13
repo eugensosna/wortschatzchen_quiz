@@ -24,11 +24,13 @@ class DeckEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var list =
-        Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
-    if (list.isEmpty) {
-      Provider.of<AppDataProvider>(context, listen: false).updateSessions();
-    }
+    // var list =
+    //     Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
+    // if (list.isEmpty) {
+    //   Provider.of<AppDataProvider>(context, listen: false).updateSessions();
+    // }
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -139,12 +141,13 @@ class DeckEntryView extends StatelessWidget {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          var deckLocal = await provider.getQuizData(deck) ?? deck;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => QuizView(
-                                      deck: deck,
+                                      deck: deckLocal,
                                     )),
                           );
                         },

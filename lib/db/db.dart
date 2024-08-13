@@ -113,6 +113,7 @@ class Question extends Table {
       )
       .references(Words, #id)();
   IntColumn get refQuizGroup => integer().references(QuizGroup, #id)();
+  BoolColumn get archive => boolean().nullable()();
 }
 
 @TableIndex(name: "type_session", columns: {#typesession})
@@ -155,7 +156,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -163,6 +164,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
+        if (to == 21) {
+          await m.addColumn(question, question.archive);
+        }
         if (to == 19) {
           await m.database.customStatement(
               """ ALTER TABLE "question" ADD COLUMN "ref_word" INTEGER NOT NULL DEFAULT 0""");

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/activ_quiz_card.dart';
@@ -98,12 +100,12 @@ class _QuizViewState extends State<QuizView> {
   }
 
   _cardDeck(List<QuizCard> cards) {
-    print("deck");
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
     int currentCardIndex = 0;
     List<ActiveQuizCard> newCardDeck = [];
     for (QuizCard card in cards) {
       if (currentCardIndex <= activeCardIndex) {
-        var userAnswer = Answer();
+        var userAnswer = Answer(provider, widget.deck, card);
         var x = ActiveQuizCard(
           card: card,
           answer: userAnswer,
@@ -133,13 +135,16 @@ class _QuizViewState extends State<QuizView> {
   }
 
   _renderFlatButton(String buttonText) {
-    var userAnswer = Answer();
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
+
+    var userAnswer = Answer(provider, widget.deck, widget.deck.cards[activeCardIndex]);
 
     return ElevatedButton(
       onPressed: () {
         if (newCardDeck.isNotEmpty) {
           userAnswer = newCardDeck[0].answer;
         }
+        userAnswer.card = widget.deck.cards[activeCardIndex];
         buttonText == "Correct" ? userAnswer.correct() : userAnswer.incorrect();
         _onSlideOutComplete(userAnswer.userAnswer);
       },

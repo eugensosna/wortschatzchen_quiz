@@ -12,6 +12,7 @@ class QuizCard {
   String translatedAnswer;
   String translatedExample;
   Word? word;
+  bool? archive;
   QuizCard(
       {required this.question,
       required this.answer,
@@ -20,7 +21,8 @@ class QuizCard {
       this.translatedQuestions = "",
       this.translatedAnswer = "",
       this.translatedExample = "",
-      this.word});
+      this.word,
+      this.archive = false});
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -32,16 +34,19 @@ class QuizCard {
       'translatedAnswer': translatedAnswer,
       'translatedExample': translatedExample,
       'wordID': word != null ? word!.uuid : "",
+      "archive": archive ?? false
     };
   }
 
   static QuizCard fromJson(Map<String, dynamic> json) {
+    bool isArchive = json.containsKey('archive') ? json['archive'] : false;
     
     return QuizCard(
         question: json['question'],
         answer: json['answer'],
         id: json['id'],
-        example: json['example']);
+        example: json['example'],
+        archive: isArchive);
   }
   Future<void> save(AppDataProvider provider, Deck quiz_group) async {
     var db = provider.db;
@@ -55,7 +60,8 @@ class QuizCard {
           name: question,
           answer: answer,
           example: example,
-          refQuizGroup: quiz_group.id));
+          refQuizGroup: quiz_group.id,
+          archive: Value(archive)));
       row = await db.getQuestionByIdOrUuid(idLocal);
       id = idLocal;
     }
@@ -65,7 +71,8 @@ class QuizCard {
           answer: answer,
           example: example,
           refWord: word != null ? word!.id : 0,
-          refQuizGroup: quiz_group.id);
+          refQuizGroup: quiz_group.id,
+          archive: Value(archive));
       await db.update(db.question).replace(toUpdate);
     } else {
       Exception("can't found $question id $id");

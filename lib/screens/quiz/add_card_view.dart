@@ -33,6 +33,9 @@ class _AddCardViewState extends State<AddCardView> {
   @override
   Widget build(BuildContext context) {
     Deck deck = widget.deck;
+    var provider = Provider.of<AppDataProvider>(context, listen: false);
+    bool isArchive = widget.quizCard?.archive ?? false;
+
 
     return Scaffold(
         appBar: AppBar(
@@ -60,6 +63,32 @@ class _AddCardViewState extends State<AddCardView> {
                   padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
                   child: _examplesFieldNewCardScreen(),
                 ),
+                Center(
+                  child: Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text("Active"),
+                        selected: isArchive == false,
+                        onSelected: (value) {
+                          widget.quizCard?.archive = false;
+                          widget.quizCard?.save(provider, widget.deck);
+                          setState(() {});
+                        },
+                      ),
+                      ChoiceChip(
+                        label: const Text("Archive"),
+                        selected: isArchive == true,
+                        onSelected: (value) async {
+                          widget.quizCard?.archive = true;
+                          widget.quizCard?.save(provider, widget.deck);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+
                   _submitButton(deck)
                 ],
               ),

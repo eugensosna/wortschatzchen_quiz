@@ -276,7 +276,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
     // File file = File(result);
     // var dbToImport = DbHelper(pathToFile: file.path);
-    var quizGroups = await db.getQuestions();
+    var quizGroups = await db.getDecks(includeArchive: true);
     List<dynamic> resultList = [];
     for (var item in quizGroups) {
       resultList.add(item.toJson());

@@ -89,7 +89,7 @@ class AppDataProvider extends ChangeNotifier {
   }
 
   Future<List<Deck>> updateDecks() async {
-    _decks = await db.getQuestions();
+    _decks = await db.getDecks();
     notifyListeners();
     return decks;
   }
@@ -272,7 +272,8 @@ addExamplesToBase(List<String> examples, Word editWord) async {
           answer: answer,
           example: example,
           refQuizGroup: deckDB.id,
-          refWord: Value<int>(wordID)));
+          refWord: Value<int>(wordID),
+          archive: const Value(false)));
       deck.cards.add(
           QuizCard(answer: answer, question: question, example: "", id: newId));
     }

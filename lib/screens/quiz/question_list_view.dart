@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
@@ -65,7 +66,8 @@ class _QuestionListViewState extends State<QuestionListView> {
   Widget _itemBuilder(
       BuildContext context, int index, List<QuizCard> questions) {
     QuizCard card = questions[index];
-
+    bool isArchive = card.archive ?? false;
+    
     return Container(
       decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.black))),
@@ -79,15 +81,18 @@ class _QuestionListViewState extends State<QuestionListView> {
         onDismissed: (direction) {
           questions.removeAt(index);
           setState(() {});
-          _delete(card);
+          _delete(card, context);
         },
         child: ListTile(
           onTap: () {
-            _viewQuestion(card);
+            _viewQuestion(card, context);
           },
           title: Text(
             card.question,
-            style: const TextStyle(fontSize: 20),
+              style: isArchive
+                  ? TextStyle(fontSize: 20, decoration: TextDecoration.lineThrough)
+                  : TextStyle(fontSize: 14)
+            
           ),
 
           //  Center(
@@ -116,7 +121,7 @@ class _QuestionListViewState extends State<QuestionListView> {
     );
   }
 
-  void _viewQuestion(QuizCard card) async {
+  void _viewQuestion(QuizCard card, BuildContext context) async {
     var result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -134,7 +139,7 @@ class _QuestionListViewState extends State<QuestionListView> {
 
   }
 
-  void _delete(QuizCard card) async {
+  void _delete(QuizCard card, BuildContext context) async {
     Provider.of<AppDataProvider>(context, listen: false)
         .deleteQuestion(widget.deck, card);
   }

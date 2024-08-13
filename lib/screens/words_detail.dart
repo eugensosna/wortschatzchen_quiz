@@ -803,6 +803,9 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<Word> updateWordIfNeed(Word wordToUpdate) async {
+    if (!context.mounted) {
+      return editWord;
+    }
     var db = Provider.of<AppDataProvider>(context, listen: false).db;
     var provider = Provider.of<AppDataProvider>(context, listen: false);
 

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/io.dart';
@@ -532,13 +531,14 @@ class LeipzigWord {
           quiz = await db.getQuizByNameOrId(formatted);
       }
 
-      if (quiz != null) {
-        var question = db.getQuestionByName(word.name, quiz.id, wordId: id);
-        if (question != null) {
+        if (quiz != null) {
           db.into(db.question).insert(QuestionCompanion.insert(
-              name: word.name, answer: word.description, example: "", refQuizGroup: quiz.id));
-        } else {}
-      }
+              name: word.name,
+              answer: word.description,
+              example: "",
+              refQuizGroup: quiz.id,
+              archive: const Value(false)));
+        }
     }
     } catch (e) {
       talker.error("addToSession", e);

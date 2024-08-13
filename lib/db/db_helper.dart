@@ -185,19 +185,16 @@ class DbHelper extends AppDatabase {
                 tbl.refQuizGroup.equals(quizID),
                 wordId > 0
                     ? tbl.refWord.equals(wordId)
-                    : tbl.refWord.isBiggerThanValue(wordId)
+                    : tbl.refWord.isBiggerOrEqualValue(wordId)
               ]))
           ..limit(1))
         .getSingleOrNull();
   }
-  Future<QuestionData?> getQuestionById(int id, {int wordId = 0, int quizID = 0}) async {
+  Future<QuestionData?> getQuestionById(int id) async {
     return (select(question)
           ..where((tbl) => Expression.and([
                 tbl.id.equals(id),
-                quizID > 0
-                    ? tbl.refQuizGroup.equals(quizID)
-                    : tbl.refQuizGroup.isBiggerOrEqualValue(quizID),
-                wordId > 0 ? tbl.refWord.equals(wordId) : tbl.refWord.isBiggerThanValue(wordId)
+                
               ]))
           ..limit(1))
         .getSingleOrNull();
@@ -400,8 +397,8 @@ ORDER by words.name  ; ''',
       //print(item.data.toString());
       try {
         result.add(words.map(item.data));
+        // ignore: empty_catches
       } catch (e) {
-        print(e);
       }
     }
 
@@ -411,7 +408,7 @@ ORDER by words.name  ; ''',
   Stream<List<Session>> getGroupedSessionsByNameStream() =>
       select(sessions).watch();
 
-  Future<List<Deck>> getQuestions() async {
+  Future<List<Deck>> getDecks({bool includeArchive = false}) async {
     List<Deck> result = [];
     var quizGroupLoc = await (select(quizGroup)
           ..orderBy([
@@ -421,7 +418,13 @@ ORDER by words.name  ; ''',
         .get();
     for (var itemGroup in quizGroupLoc) {
       var questions = await (select(question)
-            ..where((tbl) => tbl.refQuizGroup.equals(itemGroup.id))
+            ..where((tbl) => Expression.and([
+                  tbl.refQuizGroup.equals(itemGroup.id),
+                  Expression.or([
+                    tbl.archive.isNull(),
+                    includeArchive ? tbl.archive.equals(true) : tbl.archive.equals(false)
+                  ])
+                ]))
             ..orderBy([
               (tbl) => OrderingTerm(expression: (tbl.id)),
               // ((tbl) => OrderingTerm(expression: tbl.id))
@@ -429,11 +432,18 @@ ORDER by words.name  ; ''',
           .get();
       List<QuizCard> cards = [];
       for (var itemQuestion in questions) {
+        Word? word;
+        if (itemQuestion.refWord > 0) {
+          word = await getWordById(itemQuestion.refWord);
+        } 
+      
         cards.add(QuizCard(
             question: itemQuestion.name,
             answer: itemQuestion.answer,
             example: itemQuestion.example,
-            id: itemQuestion.id));
+            id: itemQuestion.id,
+            archive: itemQuestion.archive ?? false,
+            word: word));
       }
       result
           .add(Deck(deckTitle: itemGroup.name, cards: cards, id: itemGroup.id));
@@ -448,7 +458,8 @@ ORDER by words.name  ; ''',
         name: name,
         answer: answer,
         example: example,
-        refQuizGroup: refQuizGroup));
+        refQuizGroup: refQuizGroup,
+        archive: const Value(false)));
     var result = await (select(question)..where((tbl) => tbl.id.equals(id)))
         .getSingleOrNull();
     if (refWord > 0) {
@@ -459,7 +470,39 @@ ORDER by words.name  ; ''',
     return result;
   }
 
-  Future<Deck?> getQuizById(int id, int baseLangID, int targetLangID, {String uuid = ""}) async {
+  Future<List<QuizCard>> getQuestions(int refQuizGroup, {includeArchive = false}) async {
+    var questions = await (select(question)
+          ..where((tbl) => Expression.and([
+                tbl.refQuizGroup.equals(refQuizGroup),
+                Expression.or([
+                  tbl.archive.isNull(),
+                  includeArchive ? tbl.archive.equals(true) : tbl.archive.equals(false)
+                ])
+              ]))
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: (tbl.id)),
+            // ((tbl) => OrderingTerm(expression: tbl.id))
+          ]))
+        .get();
+    List<QuizCard> cards = [];
+    for (var itemQuestion in questions) {
+      Word? word;
+      if (itemQuestion.refWord > 0) {
+        word = await getWordById(itemQuestion.refWord);
+      }
+      cards.add(QuizCard(
+          question: itemQuestion.name,
+          answer: itemQuestion.answer,
+          example: itemQuestion.example,
+          id: itemQuestion.id,
+          archive: itemQuestion.archive ?? false,
+          word: word));
+    }
+    return cards;
+  }
+
+  Future<Deck?> getQuizById(int id, int baseLangID, int targetLangID,
+      {String uuid = "", bool includeArchive = false}) async {
     Deck result;
     var quizGroupLoc = await (select(quizGroup)
           ..where((tbl) => uuid.isEmpty ? tbl.id.equals(id) : tbl.uuid.equals(uuid))
@@ -469,32 +512,28 @@ ORDER by words.name  ; ''',
           ]))
         .getSingleOrNull();
     if (quizGroupLoc != null) {
-      var questions = await (select(question)
-            ..where((tbl) => tbl.refQuizGroup.equals(quizGroupLoc.id))
-            ..orderBy([
-              (tbl) => OrderingTerm(expression: (tbl.id)),
-              // ((tbl) => OrderingTerm(expression: tbl.id))
-            ]))
-          .get();
+      var questions = await getQuestions(quizGroupLoc.id, includeArchive: includeArchive);
+     
       List<QuizCard> cards = [];
       for (var itemQuestion in questions) {
         var questionTranslate = await getTranslateString(
-            itemQuestion.name, baseLangID, targetLangID);
+            itemQuestion.question, baseLangID, targetLangID);
         var answerTranslate = await getTranslateString(
             itemQuestion.answer, baseLangID, targetLangID);
         var exampleTranslate = await getTranslateString(
             itemQuestion.example, baseLangID, targetLangID);
-        var word = await getWordById(itemQuestion.refWord);
+        var word = itemQuestion.word;
 
         cards.add(QuizCard(
-            question: itemQuestion.name,
+            question: itemQuestion.question,
             answer: itemQuestion.answer,
             example: itemQuestion.example,
             id: itemQuestion.id,
             translatedAnswer: answerTranslate,
             translatedQuestions: questionTranslate,
             translatedExample: exampleTranslate,
-            word: word));
+            word: word,
+            archive: itemQuestion.archive ?? false));
       }
       result =
           Deck(id: quizGroupLoc.id, deckTitle: quizGroupLoc.name, cards: cards);

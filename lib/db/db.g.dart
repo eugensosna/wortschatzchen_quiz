@@ -153,6 +153,15 @@ class Language extends DataClass implements Insertable<Language> {
         shortName: shortName ?? this.shortName,
         uuid: uuid ?? this.uuid,
       );
+  Language copyWithCompanion(LanguagesCompanion data) {
+    return Language(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      shortName: data.shortName.present ? data.shortName.value : this.shortName,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Language(')
@@ -554,6 +563,23 @@ class Word extends DataClass implements Insertable<Word> {
         rootWordID: rootWordID ?? this.rootWordID,
         version: version.present ? version.value : this.version,
       );
+  Word copyWithCompanion(WordsCompanion data) {
+    return Word(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      important: data.important.present ? data.important.value : this.important,
+      description:
+          data.description.present ? data.description.value : this.description,
+      mean: data.mean.present ? data.mean.value : this.mean,
+      baseForm: data.baseForm.present ? data.baseForm.value : this.baseForm,
+      baseLang: data.baseLang.present ? data.baseLang.value : this.baseLang,
+      rootWordID:
+          data.rootWordID.present ? data.rootWordID.value : this.rootWordID,
+      version: data.version.present ? data.version.value : this.version,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Word(')
@@ -966,6 +992,21 @@ class Synonym extends DataClass implements Insertable<Synonym> {
         baseLang: baseLang ?? this.baseLang,
         translatedName: translatedName ?? this.translatedName,
       );
+  Synonym copyWithCompanion(SynonymsCompanion data) {
+    return Synonym(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseWord: data.baseWord.present ? data.baseWord.value : this.baseWord,
+      synonymWord:
+          data.synonymWord.present ? data.synonymWord.value : this.synonymWord,
+      name: data.name.present ? data.name.value : this.name,
+      baseLang: data.baseLang.present ? data.baseLang.value : this.baseLang,
+      translatedName: data.translatedName.present
+          ? data.translatedName.value
+          : this.translatedName,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Synonym(')
@@ -1313,6 +1354,20 @@ class translatedwords extends DataClass implements Insertable<translatedwords> {
         name: name ?? this.name,
         translatedName: translatedName ?? this.translatedName,
       );
+  translatedwords copyWithCompanion(TranslatedWordsCompanion data) {
+    return translatedwords(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseLang: data.baseLang.present ? data.baseLang.value : this.baseLang,
+      targetLang:
+          data.targetLang.present ? data.targetLang.value : this.targetLang,
+      name: data.name.present ? data.name.value : this.name,
+      translatedName: data.translatedName.present
+          ? data.translatedName.value
+          : this.translatedName,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('translatedwords(')
@@ -1750,6 +1805,26 @@ class LeipzigDataFromIntranetData extends DataClass
         KindOfWort: KindOfWort ?? this.KindOfWort,
         wordOfBase: wordOfBase ?? this.wordOfBase,
       );
+  LeipzigDataFromIntranetData copyWithCompanion(
+      LeipzigDataFromIntranetCompanion data) {
+    return LeipzigDataFromIntranetData(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseWord: data.baseWord.present ? data.baseWord.value : this.baseWord,
+      url: data.url.present ? data.url.value : this.url,
+      html: data.html.present ? data.html.value : this.html,
+      htmlOpen: data.htmlOpen.present ? data.htmlOpen.value : this.htmlOpen,
+      htmlExamples: data.htmlExamples.present
+          ? data.htmlExamples.value
+          : this.htmlExamples,
+      article: data.article.present ? data.article.value : this.article,
+      KindOfWort:
+          data.KindOfWort.present ? data.KindOfWort.value : this.KindOfWort,
+      wordOfBase:
+          data.wordOfBase.present ? data.wordOfBase.value : this.wordOfBase,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('LeipzigDataFromIntranetData(')
@@ -2109,6 +2184,17 @@ class Mean extends DataClass implements Insertable<Mean> {
         name: name ?? this.name,
         meansOrder: meansOrder ?? this.meansOrder,
       );
+  Mean copyWithCompanion(MeansCompanion data) {
+    return Mean(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseWord: data.baseWord.present ? data.baseWord.value : this.baseWord,
+      name: data.name.present ? data.name.value : this.name,
+      meansOrder:
+          data.meansOrder.present ? data.meansOrder.value : this.meansOrder,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Mean(')
@@ -2373,6 +2459,16 @@ class Session extends DataClass implements Insertable<Session> {
         baseWord: baseWord ?? this.baseWord,
         typesession: typesession ?? this.typesession,
       );
+  Session copyWithCompanion(SessionsCompanion data) {
+    return Session(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseWord: data.baseWord.present ? data.baseWord.value : this.baseWord,
+      typesession:
+          data.typesession.present ? data.typesession.value : this.typesession,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Session(')
@@ -2671,6 +2767,19 @@ class Example extends DataClass implements Insertable<Example> {
         goaltext: goaltext ?? this.goaltext,
         exampleOrder: exampleOrder ?? this.exampleOrder,
       );
+  Example copyWithCompanion(ExamplesCompanion data) {
+    return Example(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      baseWord: data.baseWord.present ? data.baseWord.value : this.baseWord,
+      name: data.name.present ? data.name.value : this.name,
+      goaltext: data.goaltext.present ? data.goaltext.value : this.goaltext,
+      exampleOrder: data.exampleOrder.present
+          ? data.exampleOrder.value
+          : this.exampleOrder,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Example(')
@@ -2920,6 +3029,14 @@ class QuizGroupData extends DataClass implements Insertable<QuizGroupData> {
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
       );
+  QuizGroupData copyWithCompanion(QuizGroupCompanion data) {
+    return QuizGroupData(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('QuizGroupData(')
@@ -3059,9 +3176,18 @@ class $QuestionTable extends Question
       requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES quiz_group (id)'));
+  static const VerificationMeta _archiveMeta =
+      const VerificationMeta('archive');
+  @override
+  late final GeneratedColumn<bool> archive = GeneratedColumn<bool>(
+      'archive', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("archive" IN (0, 1))'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, uuid, name, answer, example, refWord, refQuizGroup];
+      [id, uuid, name, answer, example, refWord, refQuizGroup, archive];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3109,6 +3235,10 @@ class $QuestionTable extends Question
     } else if (isInserting) {
       context.missing(_refQuizGroupMeta);
     }
+    if (data.containsKey('archive')) {
+      context.handle(_archiveMeta,
+          archive.isAcceptableOrUnknown(data['archive']!, _archiveMeta));
+    }
     return context;
   }
 
@@ -3132,6 +3262,8 @@ class $QuestionTable extends Question
           .read(DriftSqlType.int, data['${effectivePrefix}ref_word'])!,
       refQuizGroup: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}ref_quiz_group'])!,
+      archive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}archive']),
     );
   }
 
@@ -3149,6 +3281,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
   final String example;
   final int refWord;
   final int refQuizGroup;
+  final bool? archive;
   const QuestionData(
       {required this.id,
       required this.uuid,
@@ -3156,7 +3289,8 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       required this.answer,
       required this.example,
       required this.refWord,
-      required this.refQuizGroup});
+      required this.refQuizGroup,
+      this.archive});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3167,6 +3301,9 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
     map['example'] = Variable<String>(example);
     map['ref_word'] = Variable<int>(refWord);
     map['ref_quiz_group'] = Variable<int>(refQuizGroup);
+    if (!nullToAbsent || archive != null) {
+      map['archive'] = Variable<bool>(archive);
+    }
     return map;
   }
 
@@ -3179,6 +3316,9 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       example: Value(example),
       refWord: Value(refWord),
       refQuizGroup: Value(refQuizGroup),
+      archive: archive == null && nullToAbsent
+          ? const Value.absent()
+          : Value(archive),
     );
   }
 
@@ -3193,6 +3333,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       example: serializer.fromJson<String>(json['example']),
       refWord: serializer.fromJson<int>(json['refWord']),
       refQuizGroup: serializer.fromJson<int>(json['refQuizGroup']),
+      archive: serializer.fromJson<bool?>(json['archive']),
     );
   }
   @override
@@ -3206,6 +3347,7 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
       'example': serializer.toJson<String>(example),
       'refWord': serializer.toJson<int>(refWord),
       'refQuizGroup': serializer.toJson<int>(refQuizGroup),
+      'archive': serializer.toJson<bool?>(archive),
     };
   }
 
@@ -3216,7 +3358,8 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           String? answer,
           String? example,
           int? refWord,
-          int? refQuizGroup}) =>
+          int? refQuizGroup,
+          Value<bool?> archive = const Value.absent()}) =>
       QuestionData(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
@@ -3225,7 +3368,23 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
         example: example ?? this.example,
         refWord: refWord ?? this.refWord,
         refQuizGroup: refQuizGroup ?? this.refQuizGroup,
+        archive: archive.present ? archive.value : this.archive,
       );
+  QuestionData copyWithCompanion(QuestionCompanion data) {
+    return QuestionData(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      answer: data.answer.present ? data.answer.value : this.answer,
+      example: data.example.present ? data.example.value : this.example,
+      refWord: data.refWord.present ? data.refWord.value : this.refWord,
+      refQuizGroup: data.refQuizGroup.present
+          ? data.refQuizGroup.value
+          : this.refQuizGroup,
+      archive: data.archive.present ? data.archive.value : this.archive,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('QuestionData(')
@@ -3235,14 +3394,15 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           ..write('answer: $answer, ')
           ..write('example: $example, ')
           ..write('refWord: $refWord, ')
-          ..write('refQuizGroup: $refQuizGroup')
+          ..write('refQuizGroup: $refQuizGroup, ')
+          ..write('archive: $archive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, uuid, name, answer, example, refWord, refQuizGroup);
+  int get hashCode => Object.hash(
+      id, uuid, name, answer, example, refWord, refQuizGroup, archive);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3253,7 +3413,8 @@ class QuestionData extends DataClass implements Insertable<QuestionData> {
           other.answer == this.answer &&
           other.example == this.example &&
           other.refWord == this.refWord &&
-          other.refQuizGroup == this.refQuizGroup);
+          other.refQuizGroup == this.refQuizGroup &&
+          other.archive == this.archive);
 }
 
 class QuestionCompanion extends UpdateCompanion<QuestionData> {
@@ -3264,6 +3425,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
   final Value<String> example;
   final Value<int> refWord;
   final Value<int> refQuizGroup;
+  final Value<bool?> archive;
   const QuestionCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
@@ -3272,6 +3434,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     this.example = const Value.absent(),
     this.refWord = const Value.absent(),
     this.refQuizGroup = const Value.absent(),
+    this.archive = const Value.absent(),
   });
   QuestionCompanion.insert({
     this.id = const Value.absent(),
@@ -3281,6 +3444,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     required String example,
     this.refWord = const Value.absent(),
     required int refQuizGroup,
+    this.archive = const Value.absent(),
   })  : name = Value(name),
         answer = Value(answer),
         example = Value(example),
@@ -3293,6 +3457,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     Expression<String>? example,
     Expression<int>? refWord,
     Expression<int>? refQuizGroup,
+    Expression<bool>? archive,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3302,6 +3467,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       if (example != null) 'example': example,
       if (refWord != null) 'ref_word': refWord,
       if (refQuizGroup != null) 'ref_quiz_group': refQuizGroup,
+      if (archive != null) 'archive': archive,
     });
   }
 
@@ -3312,7 +3478,8 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       Value<String>? answer,
       Value<String>? example,
       Value<int>? refWord,
-      Value<int>? refQuizGroup}) {
+      Value<int>? refQuizGroup,
+      Value<bool?>? archive}) {
     return QuestionCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
@@ -3321,6 +3488,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
       example: example ?? this.example,
       refWord: refWord ?? this.refWord,
       refQuizGroup: refQuizGroup ?? this.refQuizGroup,
+      archive: archive ?? this.archive,
     );
   }
 
@@ -3348,6 +3516,9 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
     if (refQuizGroup.present) {
       map['ref_quiz_group'] = Variable<int>(refQuizGroup.value);
     }
+    if (archive.present) {
+      map['archive'] = Variable<bool>(archive.value);
+    }
     return map;
   }
 
@@ -3360,7 +3531,8 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
           ..write('answer: $answer, ')
           ..write('example: $example, ')
           ..write('refWord: $refWord, ')
-          ..write('refQuizGroup: $refQuizGroup')
+          ..write('refQuizGroup: $refQuizGroup, ')
+          ..write('archive: $archive')
           ..write(')'))
         .toString();
   }
@@ -3368,7 +3540,7 @@ class QuestionCompanion extends UpdateCompanion<QuestionData> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
+  $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LanguagesTable languages = $LanguagesTable(this);
   late final $WordsTable words = $WordsTable(this);
   late final $SynonymsTable synonyms = $SynonymsTable(this);
@@ -3402,7 +3574,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ];
 }
 
-typedef $$LanguagesTableInsertCompanionBuilder = LanguagesCompanion Function({
+typedef $$LanguagesTableCreateCompanionBuilder = LanguagesCompanion Function({
   Value<int> id,
   required String name,
   required String shortName,
@@ -3421,8 +3593,7 @@ class $$LanguagesTableTableManager extends RootTableManager<
     Language,
     $$LanguagesTableFilterComposer,
     $$LanguagesTableOrderingComposer,
-    $$LanguagesTableProcessedTableManager,
-    $$LanguagesTableInsertCompanionBuilder,
+    $$LanguagesTableCreateCompanionBuilder,
     $$LanguagesTableUpdateCompanionBuilder> {
   $$LanguagesTableTableManager(_$AppDatabase db, $LanguagesTable table)
       : super(TableManagerState(
@@ -3432,9 +3603,7 @@ class $$LanguagesTableTableManager extends RootTableManager<
               $$LanguagesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$LanguagesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$LanguagesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> shortName = const Value.absent(),
@@ -3446,7 +3615,7 @@ class $$LanguagesTableTableManager extends RootTableManager<
             shortName: shortName,
             uuid: uuid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             required String shortName,
@@ -3459,18 +3628,6 @@ class $$LanguagesTableTableManager extends RootTableManager<
             uuid: uuid,
           ),
         ));
-}
-
-class $$LanguagesTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $LanguagesTable,
-    Language,
-    $$LanguagesTableFilterComposer,
-    $$LanguagesTableOrderingComposer,
-    $$LanguagesTableProcessedTableManager,
-    $$LanguagesTableInsertCompanionBuilder,
-    $$LanguagesTableUpdateCompanionBuilder> {
-  $$LanguagesTableProcessedTableManager(super.$state);
 }
 
 class $$LanguagesTableFilterComposer
@@ -3575,7 +3732,7 @@ class $$LanguagesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$WordsTableInsertCompanionBuilder = WordsCompanion Function({
+typedef $$WordsTableCreateCompanionBuilder = WordsCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required String name,
@@ -3606,8 +3763,7 @@ class $$WordsTableTableManager extends RootTableManager<
     Word,
     $$WordsTableFilterComposer,
     $$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
-    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder> {
   $$WordsTableTableManager(_$AppDatabase db, $WordsTable table)
       : super(TableManagerState(
@@ -3617,8 +3773,7 @@ class $$WordsTableTableManager extends RootTableManager<
               $$WordsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$WordsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$WordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -3642,7 +3797,7 @@ class $$WordsTableTableManager extends RootTableManager<
             rootWordID: rootWordID,
             version: version,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required String name,
@@ -3667,18 +3822,6 @@ class $$WordsTableTableManager extends RootTableManager<
             version: version,
           ),
         ));
-}
-
-class $$WordsTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $WordsTable,
-    Word,
-    $$WordsTableFilterComposer,
-    $$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
-    $$WordsTableInsertCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
-  $$WordsTableProcessedTableManager(super.$state);
 }
 
 class $$WordsTableFilterComposer
@@ -3899,7 +4042,7 @@ class $$WordsTableOrderingComposer
   }
 }
 
-typedef $$SynonymsTableInsertCompanionBuilder = SynonymsCompanion Function({
+typedef $$SynonymsTableCreateCompanionBuilder = SynonymsCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required int baseWord,
@@ -3924,8 +4067,7 @@ class $$SynonymsTableTableManager extends RootTableManager<
     Synonym,
     $$SynonymsTableFilterComposer,
     $$SynonymsTableOrderingComposer,
-    $$SynonymsTableProcessedTableManager,
-    $$SynonymsTableInsertCompanionBuilder,
+    $$SynonymsTableCreateCompanionBuilder,
     $$SynonymsTableUpdateCompanionBuilder> {
   $$SynonymsTableTableManager(_$AppDatabase db, $SynonymsTable table)
       : super(TableManagerState(
@@ -3935,9 +4077,7 @@ class $$SynonymsTableTableManager extends RootTableManager<
               $$SynonymsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$SynonymsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$SynonymsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseWord = const Value.absent(),
@@ -3955,7 +4095,7 @@ class $$SynonymsTableTableManager extends RootTableManager<
             baseLang: baseLang,
             translatedName: translatedName,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseWord,
@@ -3974,18 +4114,6 @@ class $$SynonymsTableTableManager extends RootTableManager<
             translatedName: translatedName,
           ),
         ));
-}
-
-class $$SynonymsTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $SynonymsTable,
-    Synonym,
-    $$SynonymsTableFilterComposer,
-    $$SynonymsTableOrderingComposer,
-    $$SynonymsTableProcessedTableManager,
-    $$SynonymsTableInsertCompanionBuilder,
-    $$SynonymsTableUpdateCompanionBuilder> {
-  $$SynonymsTableProcessedTableManager(super.$state);
 }
 
 class $$SynonymsTableFilterComposer
@@ -4108,7 +4236,7 @@ class $$SynonymsTableOrderingComposer
   }
 }
 
-typedef $$TranslatedWordsTableInsertCompanionBuilder = TranslatedWordsCompanion
+typedef $$TranslatedWordsTableCreateCompanionBuilder = TranslatedWordsCompanion
     Function({
   Value<int> id,
   Value<String> uuid,
@@ -4133,8 +4261,7 @@ class $$TranslatedWordsTableTableManager extends RootTableManager<
     translatedwords,
     $$TranslatedWordsTableFilterComposer,
     $$TranslatedWordsTableOrderingComposer,
-    $$TranslatedWordsTableProcessedTableManager,
-    $$TranslatedWordsTableInsertCompanionBuilder,
+    $$TranslatedWordsTableCreateCompanionBuilder,
     $$TranslatedWordsTableUpdateCompanionBuilder> {
   $$TranslatedWordsTableTableManager(
       _$AppDatabase db, $TranslatedWordsTable table)
@@ -4145,9 +4272,7 @@ class $$TranslatedWordsTableTableManager extends RootTableManager<
               $$TranslatedWordsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TranslatedWordsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TranslatedWordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseLang = const Value.absent(),
@@ -4163,7 +4288,7 @@ class $$TranslatedWordsTableTableManager extends RootTableManager<
             name: name,
             translatedName: translatedName,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseLang,
@@ -4180,18 +4305,6 @@ class $$TranslatedWordsTableTableManager extends RootTableManager<
             translatedName: translatedName,
           ),
         ));
-}
-
-class $$TranslatedWordsTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $TranslatedWordsTable,
-    translatedwords,
-    $$TranslatedWordsTableFilterComposer,
-    $$TranslatedWordsTableOrderingComposer,
-    $$TranslatedWordsTableProcessedTableManager,
-    $$TranslatedWordsTableInsertCompanionBuilder,
-    $$TranslatedWordsTableUpdateCompanionBuilder> {
-  $$TranslatedWordsTableProcessedTableManager(super.$state);
 }
 
 class $$TranslatedWordsTableFilterComposer
@@ -4290,7 +4403,7 @@ class $$TranslatedWordsTableOrderingComposer
   }
 }
 
-typedef $$LeipzigDataFromIntranetTableInsertCompanionBuilder
+typedef $$LeipzigDataFromIntranetTableCreateCompanionBuilder
     = LeipzigDataFromIntranetCompanion Function({
   Value<int> id,
   Value<String> uuid,
@@ -4323,8 +4436,7 @@ class $$LeipzigDataFromIntranetTableTableManager extends RootTableManager<
     LeipzigDataFromIntranetData,
     $$LeipzigDataFromIntranetTableFilterComposer,
     $$LeipzigDataFromIntranetTableOrderingComposer,
-    $$LeipzigDataFromIntranetTableProcessedTableManager,
-    $$LeipzigDataFromIntranetTableInsertCompanionBuilder,
+    $$LeipzigDataFromIntranetTableCreateCompanionBuilder,
     $$LeipzigDataFromIntranetTableUpdateCompanionBuilder> {
   $$LeipzigDataFromIntranetTableTableManager(
       _$AppDatabase db, $LeipzigDataFromIntranetTable table)
@@ -4335,9 +4447,7 @@ class $$LeipzigDataFromIntranetTableTableManager extends RootTableManager<
               ComposerState(db, table)),
           orderingComposer: $$LeipzigDataFromIntranetTableOrderingComposer(
               ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$LeipzigDataFromIntranetTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseWord = const Value.absent(),
@@ -4361,7 +4471,7 @@ class $$LeipzigDataFromIntranetTableTableManager extends RootTableManager<
             KindOfWort: KindOfWort,
             wordOfBase: wordOfBase,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseWord,
@@ -4386,19 +4496,6 @@ class $$LeipzigDataFromIntranetTableTableManager extends RootTableManager<
             wordOfBase: wordOfBase,
           ),
         ));
-}
-
-class $$LeipzigDataFromIntranetTableProcessedTableManager
-    extends ProcessedTableManager<
-        _$AppDatabase,
-        $LeipzigDataFromIntranetTable,
-        LeipzigDataFromIntranetData,
-        $$LeipzigDataFromIntranetTableFilterComposer,
-        $$LeipzigDataFromIntranetTableOrderingComposer,
-        $$LeipzigDataFromIntranetTableProcessedTableManager,
-        $$LeipzigDataFromIntranetTableInsertCompanionBuilder,
-        $$LeipzigDataFromIntranetTableUpdateCompanionBuilder> {
-  $$LeipzigDataFromIntranetTableProcessedTableManager(super.$state);
 }
 
 class $$LeipzigDataFromIntranetTableFilterComposer
@@ -4523,7 +4620,7 @@ class $$LeipzigDataFromIntranetTableOrderingComposer
   }
 }
 
-typedef $$MeansTableInsertCompanionBuilder = MeansCompanion Function({
+typedef $$MeansTableCreateCompanionBuilder = MeansCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required int baseWord,
@@ -4544,8 +4641,7 @@ class $$MeansTableTableManager extends RootTableManager<
     Mean,
     $$MeansTableFilterComposer,
     $$MeansTableOrderingComposer,
-    $$MeansTableProcessedTableManager,
-    $$MeansTableInsertCompanionBuilder,
+    $$MeansTableCreateCompanionBuilder,
     $$MeansTableUpdateCompanionBuilder> {
   $$MeansTableTableManager(_$AppDatabase db, $MeansTable table)
       : super(TableManagerState(
@@ -4555,8 +4651,7 @@ class $$MeansTableTableManager extends RootTableManager<
               $$MeansTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$MeansTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$MeansTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseWord = const Value.absent(),
@@ -4570,7 +4665,7 @@ class $$MeansTableTableManager extends RootTableManager<
             name: name,
             meansOrder: meansOrder,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseWord,
@@ -4585,18 +4680,6 @@ class $$MeansTableTableManager extends RootTableManager<
             meansOrder: meansOrder,
           ),
         ));
-}
-
-class $$MeansTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $MeansTable,
-    Mean,
-    $$MeansTableFilterComposer,
-    $$MeansTableOrderingComposer,
-    $$MeansTableProcessedTableManager,
-    $$MeansTableInsertCompanionBuilder,
-    $$MeansTableUpdateCompanionBuilder> {
-  $$MeansTableProcessedTableManager(super.$state);
 }
 
 class $$MeansTableFilterComposer
@@ -4671,7 +4754,7 @@ class $$MeansTableOrderingComposer
   }
 }
 
-typedef $$SessionsTableInsertCompanionBuilder = SessionsCompanion Function({
+typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required int baseWord,
@@ -4690,8 +4773,7 @@ class $$SessionsTableTableManager extends RootTableManager<
     Session,
     $$SessionsTableFilterComposer,
     $$SessionsTableOrderingComposer,
-    $$SessionsTableProcessedTableManager,
-    $$SessionsTableInsertCompanionBuilder,
+    $$SessionsTableCreateCompanionBuilder,
     $$SessionsTableUpdateCompanionBuilder> {
   $$SessionsTableTableManager(_$AppDatabase db, $SessionsTable table)
       : super(TableManagerState(
@@ -4701,9 +4783,7 @@ class $$SessionsTableTableManager extends RootTableManager<
               $$SessionsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$SessionsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$SessionsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseWord = const Value.absent(),
@@ -4715,7 +4795,7 @@ class $$SessionsTableTableManager extends RootTableManager<
             baseWord: baseWord,
             typesession: typesession,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseWord,
@@ -4728,18 +4808,6 @@ class $$SessionsTableTableManager extends RootTableManager<
             typesession: typesession,
           ),
         ));
-}
-
-class $$SessionsTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $SessionsTable,
-    Session,
-    $$SessionsTableFilterComposer,
-    $$SessionsTableOrderingComposer,
-    $$SessionsTableProcessedTableManager,
-    $$SessionsTableInsertCompanionBuilder,
-    $$SessionsTableUpdateCompanionBuilder> {
-  $$SessionsTableProcessedTableManager(super.$state);
 }
 
 class $$SessionsTableFilterComposer
@@ -4804,7 +4872,7 @@ class $$SessionsTableOrderingComposer
   }
 }
 
-typedef $$ExamplesTableInsertCompanionBuilder = ExamplesCompanion Function({
+typedef $$ExamplesTableCreateCompanionBuilder = ExamplesCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required int baseWord,
@@ -4827,8 +4895,7 @@ class $$ExamplesTableTableManager extends RootTableManager<
     Example,
     $$ExamplesTableFilterComposer,
     $$ExamplesTableOrderingComposer,
-    $$ExamplesTableProcessedTableManager,
-    $$ExamplesTableInsertCompanionBuilder,
+    $$ExamplesTableCreateCompanionBuilder,
     $$ExamplesTableUpdateCompanionBuilder> {
   $$ExamplesTableTableManager(_$AppDatabase db, $ExamplesTable table)
       : super(TableManagerState(
@@ -4838,9 +4905,7 @@ class $$ExamplesTableTableManager extends RootTableManager<
               $$ExamplesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ExamplesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ExamplesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<int> baseWord = const Value.absent(),
@@ -4856,7 +4921,7 @@ class $$ExamplesTableTableManager extends RootTableManager<
             goaltext: goaltext,
             exampleOrder: exampleOrder,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required int baseWord,
@@ -4873,18 +4938,6 @@ class $$ExamplesTableTableManager extends RootTableManager<
             exampleOrder: exampleOrder,
           ),
         ));
-}
-
-class $$ExamplesTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $ExamplesTable,
-    Example,
-    $$ExamplesTableFilterComposer,
-    $$ExamplesTableOrderingComposer,
-    $$ExamplesTableProcessedTableManager,
-    $$ExamplesTableInsertCompanionBuilder,
-    $$ExamplesTableUpdateCompanionBuilder> {
-  $$ExamplesTableProcessedTableManager(super.$state);
 }
 
 class $$ExamplesTableFilterComposer
@@ -4969,7 +5022,7 @@ class $$ExamplesTableOrderingComposer
   }
 }
 
-typedef $$QuizGroupTableInsertCompanionBuilder = QuizGroupCompanion Function({
+typedef $$QuizGroupTableCreateCompanionBuilder = QuizGroupCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required String name,
@@ -4986,8 +5039,7 @@ class $$QuizGroupTableTableManager extends RootTableManager<
     QuizGroupData,
     $$QuizGroupTableFilterComposer,
     $$QuizGroupTableOrderingComposer,
-    $$QuizGroupTableProcessedTableManager,
-    $$QuizGroupTableInsertCompanionBuilder,
+    $$QuizGroupTableCreateCompanionBuilder,
     $$QuizGroupTableUpdateCompanionBuilder> {
   $$QuizGroupTableTableManager(_$AppDatabase db, $QuizGroupTable table)
       : super(TableManagerState(
@@ -4997,9 +5049,7 @@ class $$QuizGroupTableTableManager extends RootTableManager<
               $$QuizGroupTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$QuizGroupTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$QuizGroupTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -5009,7 +5059,7 @@ class $$QuizGroupTableTableManager extends RootTableManager<
             uuid: uuid,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required String name,
@@ -5020,18 +5070,6 @@ class $$QuizGroupTableTableManager extends RootTableManager<
             name: name,
           ),
         ));
-}
-
-class $$QuizGroupTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $QuizGroupTable,
-    QuizGroupData,
-    $$QuizGroupTableFilterComposer,
-    $$QuizGroupTableOrderingComposer,
-    $$QuizGroupTableProcessedTableManager,
-    $$QuizGroupTableInsertCompanionBuilder,
-    $$QuizGroupTableUpdateCompanionBuilder> {
-  $$QuizGroupTableProcessedTableManager(super.$state);
 }
 
 class $$QuizGroupTableFilterComposer
@@ -5085,7 +5123,7 @@ class $$QuizGroupTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$QuestionTableInsertCompanionBuilder = QuestionCompanion Function({
+typedef $$QuestionTableCreateCompanionBuilder = QuestionCompanion Function({
   Value<int> id,
   Value<String> uuid,
   required String name,
@@ -5093,6 +5131,7 @@ typedef $$QuestionTableInsertCompanionBuilder = QuestionCompanion Function({
   required String example,
   Value<int> refWord,
   required int refQuizGroup,
+  Value<bool?> archive,
 });
 typedef $$QuestionTableUpdateCompanionBuilder = QuestionCompanion Function({
   Value<int> id,
@@ -5102,6 +5141,7 @@ typedef $$QuestionTableUpdateCompanionBuilder = QuestionCompanion Function({
   Value<String> example,
   Value<int> refWord,
   Value<int> refQuizGroup,
+  Value<bool?> archive,
 });
 
 class $$QuestionTableTableManager extends RootTableManager<
@@ -5110,8 +5150,7 @@ class $$QuestionTableTableManager extends RootTableManager<
     QuestionData,
     $$QuestionTableFilterComposer,
     $$QuestionTableOrderingComposer,
-    $$QuestionTableProcessedTableManager,
-    $$QuestionTableInsertCompanionBuilder,
+    $$QuestionTableCreateCompanionBuilder,
     $$QuestionTableUpdateCompanionBuilder> {
   $$QuestionTableTableManager(_$AppDatabase db, $QuestionTable table)
       : super(TableManagerState(
@@ -5121,9 +5160,7 @@ class $$QuestionTableTableManager extends RootTableManager<
               $$QuestionTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$QuestionTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$QuestionTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -5131,6 +5168,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             Value<String> example = const Value.absent(),
             Value<int> refWord = const Value.absent(),
             Value<int> refQuizGroup = const Value.absent(),
+            Value<bool?> archive = const Value.absent(),
           }) =>
               QuestionCompanion(
             id: id,
@@ -5140,8 +5178,9 @@ class $$QuestionTableTableManager extends RootTableManager<
             example: example,
             refWord: refWord,
             refQuizGroup: refQuizGroup,
+            archive: archive,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
             required String name,
@@ -5149,6 +5188,7 @@ class $$QuestionTableTableManager extends RootTableManager<
             required String example,
             Value<int> refWord = const Value.absent(),
             required int refQuizGroup,
+            Value<bool?> archive = const Value.absent(),
           }) =>
               QuestionCompanion.insert(
             id: id,
@@ -5158,20 +5198,9 @@ class $$QuestionTableTableManager extends RootTableManager<
             example: example,
             refWord: refWord,
             refQuizGroup: refQuizGroup,
+            archive: archive,
           ),
         ));
-}
-
-class $$QuestionTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
-    $QuestionTable,
-    QuestionData,
-    $$QuestionTableFilterComposer,
-    $$QuestionTableOrderingComposer,
-    $$QuestionTableProcessedTableManager,
-    $$QuestionTableInsertCompanionBuilder,
-    $$QuestionTableUpdateCompanionBuilder> {
-  $$QuestionTableProcessedTableManager(super.$state);
 }
 
 class $$QuestionTableFilterComposer
@@ -5199,6 +5228,11 @@ class $$QuestionTableFilterComposer
 
   ColumnFilters<String> get example => $state.composableBuilder(
       column: $state.table.example,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get archive => $state.composableBuilder(
+      column: $state.table.archive,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -5255,6 +5289,11 @@ class $$QuestionTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
+  ColumnOrderings<bool> get archive => $state.composableBuilder(
+      column: $state.table.archive,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   $$WordsTableOrderingComposer get refWord {
     final $$WordsTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -5280,9 +5319,9 @@ class $$QuestionTableOrderingComposer
   }
 }
 
-class _$AppDatabaseManager {
+class $AppDatabaseManager {
   final _$AppDatabase _db;
-  _$AppDatabaseManager(this._db);
+  $AppDatabaseManager(this._db);
   $$LanguagesTableTableManager get languages =>
       $$LanguagesTableTableManager(_db, _db.languages);
   $$WordsTableTableManager get words =>
