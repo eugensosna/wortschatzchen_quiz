@@ -21,15 +21,14 @@ class WordsDetail extends StatefulWidget {
   final DbHelper db;
   final Talker talker;
 
-  const WordsDetail(this.editWord, this.title, this.db,
-      {super.key, required this.talker});
+  const WordsDetail(this.editWord, this.title, this.db, {super.key, required this.talker});
 
   @override
   // ignore: no_logic_in_create_state
   WordsDetailState createState() => WordsDetailState(editWord, title, db);
 }
 
-class WordsDetailState extends State<WordsDetail> {
+class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin {
   bool changed = false;
   late Word editWord;
   final String appBarText;
@@ -43,6 +42,7 @@ class WordsDetailState extends State<WordsDetail> {
   bool isLoading = false;
   bool isLoadFast = false;
   String semantic = "";
+  late TabController _tabController;
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -76,7 +76,7 @@ class WordsDetailState extends State<WordsDetail> {
     editWord = await saveWord();
 
     final st = SimplyTranslator(EngineType.google);
- 
+
     st.setSimplyInstance = "simplytranslate.pussthecat.org";
     var eipzTranslator = LeipzigTranslator(db: db);
     eipzTranslator.updateLanguagesData();
@@ -92,12 +92,9 @@ class WordsDetailState extends State<WordsDetail> {
     /// get the list with instances
     try {
       final translated = await st.translateSimply(input,
-          from: inputLanguage,
-          to: outputLanguage,
-          instanceMode: InstanceMode.Random);
+          from: inputLanguage, to: outputLanguage, instanceMode: InstanceMode.Random);
       widget.talker.info(translated.translations.text);
-      descriptionController.text =
-          encodeToHumanText(translated.translations.text);
+      descriptionController.text = encodeToHumanText(translated.translations.text);
 
       widget.talker.verbose("libre end Internet $input");
 
@@ -152,8 +149,8 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<String> translateText(String inputText) async {
-    var translator = LeipzigTranslator(
-        db: db, inputLanguage: inputLanguage, outputLanguage: outputLanguage);
+    var translator =
+        LeipzigTranslator(db: db, inputLanguage: inputLanguage, outputLanguage: outputLanguage);
 
     // result = translated.translations.text.toString();
 
@@ -195,14 +192,10 @@ class WordsDetailState extends State<WordsDetail> {
       //   defaultSession = "${item.typesession} (${item.count})";
       // }
       result.add(SessionHeader(
-          typesession: item.typesession,
-          description: "${item.typesession} (${item.count})"));
+          typesession: item.typesession, description: "${item.typesession} (${item.count})"));
     }
     if (!defaultFound) {
-      result.insert(
-          0,
-          SessionHeader(
-              typesession: defaultSession, description: defaultSession));
+      result.insert(0, SessionHeader(typesession: defaultSession, description: defaultSession));
     }
 
     return result;
@@ -210,8 +203,7 @@ class WordsDetailState extends State<WordsDetail> {
 
   @override
   void initState() {
-    baseLang =
-        const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
+    baseLang = const Language(id: 0, name: "dummy", shortName: "du", uuid: "oooo");
 
     fillControllers(editWord);
 
@@ -219,9 +211,10 @@ class WordsDetailState extends State<WordsDetail> {
     try {
       setBaseSettings(editWord).then((value) {});
     } catch (e) {
-      widget.talker
-          .error("detail init state error fill for ${editWord.name}", e);
+      widget.talker.error("detail init state error fill for ${editWord.name}", e);
     }
+
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   fillControllers(Word editWord) {
@@ -258,8 +251,9 @@ class WordsDetailState extends State<WordsDetail> {
     } else {
       var baseLangOrNull = await db.getLangByShortName("de");
       if (baseLangOrNull == null) {
-        int id = (await db.into(db.languages).insert(
-            LanguagesCompanion.insert(name: "German", shortName: "de")));
+        int id = (await db
+            .into(db.languages)
+            .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
         baseLangOrNull = (await db.getLangById(id));
         if (baseLangOrNull != null) {
           baseLang = baseLangOrNull;
@@ -326,137 +320,164 @@ class WordsDetailState extends State<WordsDetail> {
 
     return PopScope(
         canPop: true,
-        onPopInvoked: (_) async {
-          await saveWord();
-          // moveToLastScreen();
-        },
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(textToAppBar),
-            leading: buttonBack(),
-            actions: [
-              buttonBack() ?? Container(),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(8),
-            child: ListView(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(9),
-                  child: TextField(
-                      controller: titleController,
-                      style: textStyle,
-                      onEditingComplete: () {
-                        if (editWord.name.isEmpty &&
-                            titleController.text.isNotEmpty) {
-                          fillSimpleTranslations(
-                              titleController.text, editWord);
-                        }
-                      },
-                      decoration: InputDecoration(
-                          label: const Text('Title'),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5)))),
-                ),
-                editWord.baseForm.isNotEmpty
-                    ? InkWell(
-                        child: Text(
-                          "Base form :${editWord.baseForm}",
-                          style: const TextStyle(color: Colors.blue),
-                        ),
-                        onTap: () {
-                          viewWord(editWord.baseForm);
-                        },
-                      )
-                    : Container(
-                        height: 2,
-                      ),
-                // 3 element
-                article.isNotEmpty ? Text(article) : Container(),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-                  child: TextField(
-                    controller: descriptionController,
-                    style: textStyle,
-                    decoration: InputDecoration(
-                        labelText: 'Description',
-                        labelStyle: textStyle,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5.0))),
+            appBar: AppBar(
+              title: Text(textToAppBar),
+              leading: buttonBack(),
+              actions: [
+                buttonBack() ?? Container(),
+              ],
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: "General"),
+                  Tab(
+                    text: "Synonyms",
                   ),
-                ),
-                TextField(
-                  controller: meanController,
-                  decoration: InputDecoration(
-                      label: Text("Mean"),
-                      suffixIcon: IconButton(
-                          onPressed: () {
-                            _showEditMeans(context, listMeans);
+                  Tab(
+                    text: "Examples",
+                  ),
+                  Tab(
+                    text: "Verbforms",
+                  )
+                ],
+              ),
+            ),
+            body: TabBarView(controller: _tabController, children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: ListView(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(9),
+                      child: TextField(
+                          controller: titleController,
+                          style: textStyle,
+                          onEditingComplete: () {
+                            if (editWord.name.isEmpty && titleController.text.isNotEmpty) {
+                              fillSimpleTranslations(titleController.text, editWord);
+                            }
                           },
-                          icon: Icon(Icons.account_tree_rounded))),
-                  onTap: () {
-                   
-                  },
-                ),
-                TextField(
-                  controller: importantController,
-                  decoration: const InputDecoration(label: Text("Important")),
-                  onChanged: (value) {
-                    editWord = editWord.copyWith(important: value);
-                  },
-                ),
-
-                buildWidgetSynonymsView(listSynonyms),
-
-                buildWidgetExamplesView(listExamples, maxDesc: 1),
-                DroupDownSessionsChange(),
-
-                Row(
-                  children: [
-                    isLoading
-                        ? CircularProgressIndicator(
-                            value: _progress,
+                          decoration: InputDecoration(
+                              label: const Text('Title'),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))),
+                    ),
+                    editWord.baseForm.isNotEmpty
+                        ? InkWell(
+                            child: Text(
+                              "Base form :${editWord.baseForm}",
+                              style: const TextStyle(color: Colors.blue),
+                            ),
+                            onTap: () {
+                              viewWord(editWord.baseForm);
+                            },
                           )
-                        : TextButton(
-                            onPressed: _fillData,
-                            child: const Text("Full"),
+                        : Container(
+                            height: 2,
                           ),
-                    IconButton(onPressed: saveWord, icon: const Icon(Icons.save)), //Save button
-                    IconButton(
-                        onPressed: goToVerbForm,
-                        icon: const Icon(Icons.add_task)),
+                    // 3 element
+                    article.isNotEmpty ? Text(article) : Container(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                      child: TextField(
+                        controller: descriptionController,
+                        style: textStyle,
+                        decoration: InputDecoration(
+                            labelText: 'Description',
+                            labelStyle: textStyle,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
+                      ),
+                    ),
+                    TextField(
+                      controller: meanController,
+                      decoration: InputDecoration(
+                          label: Text("Mean"),
+                          suffixIcon: IconButton(
+                              onPressed: () {
+                                _showEditMeans(context, listMeans);
+                              },
+                              icon: Icon(Icons.account_tree_rounded))),
+                      onTap: () {},
+                    ),
+                    TextField(
+                      controller: importantController,
+                      decoration: const InputDecoration(label: Text("Important")),
+                      onChanged: (value) {
+                        editWord = editWord.copyWith(important: value);
+                      },
+                    ),
 
-                    ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isLoadFast = true;
-                          });
-                          fillSimpleTranslations(
-                              titleController.text, editWord);
-                        },
-                        child: const Text("Fast")),
-                    isLoadFast
-                        ? CircularProgressIndicator(
+                    DroupDownSessionsChange(),
+
+                    Row(
+                      children: [
+                        isLoading
+                            ? CircularProgressIndicator(
+                                value: _progress,
+                              )
+                            : TextButton(
+                                onPressed: _fillData,
+                                child: const Text("Full"),
+                              ),
+                        IconButton(onPressed: saveWord, icon: const Icon(Icons.save)), //Save button
+                        IconButton(onPressed: goToVerbForm, icon: const Icon(Icons.add_task)),
+
+                        ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                isLoadFast = true;
+                              });
+                              fillSimpleTranslations(titleController.text, editWord);
+                            },
+                            child: const Text("Fast")),
+                        isLoadFast
+                            ? CircularProgressIndicator(
+                                value: _progress,
+                                semanticsValue: "Download $_progress*100",
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                              )
+                            : Container(),
+                      ],
+                    ),
+                    isLoading || isLoadFast
+                        ? LinearProgressIndicator(
                             value: _progress,
-                            semanticsValue: "Download $_progress*100",
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                                Colors.blue),
+                            minHeight: 5,
+                            semanticsLabel: semantic,
                           )
                         : Container(),
                   ],
                 ),
-                isLoading || isLoadFast
-                    ? LinearProgressIndicator(
-                        value: _progress,
-                        minHeight: 5,
-                        semanticsLabel: semantic,
-                      )
-                    : Container(),
-              ],
-            ),
-          ),
-        ));
+              ),
+              RefreshIndicator(
+                child: 
+              Center(
+                child: buildWidgetSynonymsView(listSynonyms),
+              ),
+                onRefresh: () async {
+                  setBaseSettings(editWord);
+                },
+              ),
+              RefreshIndicator(
+                child: 
+              
+              Center(
+                child: buildWidgetExamplesView(listExamples, maxDesc: 1),
+                ), 
+                onRefresh: () async {
+                  setBaseSettings(editWord);
+                },
+              ),
+              RefreshIndicator(
+                child: 
+              Center(
+                child: WebViewControllerWord(editWord: editWord, title: editWord.name),
+              ),
+                onRefresh: () async {
+                  setBaseSettings(editWord);
+                },
+              )
+            ])));
   }
 
   Widget? buttonBack() {
@@ -513,8 +534,7 @@ class WordsDetailState extends State<WordsDetail> {
     return result;
   }
 
-  Widget _addListTitleSynonym(
-      String title1, String description, ReordableElement item) {
+  Widget _addListTitleSynonym(String title1, String description, ReordableElement item) {
     String tempTitle = title1;
     return ListTile(
         title: Text(title1),
@@ -566,8 +586,7 @@ class WordsDetailState extends State<WordsDetail> {
         );
   }
 
-  Widget _addListTitleExample(
-      String title1, String description, ReordableElement item) {
+  Widget _addListTitleExample(String title1, String description, ReordableElement item) {
     String tempTitle = title1;
     return ListTile(
         title: Text(title1),
@@ -614,16 +633,14 @@ class WordsDetailState extends State<WordsDetail> {
         );
   }
 
-  Widget buildWidgetExamplesView(List<ReordableElement> examples,
-      {int maxDesc = 100}) {
+  Widget buildWidgetExamplesView(List<ReordableElement> examples, {int maxDesc = 100}) {
     List<Widget> listChildren = [];
     int maxLengthSynonymsList = maxDesc;
     String titleList = "";
     String translatedList = "";
     if (examples.isNotEmpty) {
-      int maxCount = examples.length > maxLengthSynonymsList
-          ? maxLengthSynonymsList
-          : examples.length;
+      int maxCount =
+          examples.length > maxLengthSynonymsList ? maxLengthSynonymsList : examples.length;
       titleList = examples
           .map((e) {
             return " ${e.name}";
@@ -646,38 +663,12 @@ class WordsDetailState extends State<WordsDetail> {
       }
     }
     var firstElement = examples.elementAtOrNull(0);
-    firstElement ??=
-        ReordableElement(id: 0, name: "", translate: "", orderId: 0, uuid: "");
+    firstElement ??= ReordableElement(id: 0, name: "", translate: "", orderId: 0, uuid: "");
 
-    return ExpansionTile(
-      title: Text("Examples: $titleList"),
-      subtitle: Text(translatedList),
-      initiallyExpanded: false,
-      trailing: IconButton(
-        icon: const Icon(Icons.download),
-        onPressed: () async {
-          var result = await _showOrEditReordable(context, listExamples);
-          await _saveToExamples(result);
-          setState(() {
-            // isLoading = true;
-          });
-
-          db.getSynonymsByWord(editWord.id).then((value) {
-            listSynonyms = value;
-            // setState(() {
-            //   isLoading = false;
-            // });
-            db.getExamplesByWord(editWord.id).then((onValue) {
-              listExamples = onValue;
-              // setState(() {
-              // isLoading = false;
-              // });
-            });
-          });
-        },
-      ),
+    return ListView(
       children: listChildren,
     );
+
   }
 
   Widget buildWidgetSynonymsView(List<ReordableElement> listSynonyms) {
@@ -686,9 +677,8 @@ class WordsDetailState extends State<WordsDetail> {
     String titleList = "";
     String translatedList = "";
     if (listSynonyms.isNotEmpty) {
-      int maxCount = listSynonyms.length > maxLengthSynonymsList
-          ? maxLengthSynonymsList
-          : listSynonyms.length;
+      int maxCount =
+          listSynonyms.length > maxLengthSynonymsList ? maxLengthSynonymsList : listSynonyms.length;
       translatedList = listSynonyms
           .map((e) {
             return " ${e.translate}";
@@ -710,43 +700,10 @@ class WordsDetailState extends State<WordsDetail> {
         // ))
       }
     }
-
-    return ExpansionTile(
-      title: Text("Synonyms: $titleList "),
-      subtitle: Text(translatedList),
-      initiallyExpanded: false,
-      trailing: IconButton(
-        icon: const Icon(Icons.download),
-        onPressed: () async {
-          {
-            var result = await _showOrEditReordable(context, listSynonyms);
-            await _saveToExamples(result);
-          }
-
-          setState(() {
-            // isLoading = true;
-          });
-          // for (var synItem in listSynonyms) {
-          //   if (synItem.synonymWord == 0) {
-          //     addNewWordWithAllData(synItem.name, editWord);
-          //   }
-          // }
-          db.getSynonymsByWord(editWord.id).then((value) {
-            listSynonyms = value;
-            // setState(() {
-            //   isLoading = false;
-            // });
-            db.getExamplesByWord(editWord.id).then((onValue) {
-              listExamples = onValue;
-              // setState(() {
-              //   isLoading = false;
-              // });
-            });
-          });
-        },
-      ),
+return ListView(
       children: listChildren,
     );
+
   }
 
   Future<String> _fillData() async {
@@ -786,12 +743,10 @@ class WordsDetailState extends State<WordsDetail> {
     return "ok";
   }
 
-  Future<Word?> addWordShort(
-      String name, String translated, Word editWord) async {
+  Future<Word?> addWordShort(String name, String translated, Word editWord) async {
     var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
     leipzigSynonyms.db = db;
-    var word = await leipzigSynonyms.addWordUpdateShort(
-        name, translated, editWord, baseLang);
+    var word = await leipzigSynonyms.addWordUpdateShort(name, translated, editWord, baseLang);
     return word;
   }
 
@@ -816,8 +771,7 @@ class WordsDetailState extends State<WordsDetail> {
 
       Word toUpdate = wordToUpdate.copyWith();
       if (toUpdate.mean.isNotEmpty) {
-        var translator =
-            provider.translator;
+        var translator = provider.translator;
         var meanRow = await db.getMeanByNameAndWord(toUpdate.mean, toUpdate.id);
         if (meanRow == null) {
           int id = await db
@@ -830,17 +784,14 @@ class WordsDetailState extends State<WordsDetail> {
           }
         }
 
-
         var translatedMean = await db.getTranslateString(
             toUpdate.mean, toUpdate.baseLang, translator.targetLanguage!.id);
         if (translatedMean.isEmpty) {
-          await db.into(db.translatedWords).insert(
-              TranslatedWordsCompanion.insert(
-                  baseLang: toUpdate.baseLang,
-                  targetLang: translator.targetLanguage!.id,
-                  name: toUpdate.mean,
-                  translatedName: ""));
-            
+          await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+              baseLang: toUpdate.baseLang,
+              targetLang: translator.targetLanguage!.id,
+              name: toUpdate.mean,
+              translatedName: ""));
         }
       }
 
@@ -864,16 +815,13 @@ class WordsDetailState extends State<WordsDetail> {
   Future<Word?> _addUpdateWord() async {
     editWord = await saveWord();
     var leipzigSynonyms = LeipzigWord(editWord.name, db, widget.talker);
-    leipzigSynonyms.talker
-        .warning("start _addUpdateWord- getFromInternet ${editWord.name}");
+    leipzigSynonyms.talker.warning("start _addUpdateWord- getFromInternet ${editWord.name}");
 
     try {
-      var leipzigTempWord = await leipzigSynonyms.getParseAllDataSpeed(
-          leipzigSynonyms, editWord,
+      var leipzigTempWord = await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord,
           _progressbar, Provider.of<AppDataProvider>(context, listen: false));
       // await leipzigSynonyms.parseRawHtmlData(editWord.name);
-      leipzigSynonyms.talker
-          .warning("end _addUpdateWord- getFromInternet ${editWord.name}");
+      leipzigSynonyms.talker.warning("end _addUpdateWord- getFromInternet ${editWord.name}");
     } on Exception catch (e) {
       widget.talker.error("get data from Internet ${editWord.name}", e);
     }
@@ -903,8 +851,7 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return WordsDetail(wordToEdit, title, db, talker: widget.talker);
     }));
     if (result != null) {}
@@ -942,10 +889,9 @@ class WordsDetailState extends State<WordsDetail> {
 
       var leipzigSynonyms = LeipzigWord(newWord.name, db, widget.talker);
 
-      leipzigSynonyms = await leipzigSynonyms.getParseAllDataSpeed(
-          leipzigSynonyms, editWord,
+      leipzigSynonyms = await leipzigSynonyms.getParseAllDataSpeed(leipzigSynonyms, editWord,
           _progressbar, Provider.of<AppDataProvider>(context, listen: false));
-      
+
       leipzigSynonyms.translateNeededWords();
       await setBaseSettings(newWord);
       setState(() {});
@@ -971,8 +917,7 @@ class WordsDetailState extends State<WordsDetail> {
   }
 
   void goToVerbForm() async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       widget.talker.debug("go to verbform ${editWord.name}");
       return WebViewControllerWord(editWord: editWord, title: editWord.name);
     }));
@@ -989,8 +934,9 @@ class WordsDetailState extends State<WordsDetail> {
     //await db.deleteExamplesByWord(editWord);
     for (var (index, item) in elements.indexed) {
       if (item.id <= 0) {
-        int id = await db.into(db.examples).insert(
-            ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
+        int id = await db
+            .into(db.examples)
+            .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: item.name));
         elemExamples = await db.getExampleByIdOrUuid(id);
         if (elemExamples != null) {
           elemExamples = elemExamples.copyWith(exampleOrder: index);
@@ -1020,8 +966,7 @@ class WordsDetailState extends State<WordsDetail> {
     //   orders.add(ReordableElement(
     //       id: 0, name: item.name, translate: item.translatedName, order: 0));
     // }
-    var result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    var result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return ModalShowReordableView(listToView: elements);
     }));
 
@@ -1031,19 +976,18 @@ class WordsDetailState extends State<WordsDetail> {
     return result;
   }
 
-  void _showEditMeans(
-      BuildContext context, List<ReordableElement> listElements) async {
+  void _showEditMeans(BuildContext context, List<ReordableElement> listElements) async {
     Mean? element;
     var result = await _showOrEditReordable(context, listMeans);
     result ??= listElements;
     //await db.deleteMeansByWord(editWord);
     for (var (index, item) in result.indexed) {
       if (item.id <= 0) {
-        int id = await db.into(db.means).insert(
-            MeansCompanion.insert(baseWord: editWord.id, name: item.name));
+        int id = await db
+            .into(db.means)
+            .insert(MeansCompanion.insert(baseWord: editWord.id, name: item.name));
         element = await db.getMeanByIdOrUuid(id);
-        
-        
+
         if (element != null) {
           element = element.copyWith(meansOrder: index);
           item.id = id;
@@ -1065,7 +1009,6 @@ class WordsDetailState extends State<WordsDetail> {
       meanController.text = result[0].name;
       var toUpdate = editWord.copyWith(mean: result[0].name);
       editWord = await db.updateWord(toUpdate);
-      
     }
     // fillControllers(editWord);
     await setBaseSettings(editWord);
