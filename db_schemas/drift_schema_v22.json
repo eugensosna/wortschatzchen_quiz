@@ -1,0 +1,960 @@
+{
+    "_meta": {
+        "description": "This file contains a serialized version of schema entities for drift.",
+        "version": "1.1.0"
+    },
+    "options": {
+        "store_date_time_values_as_text": false
+    },
+    "entities": [
+        {
+            "id": 0,
+            "references": [],
+            "type": "table",
+            "data": {
+                "name": "languages",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "short_name",
+                        "getter_name": "shortName",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            {
+                                "allowed-lengths": {
+                                    "min": 2,
+                                    "max": 15
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 1,
+            "references": [],
+            "type": "table",
+            "data": {
+                "name": "kinds_of_words",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 2,
+            "references": [
+                0,
+                1
+            ],
+            "type": "table",
+            "data": {
+                "name": "words",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "important",
+                        "getter_name": "important",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "description",
+                        "getter_name": "description",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "mean",
+                        "getter_name": "mean",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_form",
+                        "getter_name": "baseForm",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_lang",
+                        "getter_name": "baseLang",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES languages (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "root_word_i_d",
+                        "getter_name": "rootWordID",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "version",
+                        "getter_name": "version",
+                        "moor_type": "int",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => 0",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "kind_of_word",
+                        "getter_name": "kindOfWord",
+                        "moor_type": "string",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "kind_of_word_ref",
+                        "getter_name": "kindOfWordRef",
+                        "moor_type": "int",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES kinds_of_words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 3,
+            "references": [
+                2,
+                0
+            ],
+            "type": "table",
+            "data": {
+                "name": "synonyms",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_word",
+                        "getter_name": "baseWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "synonym_word",
+                        "getter_name": "synonymWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_lang",
+                        "getter_name": "baseLang",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES languages (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "translated_name",
+                        "getter_name": "translatedName",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 4,
+            "references": [
+                0
+            ],
+            "type": "table",
+            "data": {
+                "name": "translated_words",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_lang",
+                        "getter_name": "baseLang",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES languages (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "target_lang",
+                        "getter_name": "targetLang",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES languages (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "translated_name",
+                        "getter_name": "translatedName",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 5,
+            "references": [
+                2
+            ],
+            "type": "table",
+            "data": {
+                "name": "leipzig_data_from_intranet",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_word",
+                        "getter_name": "baseWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "url",
+                        "getter_name": "url",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "html",
+                        "getter_name": "html",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "html_open",
+                        "getter_name": "htmlOpen",
+                        "moor_type": "string",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "html_examples",
+                        "getter_name": "htmlExamples",
+                        "moor_type": "string",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "article",
+                        "getter_name": "article",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "kind_of_wort",
+                        "getter_name": "KindOfWort",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "word_of_base",
+                        "getter_name": "wordOfBase",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 6,
+            "references": [
+                2
+            ],
+            "type": "table",
+            "data": {
+                "name": "means",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_word",
+                        "getter_name": "baseWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "means_order",
+                        "getter_name": "meansOrder",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => 0",
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 7,
+            "references": [
+                2
+            ],
+            "type": "table",
+            "data": {
+                "name": "sessions",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_word",
+                        "getter_name": "baseWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "typesession",
+                        "getter_name": "typesession",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 8,
+            "references": [
+                2
+            ],
+            "type": "table",
+            "data": {
+                "name": "examples",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "base_word",
+                        "getter_name": "baseWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "goaltext",
+                        "getter_name": "goaltext",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => \" \"",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "example_order",
+                        "getter_name": "exampleOrder",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => 100",
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 9,
+            "references": [],
+            "type": "table",
+            "data": {
+                "name": "quiz_group",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 10,
+            "references": [
+                2,
+                9
+            ],
+            "type": "table",
+            "data": {
+                "name": "question",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "uuid",
+                        "getter_name": "uuid",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": "() => const Uuid().v4()",
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "answer",
+                        "getter_name": "answer",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "example",
+                        "getter_name": "example",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "ref_word",
+                        "getter_name": "refWord",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES words (id)",
+                        "default_dart": null,
+                        "default_client_dart": "() => 0",
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "ref_quiz_group",
+                        "getter_name": "refQuizGroup",
+                        "moor_type": "int",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "REFERENCES quiz_group (id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "unknown"
+                        ]
+                    },
+                    {
+                        "name": "archive",
+                        "getter_name": "archive",
+                        "moor_type": "bool",
+                        "nullable": true,
+                        "customConstraints": null,
+                        "defaultConstraints": "CHECK (\"archive\" IN (0, 1))",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": false,
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 11,
+            "references": [
+                7
+            ],
+            "type": "index",
+            "data": {
+                "on": 7,
+                "name": "type_session",
+                "sql": null,
+                "unique": false,
+                "columns": [
+                    "typesession"
+                ]
+            }
+        }
+    ]
+}

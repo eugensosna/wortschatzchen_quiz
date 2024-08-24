@@ -260,6 +260,218 @@ class LanguagesCompanion extends UpdateCompanion<Language> {
   }
 }
 
+class $KindsOfWordsTable extends KindsOfWords
+    with TableInfo<$KindsOfWordsTable, KindsOfWord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KindsOfWordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => Uuid().v4());
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, uuid, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kinds_of_words';
+  @override
+  VerificationContext validateIntegrity(Insertable<KindsOfWord> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  KindsOfWord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KindsOfWord(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
+  }
+
+  @override
+  $KindsOfWordsTable createAlias(String alias) {
+    return $KindsOfWordsTable(attachedDatabase, alias);
+  }
+}
+
+class KindsOfWord extends DataClass implements Insertable<KindsOfWord> {
+  final int id;
+  final String uuid;
+  final String name;
+  const KindsOfWord({required this.id, required this.uuid, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  KindsOfWordsCompanion toCompanion(bool nullToAbsent) {
+    return KindsOfWordsCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      name: Value(name),
+    );
+  }
+
+  factory KindsOfWord.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KindsOfWord(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  KindsOfWord copyWith({int? id, String? uuid, String? name}) => KindsOfWord(
+        id: id ?? this.id,
+        uuid: uuid ?? this.uuid,
+        name: name ?? this.name,
+      );
+  KindsOfWord copyWithCompanion(KindsOfWordsCompanion data) {
+    return KindsOfWord(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KindsOfWord(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, uuid, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KindsOfWord &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.name == this.name);
+}
+
+class KindsOfWordsCompanion extends UpdateCompanion<KindsOfWord> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<String> name;
+  const KindsOfWordsCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  KindsOfWordsCompanion.insert({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<KindsOfWord> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (name != null) 'name': name,
+    });
+  }
+
+  KindsOfWordsCompanion copyWith(
+      {Value<int>? id, Value<String>? uuid, Value<String>? name}) {
+    return KindsOfWordsCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KindsOfWordsCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -332,6 +544,21 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       clientDefault: () => 0);
+  static const VerificationMeta _kindOfWordMeta =
+      const VerificationMeta('kindOfWord');
+  @override
+  late final GeneratedColumn<String> kindOfWord = GeneratedColumn<String>(
+      'kind_of_word', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _kindOfWordRefMeta =
+      const VerificationMeta('kindOfWordRef');
+  @override
+  late final GeneratedColumn<int> kindOfWordRef = GeneratedColumn<int>(
+      'kind_of_word_ref', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES kinds_of_words (id)'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -343,7 +570,9 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         baseForm,
         baseLang,
         rootWordID,
-        version
+        version,
+        kindOfWord,
+        kindOfWordRef
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -412,6 +641,18 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
       context.handle(_versionMeta,
           version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
+    if (data.containsKey('kind_of_word')) {
+      context.handle(
+          _kindOfWordMeta,
+          kindOfWord.isAcceptableOrUnknown(
+              data['kind_of_word']!, _kindOfWordMeta));
+    }
+    if (data.containsKey('kind_of_word_ref')) {
+      context.handle(
+          _kindOfWordRefMeta,
+          kindOfWordRef.isAcceptableOrUnknown(
+              data['kind_of_word_ref']!, _kindOfWordRefMeta));
+    }
     return context;
   }
 
@@ -441,6 +682,10 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
           .read(DriftSqlType.int, data['${effectivePrefix}root_word_i_d'])!,
       version: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}version']),
+      kindOfWord: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind_of_word']),
+      kindOfWordRef: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}kind_of_word_ref']),
     );
   }
 
@@ -461,6 +706,8 @@ class Word extends DataClass implements Insertable<Word> {
   final int baseLang;
   final int rootWordID;
   final int? version;
+  final String? kindOfWord;
+  final int? kindOfWordRef;
   const Word(
       {required this.id,
       required this.uuid,
@@ -471,7 +718,9 @@ class Word extends DataClass implements Insertable<Word> {
       required this.baseForm,
       required this.baseLang,
       required this.rootWordID,
-      this.version});
+      this.version,
+      this.kindOfWord,
+      this.kindOfWordRef});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -486,6 +735,12 @@ class Word extends DataClass implements Insertable<Word> {
     map['root_word_i_d'] = Variable<int>(rootWordID);
     if (!nullToAbsent || version != null) {
       map['version'] = Variable<int>(version);
+    }
+    if (!nullToAbsent || kindOfWord != null) {
+      map['kind_of_word'] = Variable<String>(kindOfWord);
+    }
+    if (!nullToAbsent || kindOfWordRef != null) {
+      map['kind_of_word_ref'] = Variable<int>(kindOfWordRef);
     }
     return map;
   }
@@ -504,6 +759,12 @@ class Word extends DataClass implements Insertable<Word> {
       version: version == null && nullToAbsent
           ? const Value.absent()
           : Value(version),
+      kindOfWord: kindOfWord == null && nullToAbsent
+          ? const Value.absent()
+          : Value(kindOfWord),
+      kindOfWordRef: kindOfWordRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(kindOfWordRef),
     );
   }
 
@@ -521,6 +782,8 @@ class Word extends DataClass implements Insertable<Word> {
       baseLang: serializer.fromJson<int>(json['baseLang']),
       rootWordID: serializer.fromJson<int>(json['rootWordID']),
       version: serializer.fromJson<int?>(json['version']),
+      kindOfWord: serializer.fromJson<String?>(json['kindOfWord']),
+      kindOfWordRef: serializer.fromJson<int?>(json['kindOfWordRef']),
     );
   }
   @override
@@ -537,6 +800,8 @@ class Word extends DataClass implements Insertable<Word> {
       'baseLang': serializer.toJson<int>(baseLang),
       'rootWordID': serializer.toJson<int>(rootWordID),
       'version': serializer.toJson<int?>(version),
+      'kindOfWord': serializer.toJson<String?>(kindOfWord),
+      'kindOfWordRef': serializer.toJson<int?>(kindOfWordRef),
     };
   }
 
@@ -550,7 +815,9 @@ class Word extends DataClass implements Insertable<Word> {
           String? baseForm,
           int? baseLang,
           int? rootWordID,
-          Value<int?> version = const Value.absent()}) =>
+          Value<int?> version = const Value.absent(),
+          Value<String?> kindOfWord = const Value.absent(),
+          Value<int?> kindOfWordRef = const Value.absent()}) =>
       Word(
         id: id ?? this.id,
         uuid: uuid ?? this.uuid,
@@ -562,6 +829,9 @@ class Word extends DataClass implements Insertable<Word> {
         baseLang: baseLang ?? this.baseLang,
         rootWordID: rootWordID ?? this.rootWordID,
         version: version.present ? version.value : this.version,
+        kindOfWord: kindOfWord.present ? kindOfWord.value : this.kindOfWord,
+        kindOfWordRef:
+            kindOfWordRef.present ? kindOfWordRef.value : this.kindOfWordRef,
       );
   Word copyWithCompanion(WordsCompanion data) {
     return Word(
@@ -577,6 +847,11 @@ class Word extends DataClass implements Insertable<Word> {
       rootWordID:
           data.rootWordID.present ? data.rootWordID.value : this.rootWordID,
       version: data.version.present ? data.version.value : this.version,
+      kindOfWord:
+          data.kindOfWord.present ? data.kindOfWord.value : this.kindOfWord,
+      kindOfWordRef: data.kindOfWordRef.present
+          ? data.kindOfWordRef.value
+          : this.kindOfWordRef,
     );
   }
 
@@ -592,14 +867,16 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('baseForm: $baseForm, ')
           ..write('baseLang: $baseLang, ')
           ..write('rootWordID: $rootWordID, ')
-          ..write('version: $version')
+          ..write('version: $version, ')
+          ..write('kindOfWord: $kindOfWord, ')
+          ..write('kindOfWordRef: $kindOfWordRef')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, uuid, name, important, description, mean,
-      baseForm, baseLang, rootWordID, version);
+      baseForm, baseLang, rootWordID, version, kindOfWord, kindOfWordRef);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -613,7 +890,9 @@ class Word extends DataClass implements Insertable<Word> {
           other.baseForm == this.baseForm &&
           other.baseLang == this.baseLang &&
           other.rootWordID == this.rootWordID &&
-          other.version == this.version);
+          other.version == this.version &&
+          other.kindOfWord == this.kindOfWord &&
+          other.kindOfWordRef == this.kindOfWordRef);
 }
 
 class WordsCompanion extends UpdateCompanion<Word> {
@@ -627,6 +906,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<int> baseLang;
   final Value<int> rootWordID;
   final Value<int?> version;
+  final Value<String?> kindOfWord;
+  final Value<int?> kindOfWordRef;
   const WordsCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
@@ -638,6 +919,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.baseLang = const Value.absent(),
     this.rootWordID = const Value.absent(),
     this.version = const Value.absent(),
+    this.kindOfWord = const Value.absent(),
+    this.kindOfWordRef = const Value.absent(),
   });
   WordsCompanion.insert({
     this.id = const Value.absent(),
@@ -650,6 +933,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
     required int baseLang,
     required int rootWordID,
     this.version = const Value.absent(),
+    this.kindOfWord = const Value.absent(),
+    this.kindOfWordRef = const Value.absent(),
   })  : name = Value(name),
         important = Value(important),
         description = Value(description),
@@ -668,6 +953,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<int>? baseLang,
     Expression<int>? rootWordID,
     Expression<int>? version,
+    Expression<String>? kindOfWord,
+    Expression<int>? kindOfWordRef,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -680,6 +967,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (baseLang != null) 'base_lang': baseLang,
       if (rootWordID != null) 'root_word_i_d': rootWordID,
       if (version != null) 'version': version,
+      if (kindOfWord != null) 'kind_of_word': kindOfWord,
+      if (kindOfWordRef != null) 'kind_of_word_ref': kindOfWordRef,
     });
   }
 
@@ -693,7 +982,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
       Value<String>? baseForm,
       Value<int>? baseLang,
       Value<int>? rootWordID,
-      Value<int?>? version}) {
+      Value<int?>? version,
+      Value<String?>? kindOfWord,
+      Value<int?>? kindOfWordRef}) {
     return WordsCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
@@ -705,6 +996,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
       baseLang: baseLang ?? this.baseLang,
       rootWordID: rootWordID ?? this.rootWordID,
       version: version ?? this.version,
+      kindOfWord: kindOfWord ?? this.kindOfWord,
+      kindOfWordRef: kindOfWordRef ?? this.kindOfWordRef,
     );
   }
 
@@ -741,6 +1034,12 @@ class WordsCompanion extends UpdateCompanion<Word> {
     if (version.present) {
       map['version'] = Variable<int>(version.value);
     }
+    if (kindOfWord.present) {
+      map['kind_of_word'] = Variable<String>(kindOfWord.value);
+    }
+    if (kindOfWordRef.present) {
+      map['kind_of_word_ref'] = Variable<int>(kindOfWordRef.value);
+    }
     return map;
   }
 
@@ -756,7 +1055,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('baseForm: $baseForm, ')
           ..write('baseLang: $baseLang, ')
           ..write('rootWordID: $rootWordID, ')
-          ..write('version: $version')
+          ..write('version: $version, ')
+          ..write('kindOfWord: $kindOfWord, ')
+          ..write('kindOfWordRef: $kindOfWordRef')
           ..write(')'))
         .toString();
   }
@@ -3542,6 +3843,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LanguagesTable languages = $LanguagesTable(this);
+  late final $KindsOfWordsTable kindsOfWords = $KindsOfWordsTable(this);
   late final $WordsTable words = $WordsTable(this);
   late final $SynonymsTable synonyms = $SynonymsTable(this);
   late final $TranslatedWordsTable translatedWords =
@@ -3561,6 +3863,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         languages,
+        kindsOfWords,
         words,
         synonyms,
         translatedWords,
@@ -3732,6 +4035,109 @@ class $$LanguagesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+typedef $$KindsOfWordsTableCreateCompanionBuilder = KindsOfWordsCompanion
+    Function({
+  Value<int> id,
+  Value<String> uuid,
+  required String name,
+});
+typedef $$KindsOfWordsTableUpdateCompanionBuilder = KindsOfWordsCompanion
+    Function({
+  Value<int> id,
+  Value<String> uuid,
+  Value<String> name,
+});
+
+class $$KindsOfWordsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $KindsOfWordsTable,
+    KindsOfWord,
+    $$KindsOfWordsTableFilterComposer,
+    $$KindsOfWordsTableOrderingComposer,
+    $$KindsOfWordsTableCreateCompanionBuilder,
+    $$KindsOfWordsTableUpdateCompanionBuilder> {
+  $$KindsOfWordsTableTableManager(_$AppDatabase db, $KindsOfWordsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$KindsOfWordsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$KindsOfWordsTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) =>
+              KindsOfWordsCompanion(
+            id: id,
+            uuid: uuid,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            required String name,
+          }) =>
+              KindsOfWordsCompanion.insert(
+            id: id,
+            uuid: uuid,
+            name: name,
+          ),
+        ));
+}
+
+class $$KindsOfWordsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $KindsOfWordsTable> {
+  $$KindsOfWordsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ComposableFilter wordsRefs(
+      ComposableFilter Function($$WordsTableFilterComposer f) f) {
+    final $$WordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.words,
+        getReferencedColumn: (t) => t.kindOfWordRef,
+        builder: (joinBuilder, parentComposers) => $$WordsTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.words, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+}
+
+class $$KindsOfWordsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $KindsOfWordsTable> {
+  $$KindsOfWordsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get uuid => $state.composableBuilder(
+      column: $state.table.uuid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 typedef $$WordsTableCreateCompanionBuilder = WordsCompanion Function({
   Value<int> id,
   Value<String> uuid,
@@ -3743,6 +4149,8 @@ typedef $$WordsTableCreateCompanionBuilder = WordsCompanion Function({
   required int baseLang,
   required int rootWordID,
   Value<int?> version,
+  Value<String?> kindOfWord,
+  Value<int?> kindOfWordRef,
 });
 typedef $$WordsTableUpdateCompanionBuilder = WordsCompanion Function({
   Value<int> id,
@@ -3755,6 +4163,8 @@ typedef $$WordsTableUpdateCompanionBuilder = WordsCompanion Function({
   Value<int> baseLang,
   Value<int> rootWordID,
   Value<int?> version,
+  Value<String?> kindOfWord,
+  Value<int?> kindOfWordRef,
 });
 
 class $$WordsTableTableManager extends RootTableManager<
@@ -3784,6 +4194,8 @@ class $$WordsTableTableManager extends RootTableManager<
             Value<int> baseLang = const Value.absent(),
             Value<int> rootWordID = const Value.absent(),
             Value<int?> version = const Value.absent(),
+            Value<String?> kindOfWord = const Value.absent(),
+            Value<int?> kindOfWordRef = const Value.absent(),
           }) =>
               WordsCompanion(
             id: id,
@@ -3796,6 +4208,8 @@ class $$WordsTableTableManager extends RootTableManager<
             baseLang: baseLang,
             rootWordID: rootWordID,
             version: version,
+            kindOfWord: kindOfWord,
+            kindOfWordRef: kindOfWordRef,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3808,6 +4222,8 @@ class $$WordsTableTableManager extends RootTableManager<
             required int baseLang,
             required int rootWordID,
             Value<int?> version = const Value.absent(),
+            Value<String?> kindOfWord = const Value.absent(),
+            Value<int?> kindOfWordRef = const Value.absent(),
           }) =>
               WordsCompanion.insert(
             id: id,
@@ -3820,6 +4236,8 @@ class $$WordsTableTableManager extends RootTableManager<
             baseLang: baseLang,
             rootWordID: rootWordID,
             version: version,
+            kindOfWord: kindOfWord,
+            kindOfWordRef: kindOfWordRef,
           ),
         ));
 }
@@ -3872,6 +4290,11 @@ class $$WordsTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
+  ColumnFilters<String> get kindOfWord => $state.composableBuilder(
+      column: $state.table.kindOfWord,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$LanguagesTableFilterComposer get baseLang {
     final $$LanguagesTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -3881,6 +4304,18 @@ class $$WordsTableFilterComposer
         builder: (joinBuilder, parentComposers) =>
             $$LanguagesTableFilterComposer(ComposerState(
                 $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$KindsOfWordsTableFilterComposer get kindOfWordRef {
+    final $$KindsOfWordsTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.kindOfWordRef,
+        referencedTable: $state.db.kindsOfWords,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$KindsOfWordsTableFilterComposer(ComposerState($state.db,
+                $state.db.kindsOfWords, joinBuilder, parentComposers)));
     return composer;
   }
 
@@ -4029,6 +4464,11 @@ class $$WordsTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
+  ColumnOrderings<String> get kindOfWord => $state.composableBuilder(
+      column: $state.table.kindOfWord,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   $$LanguagesTableOrderingComposer get baseLang {
     final $$LanguagesTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -4038,6 +4478,18 @@ class $$WordsTableOrderingComposer
         builder: (joinBuilder, parentComposers) =>
             $$LanguagesTableOrderingComposer(ComposerState(
                 $state.db, $state.db.languages, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$KindsOfWordsTableOrderingComposer get kindOfWordRef {
+    final $$KindsOfWordsTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.kindOfWordRef,
+        referencedTable: $state.db.kindsOfWords,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$KindsOfWordsTableOrderingComposer(ComposerState($state.db,
+                $state.db.kindsOfWords, joinBuilder, parentComposers)));
     return composer;
   }
 }
@@ -5324,6 +5776,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$LanguagesTableTableManager get languages =>
       $$LanguagesTableTableManager(_db, _db.languages);
+  $$KindsOfWordsTableTableManager get kindsOfWords =>
+      $$KindsOfWordsTableTableManager(_db, _db.kindsOfWords);
   $$WordsTableTableManager get words =>
       $$WordsTableTableManager(_db, _db.words);
   $$SynonymsTableTableManager get synonyms =>

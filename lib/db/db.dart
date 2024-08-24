@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
@@ -11,6 +12,7 @@ import 'package:uuid/uuid.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 import 'package:path/path.dart' as p;
+import 'package:wortschatzchen_quiz/db/db_migration.dart';
 
 part 'db.g.dart';
 
@@ -35,6 +37,8 @@ class Words extends Table {
   IntColumn get baseLang => integer().references(Languages, #id)();
   IntColumn get rootWordID => integer()();
   IntColumn get version => integer().nullable().clientDefault(() => 0)();
+  TextColumn get kindOfWord => text().nullable()();
+  IntColumn get kindOfWordRef => integer().nullable().references(KindsOfWords, #id)();
 }
 
 @DataClassName('translatedwords')
@@ -123,6 +127,11 @@ class Sessions extends Table {
   IntColumn get baseWord => integer().references(Words, #id)();
   TextColumn get typesession => text()();
 }
+class KindsOfWords extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get name => text()();
+}
 
 @DriftDatabase(tables: [
   Languages,
@@ -134,7 +143,8 @@ class Sessions extends Table {
   Sessions,
   Examples,
   QuizGroup,
-  Question
+  Question,
+  KindsOfWords
 ])
 class AppDatabase extends _$AppDatabase {
   String pathToFile = "";
@@ -156,7 +166,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -164,9 +174,25 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
-        if (to == 21) {
+
+        await customStatement('PRAGMA foreign_keys = OFF');
+        if (to <= 22 && from == 20) {
           await m.addColumn(question, question.archive);
         }
+        await transaction(() => VersionedSchema.runMigrationSteps(
+            migrator: m,
+            from: from,
+            to: to,
+            steps: migrationSteps(from21To22: (Migrator m, Schema22 schema) async {
+              // await m.addColumn(schema.question, schema.question.archive);
+              await m.createTable(schema.kindsOfWords);
+
+              await m.addColumn(schema.words, schema.words.kindOfWord);
+              await m.addColumn(schema.words, schema.words.kindOfWordRef);
+            })));
+
+        
+
         if (to == 19) {
           await m.database.customStatement(
               """ ALTER TABLE "question" ADD COLUMN "ref_word" INTEGER NOT NULL DEFAULT 0""");
