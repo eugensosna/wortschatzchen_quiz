@@ -4,8 +4,13 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 
 class WebViewControllerWord extends StatefulWidget {
   final Word editWord;
+  final String baseUri; 
   final String title;
-  const WebViewControllerWord({super.key, required this.editWord, required this.title});
+  const WebViewControllerWord(
+      {super.key,
+      required this.editWord,
+      required this.title,
+      this.baseUri = "https://www.verbformen.de/?w="});
 
   @override
   WebViewControllerWordState createState() => WebViewControllerWordState();
@@ -18,7 +23,7 @@ class WebViewControllerWordState extends State<WebViewControllerWord> {
   // WebViewControllerWordState();
   @override
   Widget build(BuildContext context) {
-    Uri uri = Uri.parse("https://www.verbformen.de/?w=${widget.title}");
+    Uri uri = Uri.parse("${widget.baseUri}${widget.title}");
     return Scaffold(
       appBar: AppBar(
           title: Text(widget.title),

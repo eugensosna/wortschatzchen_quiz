@@ -255,20 +255,22 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     });
     Map<String, dynamic> resultExport = {};
     var talker = Provider.of<AppDataProvider>(context, listen: false).talker;
-    String? result = await FilePicker.platform.saveFile();
-    if (result != null) {
+    //String? result = await FilePicker.platform.saveFile();
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory != null) {
+      String path = ppath.join(selectedDirectory, "data.json");
       List<Word> wordsToExport = [];
       if (context.mounted) {
         await exportWords(context, resultJson);
         await exportQuiz(context, resultJson);
       }
-      await writeJsonToFile(resultJson, result);
+      await writeJsonToFile(resultJson, path);
       setState(() {
         isLoading = false;
         semanticValue = "";
         _progress = 0;
       });
-      showMessage("Saved to ${result}");
+      showMessage("Saved to ${path}");
     }
   }
 

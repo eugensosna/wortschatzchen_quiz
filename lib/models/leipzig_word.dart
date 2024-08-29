@@ -582,6 +582,7 @@ class LeipzigWord {
       await db.updateWord(word);
       // db.update(db.words).replace(word);
     }
+  
 
     return word;
   }
@@ -625,6 +626,7 @@ class LeipzigWord {
         editWord = await db.updateWord(wordToUpdate);
       }
 
+
       appProvider.addMeansToBase(word.definitions, wordToUpdate);
 
       // await db.deleteMeansByWord(editWord);
@@ -635,6 +637,10 @@ class LeipzigWord {
       //         .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
 
       //   }
+    }
+    if (word.kindOfWort.isNotEmpty && editWord.kindOfWord == null) {
+      wordToUpdate = editWord.copyWith(kindOfWord: Value<String>(kindOfWort));
+      editWord = await db.updateWord(wordToUpdate);
     }
 
     try {

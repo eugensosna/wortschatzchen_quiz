@@ -1,4 +1,5 @@
 import 'dart:async';
+import "package:wortschatzchen_quiz/widgets/reordable_list_view.dart";
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -214,7 +215,7 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
       widget.talker.error("detail init state error fill for ${editWord.name}", e);
     }
 
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   fillControllers(Word editWord) {
@@ -339,6 +340,9 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                   ),
                   Tab(
                     text: "Verbforms",
+                  ),
+                  Tab(
+                    text: "Leizig",
                   )
                 ],
               ),
@@ -348,6 +352,8 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                 padding: const EdgeInsets.all(8),
                 child: ListView(
                   children: <Widget>[
+                    Text(editWord.kindOfWord ?? ""),
+
                     Padding(
                       padding: const EdgeInsets.all(9),
                       child: TextField(
@@ -476,7 +482,22 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                 onRefresh: () async {
                   setBaseSettings(editWord);
                 },
+              ),
+              RefreshIndicator(
+                child: Center(
+                  child: WebViewControllerWord(
+                    editWord: editWord,
+                    title: editWord.name,
+                    baseUri: "https://corpora.uni-leipzig.de/de/res?corpusId=deu_news_2023&word=",
+                  ),
+                ),
+                onRefresh: () async {
+                  setBaseSettings(editWord);
+                },
               )
+            
+            
+            
             ])));
   }
 
@@ -1015,3 +1036,5 @@ return ListView(
     setState(() {});
   }
 }
+
+

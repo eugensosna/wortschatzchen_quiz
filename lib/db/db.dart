@@ -13,6 +13,7 @@ import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 import 'package:path/path.dart' as p;
 import 'package:wortschatzchen_quiz/db/db_migration.dart';
+import 'package:wortschatzchen_quiz/db/migrations_steps.dart';
 
 part 'db.g.dart';
 
@@ -179,19 +180,15 @@ class AppDatabase extends _$AppDatabase {
         if (to <= 22 && from == 20) {
           await m.addColumn(question, question.archive);
         }
+        if (from >= 21) {
         await transaction(() => VersionedSchema.runMigrationSteps(
             migrator: m,
             from: from,
             to: to,
             steps: migrationSteps(from21To22: (Migrator m, Schema22 schema) async {
-              // await m.addColumn(schema.question, schema.question.archive);
-              await m.createTable(schema.kindsOfWords);
-
-              await m.addColumn(schema.words, schema.words.kindOfWord);
-              await m.addColumn(schema.words, schema.words.kindOfWordRef);
+                await MigrationsSteps.from21To22(m, schema);
             })));
-
-        
+}
 
         if (to == 19) {
           await m.database.customStatement(

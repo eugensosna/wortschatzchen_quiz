@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
@@ -15,7 +16,8 @@ class WordMvc {
   List<ReordableElement> examples = [];
   List<ReordableElement> means = [];
   String mean = "";
-  String kindOfWord = "";
+  String? kindOfWord = "";
+  int? kindOfWordRef = 0;
   String artikel = "";
   String important = "";
   String baseForm = "";
@@ -54,6 +56,7 @@ class WordMvc {
       result.baseLang = wordDb.baseLang;
       result.rootWordID = wordDb.rootWordID;
       result.quicktranslate = wordDb.description;
+      result.kindOfWord = wordDb.kindOfWord;
 
       result.synonyms = await db.getSynonymsByWord(wordDb.id);
       result.means = await db.getMeansByWord(wordDb.id);
@@ -88,7 +91,9 @@ class WordMvc {
           mean: mean,
           baseForm: baseForm,
           baseLang: baseLang,
-          rootWordID: rootWordID));
+            rootWordID: rootWordID,
+            kindOfWord: Value<String>(kindOfWord ?? ""),
+          ));
       isNew = true;
 
       editWordDB = await db.getWordById(idLocal);
@@ -120,7 +125,8 @@ class WordMvc {
           description: quicktranslate,
           baseForm: baseForm,
           baseLang: baseLang,
-          rootWordID: rootWordID);
+          rootWordID: rootWordID,
+          kindOfWord: Value(kindOfWord));
 
       if (mean.isNotEmpty) {
         means.firstWhere(
@@ -254,7 +260,8 @@ class WordMvc {
           baseWord: editWord.id,
           meansOrder: element.orderId,
           name: element.name,
-          uuid: element.uuid);
+        uuid: element.uuid,
+      );
       //foundRow.copyWith(
       //  baseWord: editWord.id, exampleOrder: element.orderId, name: element.name, uuid: uuid);
       await db.update(db.means).replace(toUpdate);
@@ -334,7 +341,7 @@ class WordMvc {
       
       'name': name,
       'mean': mean,
-      'kindOfWord': kindOfWord,
+      'kindOfWord': kindOfWord ?? "",
       'uuid': uuid,
       'currentSession': currentSession,
       'quicktranslate': quicktranslate,

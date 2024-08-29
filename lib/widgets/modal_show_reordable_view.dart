@@ -38,11 +38,11 @@ class _ModalShowReordableViewState extends State<ModalShowReordableView> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: const Text("Reorder"),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              moveToLastScreen(context);
-            }),
+        // leading: IconButton(
+        //     icon: const Icon(Icons.arrow_back),
+        //     onPressed: () async {
+        //       moveToLastScreen(context);
+        //     }),
       ),
       body: ReorderableListView.builder(
         itemCount: widget.listToView.length,
