@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:uuid/uuid.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
+import 'package:wortschatzchen_quiz/widgets/text_separator_widget.dart';
 import 'package:wortschatzchen_quiz/widgets/widgetAutoComplit.dart';
 
 class WordsList extends StatefulWidget {
@@ -89,20 +89,29 @@ class WordsListState extends State<WordsList> {
 
       // bottomNavigationBar: bottomNavigationBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: addNewWord,
-        tooltip: "Add new",
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        // crossAxisAlignment: ,
+        children: [
+          FloatingActionButton(
+            onPressed: addNewWord,
+            tooltip: "Add new",
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            onPressed: showMultilineInputText,
+            tooltip: "Add new from text",
+            child: const Icon(Icons.article_outlined),
+          ),
+        ],
       ),
     );
   }
 
-
-
-
   Widget getAzWordListView() {
     return Container();
   }
+
   Decoration getIndexBarDecoration(Color color) {
     return BoxDecoration(
         color: color,
@@ -290,6 +299,12 @@ class WordsListState extends State<WordsList> {
         BottomNavigationBarItem(icon: Icon(Icons.image_search), label: "Scan"),
       ],
     );
+  }
+
+  void showMultilineInputText() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return TextSeparatorWidget();
+    }));
   }
 
   void addNewWord() {

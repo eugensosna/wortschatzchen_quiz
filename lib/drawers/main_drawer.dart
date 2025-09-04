@@ -35,7 +35,15 @@ class MainDrawer extends StatelessWidget {
               Navigator.pushNamed(context, routeTalkerView);
             },
             title: const Text("Talker"),
-          )
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, routeSettingsPage);
+            },
+            leading: const Icon(Icons.settings),
+            title: const Text("Settings"),
+          ),
         ],
       ),
     );

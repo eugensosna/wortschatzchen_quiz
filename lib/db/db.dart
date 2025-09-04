@@ -128,9 +128,10 @@ class Sessions extends Table {
   IntColumn get baseWord => integer().references(Words, #id)();
   TextColumn get typesession => text()();
 }
+
 class KindsOfWords extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().clientDefault(() => Uuid().v4())();
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
   TextColumn get name => text()();
 }
 
@@ -175,20 +176,19 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
-
         await customStatement('PRAGMA foreign_keys = OFF');
         if (to <= 22 && from == 20) {
           await m.addColumn(question, question.archive);
         }
         if (from >= 21) {
-        await transaction(() => VersionedSchema.runMigrationSteps(
-            migrator: m,
-            from: from,
-            to: to,
-            steps: migrationSteps(from21To22: (Migrator m, Schema22 schema) async {
+          await transaction(() => VersionedSchema.runMigrationSteps(
+              migrator: m,
+              from: from,
+              to: to,
+              steps: migrationSteps(from21To22: (Migrator m, Schema22 schema) async {
                 await MigrationsSteps.from21To22(m, schema);
-            })));
-}
+              })));
+        }
 
         if (to == 19) {
           await m.database.customStatement(
@@ -221,14 +221,11 @@ class AppDatabase extends _$AppDatabase {
           if (to == 18) {
             await m.createTable(quizGroup);
             await m.createTable(question);
-            await m.addColumn(
-                leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
-            await m.addColumn(
-                leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
+            await m.addColumn(leipzigDataFromIntranet, leipzigDataFromIntranet.htmlExamples);
+            await m.addColumn(leipzigDataFromIntranet, leipzigDataFromIntranet.htmlOpen);
           }
           if (from <= 14) {
-            await customStatement(
-                'ALTER TABLE words RENAME COLUMN immportant TO important;');
+            await customStatement('ALTER TABLE words RENAME COLUMN immportant TO important;');
           }
           if (from <= 15 && to == 16) {
 //            await customStatement(
@@ -251,8 +248,7 @@ class AppDatabase extends _$AppDatabase {
           m.createIndex(typeSession);
         }
         if (from < 11) {
-          await customStatement(
-              'ALTER TABLE means   ADD COLUMN means_order INTEGER;');
+          await customStatement('ALTER TABLE means   ADD COLUMN means_order INTEGER;');
           await customStatement("""update means set means_order=0;""");
         }
       },
@@ -260,10 +256,10 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('PRAGMA foreign_keys = OFF');
         // talker.info("start before open");
         if (details.wasCreated) {
-          (await into(languages).insert(
-              LanguagesCompanion.insert(name: "German", shortName: "de")));
-          (await into(languages).insert(
-              LanguagesCompanion.insert(name: "Ukrainian", shortName: "uk")));
+          (await into(languages)
+              .insert(LanguagesCompanion.insert(name: "German", shortName: "de")));
+          (await into(languages)
+              .insert(LanguagesCompanion.insert(name: "Ukrainian", shortName: "uk")));
         }
 
         if (details.hadUpgrade && details.versionBefore! < 10) {}
@@ -281,9 +277,7 @@ LazyDatabase _openConnection(String pathToFile) {
 
     final dbFolder = await getApplicationDocumentsDirectory();
 
-    final file = File(pathToFile.isNotEmpty
-        ? pathToFile
-        : p.join(dbFolder.path, 'worts.sqlite'));
+    final file = File(pathToFile.isNotEmpty ? pathToFile : p.join(dbFolder.path, 'worts.sqlite'));
 
     // Also work around limitations on old Android versions
     if (Platform.isAndroid) {

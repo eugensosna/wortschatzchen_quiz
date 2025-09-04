@@ -11,7 +11,6 @@ import 'package:wortschatzchen_quiz/screens/quiz/add_quiz_group.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/question_list_view.dart';
 import 'package:wortschatzchen_quiz/screens/quiz/quiz_view.dart';
 import 'package:wortschatzchen_quiz/screens/session_word_list.dart';
-import 'package:wortschatzchen_quiz/widgets/drop_down_sessions_list.dart';
 import 'package:wortschatzchen_quiz/widgets/modal_show_questions_add.dart';
 
 class DeckEntryView extends StatelessWidget {
@@ -56,12 +55,10 @@ class DeckEntryView extends StatelessWidget {
           builder: (context, value, child) {
             listSessions = value.sessionsByName
                 .map(
-                  (e) => SessionHeader(
-                      typesession: e.typesession, description: e.typesession),
+                  (e) => SessionHeader(typesession: e.typesession, description: e.typesession),
                 )
                 .toList();
-            currentSessionName =
-                listSessions.isNotEmpty ? listSessions[0].typesession : "";
+            currentSessionName = listSessions.isNotEmpty ? listSessions[0].typesession : "";
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 100.0),
@@ -78,8 +75,7 @@ class DeckEntryView extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 100.0),
+                        padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 100.0),
                         child: Text(
                           "${deck.cards.length} cards",
                           textAlign: TextAlign.center,
@@ -165,13 +161,11 @@ class DeckEntryView extends StatelessWidget {
                         margin: const EdgeInsets.all(10.0),
                         padding: const EdgeInsets.all(8.0),
                         decoration: const BoxDecoration(
-                            border:
-                                Border(top: BorderSide(color: Colors.black))),
+                            border: Border(top: BorderSide(color: Colors.black))),
                         child: ElevatedButton(
                             onPressed: () async {
                               var quizUpdated =
-                                  await Provider.of<AppDataProvider>(context,
-                                              listen: false)
+                                  await Provider.of<AppDataProvider>(context, listen: false)
                                           .getQuizData(deck) ??
                                       deck;
                               Navigator.push(
@@ -183,7 +177,6 @@ class DeckEntryView extends StatelessWidget {
                                             questionsField: "name",
                                             answerField: "description",
                                           )));
-                              
                             },
                             child: const Text("Generate to lern")),
                       ),
@@ -202,16 +195,15 @@ class DeckEntryView extends StatelessWidget {
     currentSessionName = value;
   }
 
-  void fillQuestions(BuildContext context, String currentSessionName,
-      String questionField, String answerField) async {
+  void fillQuestions(BuildContext context, String currentSessionName, String questionField,
+      String answerField) async {
     String question;
     var db = Provider.of<AppDataProvider>(context, listen: false).db;
     var words = await Provider.of<AppDataProvider>(context, listen: false)
         .updateSessionByFilter(current: currentSessionName);
     for (var item in words) {
       question = getValueByFieldName(questionField, item).toString();
-      var questiondb =
-          await db.getQuestionByName(question, deck.id, wordId: item.id);
+      var questiondb = await db.getQuestionByName(question, deck.id, wordId: item.id);
       if (questiondb != null) {
         continue;
       }

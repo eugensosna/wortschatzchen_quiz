@@ -40,7 +40,7 @@ class QuizCard {
 
   static QuizCard fromJson(Map<String, dynamic> json) {
     bool isArchive = json.containsKey('archive') ? json['archive'] : false;
-    
+
     return QuizCard(
         question: json['question'],
         answer: json['answer'],
@@ -48,19 +48,20 @@ class QuizCard {
         example: json['example'],
         archive: isArchive);
   }
-  Future<void> save(AppDataProvider provider, Deck quiz_group) async {
+
+  Future<void> save(AppDataProvider provider, Deck quizGroup) async {
     var db = provider.db;
     QuestionData? row;
     row = await db.getQuestionByName(
       question,
-      quiz_group.id,
+      quizGroup.id,
     );
     if (row == null) {
       var idLocal = await db.into(db.question).insert(QuestionCompanion.insert(
           name: question,
           answer: answer,
           example: example,
-          refQuizGroup: quiz_group.id,
+          refQuizGroup: quizGroup.id,
           archive: Value(archive)));
       row = await db.getQuestionByIdOrUuid(idLocal);
       id = idLocal;
@@ -71,13 +72,11 @@ class QuizCard {
           answer: answer,
           example: example,
           refWord: word != null ? word!.id : 0,
-          refQuizGroup: quiz_group.id,
+          refQuizGroup: quizGroup.id,
           archive: Value(archive));
       await db.update(db.question).replace(toUpdate);
     } else {
       Exception("can't found $question id $id");
     }
   }
-
-
 }

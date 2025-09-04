@@ -19,7 +19,6 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -64,8 +63,6 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
       textController.text = textToView;
     }
     return TextField(
-
-      
       controller: textController,
       textAlign: TextAlign.center,
       autocorrect: true,
@@ -74,8 +71,7 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
           hintText: "Deck Title",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                  color: Colors.black, width: 2.0, style: BorderStyle.solid))),
+              borderSide: BorderSide(color: Colors.black, width: 2.0, style: BorderStyle.solid))),
     );
   }
 
@@ -89,7 +85,7 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
       ),
       onPressed: () async {
         Deck deck;
-        var provider = await Provider.of<AppDataProvider>(context, listen: false);
+        var provider = Provider.of<AppDataProvider>(context, listen: false);
         if (widget._deck != null) {
           var db = provider.db;
           var deckdb = await db.getQuizByNameOrId("", id: widget._deck!.id);
@@ -119,7 +115,6 @@ class _AddQuizGroupState extends State<AddQuizGroup> {
         // MockDecks.addDeck(textController.text);
         // List<Deck> decks = MockDecks.fetchDecks();
         // Deck deck = decks.elementAt(decks.length - 1);
-        
       },
       // textColor: Colors.white,
       // padding: EdgeInsets.fromLTRB(40.0, 15.0, 40.0, 15.0),

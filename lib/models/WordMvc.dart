@@ -1,6 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
@@ -66,11 +64,7 @@ class WordMvc {
         result.currentSession = sessionRow.typesession;
       }
       // result
-    } else {
-
-      
-
-    }
+    } else {}
 
     if (result.currentSession.isEmpty) {
       result.currentSession = getDefaultSessionName();
@@ -79,18 +73,16 @@ class WordMvc {
   }
 
   Future<WordMvc?> save() async {
-
     Word? editWordDB;
 
-   
-    if (id<=0){
+    if (id <= 0) {
       var idLocal = await db.into(db.words).insert(WordsCompanion.insert(
-          name: name,
-          important: important,
-          description: quicktranslate,
-          mean: mean,
-          baseForm: baseForm,
-          baseLang: baseLang,
+            name: name,
+            important: important,
+            description: quicktranslate,
+            mean: mean,
+            baseForm: baseForm,
+            baseLang: baseLang,
             rootWordID: rootWordID,
             kindOfWord: Value<String>(kindOfWord ?? ""),
           ));
@@ -145,12 +137,10 @@ class WordMvc {
       await saveSynonymsToBase(synonyms, toUpdate);
       appProvider.saveWordToSession(toUpdate, currentSession);
       await saveExamplesToBase(examples, toUpdate);
-      
 
       // appProvider.addExamplesToBase(examples.map((e) => e.name,), editWord)
     }
     return this;
-
   }
 
   saveExamplesToBase(List<ReordableElement> listToWrite, Word editWord,
@@ -257,9 +247,9 @@ class WordMvc {
     }
     if (foundRow != null) {
       var toUpdate = foundRow.copyWith(
-          baseWord: editWord.id,
-          meansOrder: element.orderId,
-          name: element.name,
+        baseWord: editWord.id,
+        meansOrder: element.orderId,
+        name: element.name,
         uuid: element.uuid,
       );
       //foundRow.copyWith(
@@ -288,7 +278,6 @@ class WordMvc {
     }
   }
 
-
   Future<void> addToTranslate(ReordableElement element) async {
     await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
         baseLang: appProvider.translator.baseLang!.id,
@@ -296,7 +285,6 @@ class WordMvc {
         name: element.name,
         translatedName: element.translate));
   }
-
 
   static WordMvc fromJson(Map<String, dynamic> json, AppDataProvider appProvider) {
     var db = appProvider.db;
@@ -338,7 +326,6 @@ class WordMvc {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
-      
       'name': name,
       'mean': mean,
       'kindOfWord': kindOfWord ?? "",

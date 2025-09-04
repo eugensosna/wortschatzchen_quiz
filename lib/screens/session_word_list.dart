@@ -7,10 +7,7 @@ import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
-import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
-import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/screens/words_detail.dart';
-import 'package:wortschatzchen_quiz/screens/words_list.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 import 'package:wortschatzchen_quiz/widgets/animated_Card.dart';
 
@@ -20,10 +17,7 @@ class SessionWordList extends StatefulWidget {
   final String currentSession;
 
   const SessionWordList(
-      {super.key,
-      required this.talker,
-      required this.db,
-      required this.currentSession});
+      {super.key, required this.talker, required this.db, required this.currentSession});
   @override
   SessionWordListState createState() => SessionWordListState();
 }
@@ -57,72 +51,63 @@ class SessionWordListState extends State<SessionWordList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<AppDataProvider>(
-          builder: (context, AppDataProvider, child) {
+      body: Consumer<AppDataProvider>(builder: (context, AppDataProvider, child) {
         listWords = AppDataProvider.sessionByFilter;
         return CustomScrollView(
-          
-              slivers: [
-                SliverAppBar(
-                  centerTitle: true,
-                  pinned: true,
-                  floating: true,
-                  snap: true,
-                  elevation: 0,
-            title: isLoad
-                ? const Center(child: CircularProgressIndicator())
-                : Text(widget.currentSession),
-          
-          
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () async {
-                      moveToLastScreen();
-                    },
-                  ),
+          slivers: [
+            SliverAppBar(
+              centerTitle: true,
+              pinned: true,
+              floating: true,
+              snap: true,
+              elevation: 0,
+              title: isLoad
+                  ? const Center(child: CircularProgressIndicator())
+                  : Text(widget.currentSession),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () async {
+                  moveToLastScreen();
+                },
+              ),
               surfaceTintColor: Colors.transparent,
-                ),
-                SliverGrid.builder(
-                  itemCount: listWords.length,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 300, crossAxisSpacing: 5),
-                  itemBuilder: (context, index) {
-                    Word element = listWords.elementAt(index);
-                      return Container(
-                        child: Center(
-                          child: AnimatedCard(
-                              editWord: element,
-                              db: widget.db,
-                              talker: widget.talker),
-                        ),
-                      );
-                    //  Card(
-                    //   color: Colors.amber,
-                    // );
+            ),
+            SliverGrid.builder(
+              itemCount: listWords.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 300, crossAxisSpacing: 5),
+              itemBuilder: (context, index) {
+                Word element = listWords.elementAt(index);
+                return Container(
+                  child: Center(
+                    child: AnimatedCard(editWord: element, db: widget.db, talker: widget.talker),
+                  ),
+                );
+                //  Card(
+                //   color: Colors.amber,
+                // );
+              },
+            ),
+            SliverList.builder(
+              itemBuilder: (context, index) {
+                var itemWord = AppDataProvider.sessionByFilter.elementAt(index);
+                return GestureDetector(
+                  onDoubleTap: () {
+                    navigateToDetail(itemWord, "View ${itemWord.name}");
                   },
-                ),
-                SliverList.builder(
-                  itemBuilder: (context, index) {
-                      var itemWord =
-                          AppDataProvider.sessionByFilter.elementAt(index);
-                    return GestureDetector(
-                      onDoubleTap: () {
-                        navigateToDetail(itemWord, "View ${itemWord.name}");
-                      },
-                      child: Dismissible(
-                        key: Key(itemWord.uuid),
-                        direction: DismissDirection.startToEnd,
-                        child: ListTile(
-                          title: Text(
-                              "${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
-                          leading: Text(" ${itemWord.important}  "),
-                        ),
-                      ),
-                    );
-                  },
+                  child: Dismissible(
+                    key: Key(itemWord.uuid),
+                    direction: DismissDirection.startToEnd,
+                    child: ListTile(
+                      title: Text("${itemWord.name},${itemWord.baseForm}-${itemWord.description} "),
+                      leading: Text(" ${itemWord.important}  "),
+                    ),
+                  ),
+                );
+              },
               itemCount: AppDataProvider.sessionByFilter.length,
-                )
-              ],
+            )
+          ],
         );
       }),
       floatingActionButton: FloatingActionButton(
@@ -215,8 +200,7 @@ class SessionWordListState extends State<SessionWordList> {
                 var autoItem = options.elementAt(index);
                 return ListTile(
                   title: Text(autoItem.name),
-                  onTap: () {
-                  },
+                  onTap: () {},
                 );
               },
               separatorBuilder: (context, index) => const Divider(),
@@ -232,23 +216,19 @@ class SessionWordListState extends State<SessionWordList> {
 
     List<SessionHeader> result = [];
     //def =  getFormattedDate(DateTime.now());
-    final sessions = await widget.db
-        .getGroupedSessionsByName();
+    final sessions = await widget.db.getGroupedSessionsByName();
     for (var item in sessions) {
       if (item.typesession.contains(todaySession)) {
         defaultSession = "${item.typesession} (${item.count})";
       }
       result.add(SessionHeader(
-          typesession: item.typesession,
-          description: "${item.typesession} (${item.count})"));
+          typesession: item.typesession, description: "${item.typesession} (${item.count})"));
     }
 
     if (defaultSession.isEmpty) {
       defaultSession = todaySession;
       result.insert(
-          0,
-          SessionHeader(
-              typesession: defaultSession, description: "$defaultSession (0)"));
+          0, SessionHeader(typesession: defaultSession, description: "$defaultSession (0)"));
     }
     return result;
   }
@@ -260,11 +240,9 @@ class SessionWordListState extends State<SessionWordList> {
   }
 
   Future<List<Word>> _updateWordsList() async {
-    
     listWords = await Provider.of<AppDataProvider>(context, listen: false)
         .updateSessionByFilter(current: widget.currentSession);
     return listWords;
-    
   }
 
   Future<void> addWord(String name) async {
@@ -283,8 +261,7 @@ class SessionWordListState extends State<SessionWordList> {
   }
 
   Future<void> navigateToDetail(Word wordToEdit, String title) async {
-    final result =
-        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
       // widget.talker.info("session word list route to detail ", wordToEdit);
       return WordsDetail(
         wordToEdit,

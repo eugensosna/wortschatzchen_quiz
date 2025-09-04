@@ -1,12 +1,15 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/providers/settings_provider.dart';
 import 'package:wortschatzchen_quiz/screens/backup_restore_page.dart';
 import 'package:wortschatzchen_quiz/screens/home_page.dart';
+import 'package:wortschatzchen_quiz/screens/setting_page.dart';
 import 'package:wortschatzchen_quiz/utils/constants.dart';
 
 late AppDatabase db;
@@ -17,12 +20,16 @@ void main() async {
   final talker = dataProviderTemp.talker;
   // talker.info("init Talker ");
 
-  runApp(ChangeNotifierProvider(
-      create: (context) => dataProviderTemp,
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => dataProviderTemp),
+        ChangeNotifierProvider(
+            create: (context) =>
+                SettingsProvider(Provider.of<AppDataProvider>(context, listen: false)))
+      ],
       child: MyApp(
         talker: talker,
       )));
-
   // runZonedGuarded(
   //   () => runApp(MyApp(
   //     talker: talker,
@@ -43,6 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var wtalker = talker;
+    Provider.of<SettingsProvider>(context, listen: false).loadSettings();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       showSemanticsDebugger: false,
@@ -95,15 +103,16 @@ class _MyHomePageState extends State<MyHomePage> {
       routes: {
         routeNameHome: (context) => HomePage(talker: wtalker),
         routeBackupRestoreDataPage: (context) => const BackupRestorePage(),
+        routeSettingsPage: (context) => const SettingsForm(),
         routeDriftViewer: (context) => DriftDbViewer(db),
         routeTalkerView: (context) => TalkerScreen(
             talker: wtalker,
             theme: const TalkerScreenTheme(
               /// Your custom log colors
               logColors: {
-                TalkerLogType.httpResponse: Color(0xFF26FF3C),
-                TalkerLogType.error: Colors.redAccent,
-                TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
+                'httpResponse': Color(0xFF26FF3C),
+                'error': Colors.redAccent,
+                'info': Color.fromARGB(255, 0, 255, 247),
               },
             ))
       },

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 // import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart' as nativewrappers;
 
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/WordMvc.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
+import 'package:wortschatzchen_quiz/providers/settings_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/utils/helper_functions.dart';
 
@@ -77,31 +79,38 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             },
           ),
           ElevatedButton(
-              child: const Text("Export words to json "),
-              onPressed: () {
-                exportToJson(context);
-              }),
+            child: const Text("Export words to json "),
+            onPressed: () {
+              exportToJson(context);
+            },
+          ),
           ElevatedButton(
             child: const Text("Import data from json "),
             onPressed: () {
               importFromJson(context);
             },
           ),
+          ElevatedButton(
+            child: const Text("export data to server  "),
+            onPressed: () {
+              exportToServer(context);
+            },
+          ),
           isLoading
               ? Stack(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 20,
                       child: LinearProgressIndicator(
                         value: _progress,
                         semanticsValue: semanticValue,
                         backgroundColor: Colors.white,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
                       ),
                     ),
                     Align(
-                      child: Text(semanticValue),
                       alignment: Alignment.topCenter,
+                      child: Text(semanticValue),
                     )
                   ],
                 )
@@ -168,7 +177,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
           editWord,
           Provider.of<AppDataProvider>(context, listen: false),
         );
-        talker.info(" parsed ${editWord.name}");
+        talker.info(" parOed ${editWord.name}");
       } catch (e) {
         talker.error("error parse ${editWord.name}", e);
       }
@@ -213,7 +222,6 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                   .insert(SessionsCompanion.insert(baseWord: savedword.id, typesession: formatted));
             }
             talker.verbose("end ${element["name"]}");
-
           } on Exception catch (e) {
             talker.error("import from json $element", e);
             // TODO
@@ -270,12 +278,71 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
         semanticValue = "";
         _progress = 0;
       });
-      showMessage("Saved to ${path}");
+      showMessage("Saved to $path");
     }
   }
 
+  void exportToServer(BuildContext context) async {
+    Map<String, dynamic> resultJson = {};
+    setState(() {
+      isLoading = true;
+    });
+    Map<String, dynamic> resultExport = {};
+    var talker = await Provider.of<AppDataProvider>(context, listen: false).talker;
+    var dbInto = await Provider.of<AppDataProvider>(context, listen: false).db;
+    var provider = await Provider.of<AppDataProvider>(context, listen: false);
+
+    var dio = await Provider.of<SettingsProvider>(context, listen: false).apiDio;
+    var headers = await Provider.of<SettingsProvider>(context, listen: false).defaultHeaders;
+    // dio.options.headers = headers;
+
+    //String? result = await FilePicker.platform.saveFile();
+    // String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    // if (selectedDirectory != null) {
+    //   String path = ppath.join(selectedDirectory, "data.json");
+    List<Word> wordsToExport = [];
+    var words = await dbInto.getOrdersWordList();
+
+    for (var item in words) {
+      // setState(() {
+      //   _progress = progressLoc;
+      // });
+
+      semanticValue = item.name;
+      try {
+        var elem = await WordMvc.read(provider, uuid: item.uuid);
+        var wordJson = elem.toJson();
+        var result = await dio.get("/words/uuid/${item.uuid}", options: Options(headers: headers));
+        if (result.statusCode == 200) {
+          // update
+        } else {
+          // create
+          talker.info("create word ${item.name}");
+        }
+
+        // wordsJson.add(elem.toJson());
+      } on Exception catch (e) {
+        provider.talker.error("export ${item.id}", e);
+      }
+    }
+
+    if (context.mounted) {
+      await exportWords(context, resultJson);
+      await exportQuiz(context, resultJson);
+    }
+
+    // await writeJsonToFile(resultJson, path);
+    setState(() {
+      isLoading = false;
+      semanticValue = "";
+      _progress = 0;
+    });
+    showMessage("Exported");
+  }
+
   Future<void> exportQuiz(BuildContext context, Map<String, dynamic> resultJson) async {
-    var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
+
     // File file = File(result);
     // var dbToImport = DbHelper(pathToFile: file.path);
     var quizGroups = await db.getDecks(includeArchive: true);
@@ -287,7 +354,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   }
 
   Future<void> exportSessions(BuildContext context, Map<String, dynamic> resultJson) async {
-    var dbInto = Provider.of<AppDataProvider>(context, listen: false).db;
+    var db = Provider.of<AppDataProvider>(context, listen: false).db;
     // File file = File(result);
     // var dbToImport = DbHelper(pathToFile: file.path);
     var groupSessions = await db.getGroupedSessionsByName();

@@ -36,29 +36,26 @@ class _AddCardViewState extends State<AddCardView> {
     var provider = Provider.of<AppDataProvider>(context, listen: false);
     bool isArchive = widget.quizCard?.archive ?? false;
 
-
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: true,
-        title: widget.quizCard == null
-            ? const Text("Add Card")
-            : const Text("View Card"),
-          // backgroundColor: Colors.black,
-        ),
-        body: ListView(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15.0, 50.0, 15.0, 25.0),
-                    child: _questionFieldNewCardScreen(),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
-                    child: _answerFieldNewCardScreen(),
-                  ),
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        title: widget.quizCard == null ? const Text("Add Card") : const Text("View Card"),
+        // backgroundColor: Colors.black,
+      ),
+      body: ListView(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(15.0, 50.0, 15.0, 25.0),
+                  child: _questionFieldNewCardScreen(),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
+                  child: _answerFieldNewCardScreen(),
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(15.0, 25.0, 15.0, 50.0),
                   child: _examplesFieldNewCardScreen(),
@@ -87,13 +84,11 @@ class _AddCardViewState extends State<AddCardView> {
                     ],
                   ),
                 ),
-
-
-                  _submitButton(deck)
-                ],
-              ),
+                _submitButton(deck)
+              ],
             ),
-          ],
+          ),
+        ],
       ),
     );
   }
@@ -109,11 +104,9 @@ class _AddCardViewState extends State<AddCardView> {
       decoration: const InputDecoration(
           hintText: "Question",
           label: Text(" Question"),
-
           border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                  color: Colors.black, width: 2.0, style: BorderStyle.solid))),
+              borderSide: BorderSide(color: Colors.black, width: 2.0, style: BorderStyle.solid))),
     );
   }
 
@@ -126,15 +119,13 @@ class _AddCardViewState extends State<AddCardView> {
       decoration: const InputDecoration(
           hintText: "Answer",
           label: Text(" Answer"),
-
           border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                  color: Colors.black, width: 2.0, style: BorderStyle.solid))),
+              borderSide: BorderSide(color: Colors.black, width: 2.0, style: BorderStyle.solid))),
     );
   }
 
-Widget _examplesFieldNewCardScreen() {
+  Widget _examplesFieldNewCardScreen() {
     return TextField(
       controller: exampleTextController,
       textAlign: TextAlign.center,
@@ -149,12 +140,11 @@ Widget _examplesFieldNewCardScreen() {
     );
   }
 
-
   Widget _submitButton(Deck currenDeck) {
     return ElevatedButton(
       // color: Colors.black,
       onPressed: () async {
-        var provider = await Provider.of<AppDataProvider>(context, listen: false);
+        var provider = Provider.of<AppDataProvider>(context, listen: false);
         var card = QuizCard(
             question: questionTextController.text,
             answer: answerTextController.text,

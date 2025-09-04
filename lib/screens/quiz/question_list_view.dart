@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
@@ -90,8 +89,8 @@ class _QuestionListViewState extends State<QuestionListView> {
           title: Text(
             card.question,
               style: isArchive
-                  ? TextStyle(fontSize: 20, decoration: TextDecoration.lineThrough)
-                  : TextStyle(fontSize: 14)
+                  ? const TextStyle(fontSize: 20, decoration: TextDecoration.lineThrough)
+                  : const TextStyle(fontSize: 14)
             
           ),
 
@@ -135,7 +134,6 @@ class _QuestionListViewState extends State<QuestionListView> {
       card = result;
 
     }
-    ;
 
   }
 

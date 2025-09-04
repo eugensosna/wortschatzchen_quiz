@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wortschatzchen_quiz/db/db.dart' as Db;
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
-import 'package:wortschatzchen_quiz/models/auto_complite_helper.dart';
 import 'package:wortschatzchen_quiz/providers/app_data_provider.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
@@ -47,8 +46,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    listSessions =
-        Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
+    listSessions = Provider.of<AppDataProvider>(context, listen: false).sessionsByName;
 
     words = fillBaseWords();
     questionDefault = widget.questionsField;
@@ -58,10 +56,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
   List<QuestionCardMarkable> fillBaseWords() {
     return widget.QuizGroup.cards.map((toElement) {
       var elem = QuestionCardMarkable(
-          question: toElement.question,
-          answer: toElement.answer,
-          id: 0,
-          example: "");
+          question: toElement.question, answer: toElement.answer, id: 0, example: "");
       elem.mark = false;
       return elem;
     }).toList();
@@ -93,8 +88,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
         children: [
           Container(
             decoration:
-                const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.black))),
+                const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black))),
             //height: MediaQuery.of(context).size.height / 3,
             child: Row(
               textBaseline: TextBaseline.alphabetic,
@@ -126,16 +120,15 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     },
                     controller: questionController,
                     dropdownMenuEntries: fieldNames.map((value) {
-                      return DropdownMenuEntry<String>(
-                          value: value, label: value);
+                      return DropdownMenuEntry<String>(value: value, label: value);
                       // trailingIcon: Icon(Icons.question_mark));
                     }).toList()),
               ],
             ),
           ),
           Container(
-            decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.black))),
+            decoration:
+                const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black))),
             child: Row(
               children: [
                 DropdownMenu<String>(
@@ -150,15 +143,13 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                     controller: answerController,
                     dropdownMenuEntries: fieldNames.map((value) {
                       return DropdownMenuEntry<String>(
-                          value: value,
-                          label: value,
-                          trailingIcon: const Icon(Icons.abc));
+                          value: value, label: value, trailingIcon: const Icon(Icons.abc));
                     }).toList()),
                 ElevatedButton(
                     onPressed: () {
                       _generate("");
                     },
-                    child: Text("Generate Questions")),
+                    child: const Text("Generate Questions")),
               ],
             ),
           ),
@@ -171,9 +162,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                       var item = words[index];
                       return ListTile(
                         leading: IconButton(
-                          icon: item.mark
-                              ? const Icon(Icons.add)
-                              : const Icon(Icons.menu),
+                          icon: item.mark ? const Icon(Icons.add) : const Icon(Icons.menu),
                           onPressed: () {
                             item.mark = !item.mark;
                             setState(() {});
@@ -185,8 +174,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                             ? ElevatedButton(
                                 child: Text(
                                   item.word!.name,
-                                  style: const TextStyle(
-                                      backgroundColor: Colors.blue),
+                                  style: const TextStyle(backgroundColor: Colors.blue),
                                 ),
                                 onPressed: () {},
                               )
@@ -197,7 +185,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
                 ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [ElevatedButton(onPressed: _save, child: Text("Save"))],
+            children: [ElevatedButton(onPressed: _save, child: const Text("Save"))],
           )
         ],
       ),
@@ -234,22 +222,20 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     var questionField = questionController.text;
     var answerField = answerController.text;
     var sessionWords =
-        await Provider.of<AppDataProvider>(context, listen: false)
-            .updateSessionByFilter(
+        await Provider.of<AppDataProvider>(context, listen: false).updateSessionByFilter(
       current: sessionsController.text,
     );
     for (var item in sessionWords) {
       String question = getValueByFieldName(questionField, item).toString();
       String answer = getValueByFieldName(answerField, item).toString();
 
-      var questionDB =
-          await Provider.of<AppDataProvider>(context, listen: false)
-              .db
-              .getQuestionByName(question, widget.QuizGroup.id, wordId: 0);
+      var questionDB = await Provider.of<AppDataProvider>(context, listen: false)
+          .db
+          .getQuestionByName(question, widget.QuizGroup.id, wordId: 0);
 
       if (question.isNotEmpty && answer.isNotEmpty) {
-        var newElement = QuestionCardMarkable(
-            question: question, answer: answer, id: 0, example: "");
+        var newElement =
+            QuestionCardMarkable(question: question, answer: answer, id: 0, example: "");
         newElement.mark = questionDB == null ? true : false;
         newElement.word = item;
         words.insert(0, newElement);
@@ -269,15 +255,12 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
       if (item.mark) {
         item.mark = false;
         count += 1;
-        await Provider.of<AppDataProvider>(context, listen: false)
-            .addQuizQuestion(item.question, item.answer, widget.QuizGroup,
-                wordID: item.word?.id ?? 0);
+        await Provider.of<AppDataProvider>(context, listen: false).addQuizQuestion(
+            item.question, item.answer, widget.QuizGroup,
+            wordID: item.word?.id ?? 0);
 
         var elem = QuizCard(
-            question: item.question,
-            answer: item.answer,
-            id: item.id,
-            example: item.question);
+            question: item.question, answer: item.answer, id: item.id, example: item.question);
         widget.QuizGroup.cards.add(elem);
       }
       if (count > 3) {
@@ -288,8 +271,7 @@ class _QuestionsGeneratorState extends State<QuestionsGenerator> {
     words = fillBaseWords();
 
     setState(() {});
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Complite!")));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Complite!")));
   }
 }
 

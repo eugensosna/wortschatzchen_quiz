@@ -43,9 +43,9 @@ class HomePageState extends State<HomePage> {
           theme: const TalkerScreenTheme(
             /// Your custom log colors
             logColors: {
-              TalkerLogType.httpResponse: Color(0xFF26FF3C),
-              TalkerLogType.error: Colors.redAccent,
-              TalkerLogType.info: Color.fromARGB(255, 0, 255, 247),
+              'httpResponse': Color(0xFF26FF3C),
+              'error': Colors.redAccent,
+              'info': Color.fromARGB(255, 0, 255, 247),
             },
           )),
       ImageToText(
@@ -99,8 +99,7 @@ class HomePageState extends State<HomePage> {
       onTap: onItemTapped,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.play_arrow), label: "Quiz"),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.circle_outlined), label: "Repeat"),
+        BottomNavigationBarItem(icon: Icon(Icons.circle_outlined), label: "Repeat"),
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes"),
         BottomNavigationBarItem(icon: Icon(Icons.image_search), label: "Scan"),

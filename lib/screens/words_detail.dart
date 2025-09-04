@@ -1,5 +1,4 @@
 import 'dart:async';
-import "package:wortschatzchen_quiz/widgets/reordable_list_view.dart";
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -397,12 +396,12 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                     TextField(
                       controller: meanController,
                       decoration: InputDecoration(
-                          label: Text("Mean"),
+                          label: const Text("Mean"),
                           suffixIcon: IconButton(
                               onPressed: () {
                                 _showEditMeans(context, listMeans);
                               },
-                              icon: Icon(Icons.account_tree_rounded))),
+                              icon: const Icon(Icons.account_tree_rounded))),
                       onTap: () {},
                     ),
                     TextField(
@@ -456,29 +455,25 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                 ),
               ),
               RefreshIndicator(
-                child: 
-              Center(
-                child: buildWidgetSynonymsView(listSynonyms),
-              ),
+                child: Center(
+                  child: buildWidgetSynonymsView(listSynonyms),
+                ),
                 onRefresh: () async {
                   setBaseSettings(editWord);
                 },
               ),
               RefreshIndicator(
-                child: 
-              
-              Center(
-                child: buildWidgetExamplesView(listExamples, maxDesc: 1),
-                ), 
+                child: Center(
+                  child: buildWidgetExamplesView(listExamples, maxDesc: 1),
+                ),
                 onRefresh: () async {
                   setBaseSettings(editWord);
                 },
               ),
               RefreshIndicator(
-                child: 
-              Center(
-                child: WebViewControllerWord(editWord: editWord, title: editWord.name),
-              ),
+                child: Center(
+                  child: WebViewControllerWord(editWord: editWord, title: editWord.name),
+                ),
                 onRefresh: () async {
                   setBaseSettings(editWord);
                 },
@@ -495,9 +490,6 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
                   setBaseSettings(editWord);
                 },
               )
-            
-            
-            
             ])));
   }
 
@@ -689,7 +681,6 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
     return ListView(
       children: listChildren,
     );
-
   }
 
   Widget buildWidgetSynonymsView(List<ReordableElement> listSynonyms) {
@@ -721,10 +712,9 @@ class WordsDetailState extends State<WordsDetail> with TickerProviderStateMixin 
         // ))
       }
     }
-return ListView(
+    return ListView(
       children: listChildren,
     );
-
   }
 
   Future<String> _fillData() async {
@@ -1036,5 +1026,3 @@ return ListView(
     setState(() {});
   }
 }
-
-

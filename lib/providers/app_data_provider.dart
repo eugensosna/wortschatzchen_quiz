@@ -1,21 +1,33 @@
+import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker/talker.dart';
+import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
+import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:wortschatzchen_quiz/db/db.dart';
 import 'package:wortschatzchen_quiz/db/db_helper.dart';
 import 'package:wortschatzchen_quiz/models/leipzig_word.dart';
 import 'package:wortschatzchen_quiz/quiz/models/deck.dart';
 import 'package:wortschatzchen_quiz/quiz/models/quiz_card.dart';
+import 'package:wortschatzchen_quiz/utils/constants.dart';
 
 class AppDataProvider extends ChangeNotifier {
   final DbHelper _db;
   final Talker _talker = Talker();
+  final sharedPrefs = SharedPreferences.getInstance();
   DbHelper get db => _db;
   List<Word> _listWords = [];
   Talker get talker => _talker;
   late LeipzigTranslator translator;
+  late Dio dio;
+  String authToken = "";
+  String baseUrl = "";
+  bool isDioLoaded = false;
   List<SessionsGroupedByName> _sessions = [];
   List<SessionsGroupedByName> get sessionsByName => _sessions;
   String currentSession = "";
@@ -23,7 +35,6 @@ class AppDataProvider extends ChangeNotifier {
   List<Deck> _decks = [];
   List<Word> get listWords => _listWords;
   List<Word> get sessionByFilter => _sessionByFilter;
-
 
   List<Deck> get decks => _decks;
 
@@ -36,12 +47,34 @@ class AppDataProvider extends ChangeNotifier {
       _sessions = await db.getGroupedSessionsByName();
       notifyListeners();
     });
-    
+  }
+
+  Dio getDio(String baseUrl, authToken) {
+    final dio = Dio();
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (cert, host, port) => true;
+      return client;
+    };
+    dio.interceptors.add(
+      TalkerDioLogger(
+        talker: _talker,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: false,
+          printResponseHeaders: false,
+          printResponseMessage: true,
+          printResponseData: false,
+        ),
+      ),
+    );
+    dio.options.baseUrl = baseUrl;
+
+    return dio;
   }
 
   Future<List<Word>> updateSessionByFilter({String current = ""}) async {
     String filter = current.isEmpty ? currentSession : current;
-    
+
     _sessionByFilter = await db.getWordsBySession(filter);
     if (current.isNotEmpty) {
       currentSession = current;
@@ -125,16 +158,13 @@ class AppDataProvider extends ChangeNotifier {
       if (index < 3) {
         await translate(item);
       } else {
-        await db.into(db.translatedWords).insert(
-            TranslatedWordsCompanion.insert(
-                baseLang: translator.baseLang!.id,
-                targetLang: translator.targetLanguage!.id,
-                name: item,
-                translatedName: ""));
+        await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+            baseLang: translator.baseLang!.id,
+            targetLang: translator.targetLanguage!.id,
+            name: item,
+            translatedName: ""));
       }
-      await db
-          .into(db.means)
-          .insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
+      await db.into(db.means).insert(MeansCompanion.insert(baseWord: editWord.id, name: item));
     }
     var toUpdate = await db.getWordById(editWord.id) ?? editWord;
     listOfBaseMeans = await db.getMeansByWord(editWord.id);
@@ -146,7 +176,7 @@ class AppDataProvider extends ChangeNotifier {
     updateAll();
   }
 
-addExamplesToBase(List<String> examples, Word editWord) async {
+  addExamplesToBase(List<String> examples, Word editWord) async {
     // if (editWord.mean.isEmpty && means.isNotEmpty) {
     //   var toUpdate = editWord.copyWith(mean: means[0]);
     //   db.updateWord(toUpdate);
@@ -210,11 +240,8 @@ addExamplesToBase(List<String> examples, Word editWord) async {
     updateAll();
   }
 
-
   Future<Deck> addQuizGroup(String name) async {
-    var newId = await db
-        .into(db.quizGroup)
-        .insert(QuizGroupCompanion.insert(name: name));
+    var newId = await db.into(db.quizGroup).insert(QuizGroupCompanion.insert(name: name));
     updateDecks();
 
     // var resultDB
@@ -226,7 +253,6 @@ addExamplesToBase(List<String> examples, Word editWord) async {
     notifyListeners();
     return result;
   }
-
 
   Future<Deck> getQuizGroup(String name) async {
     updateDecks();
@@ -241,21 +267,16 @@ addExamplesToBase(List<String> examples, Word editWord) async {
     return result;
   }
 
-  Future<QuizCard> updateQuestion(
-      QuizCard card, String answer, Deck deck, String question,
+  Future<QuizCard> updateQuestion(QuizCard card, String answer, Deck deck, String question,
       {String example = ""}) async {
-    QuizCard toReturn =
-        QuizCard(question: question, answer: answer, id: card.id, example: "");
+    QuizCard toReturn = QuizCard(question: question, answer: answer, id: card.id, example: "");
 
     var questionDb = await db.getQuestionById(card.id);
     if (questionDb != null) {
       var toupdate = questionDb.copyWith(name: question, answer: answer, example: example);
       db.update(db.question).replace(toupdate);
-      toReturn = QuizCard(
-          question: question,
-          answer: answer,
-          id: card.id,
-          example: toupdate.example);
+      toReturn =
+          QuizCard(question: question, answer: answer, id: card.id, example: toupdate.example);
       await updateDecks();
     }
     return toReturn;
@@ -263,8 +284,7 @@ addExamplesToBase(List<String> examples, Word editWord) async {
 
   Future<Deck> addQuizQuestion(String question, String answer, Deck deck,
       {String example = "", int wordID = 0}) async {
-    var deckDB = await (db.select(db.quizGroup)
-          ..where((tbl) => tbl.name.equals(deck.deckTitle)))
+    var deckDB = await (db.select(db.quizGroup)..where((tbl) => tbl.name.equals(deck.deckTitle)))
         .getSingleOrNull();
     if (deckDB != null) {
       var newId = await db.into(db.question).insert(QuestionCompanion.insert(
@@ -274,8 +294,7 @@ addExamplesToBase(List<String> examples, Word editWord) async {
           refQuizGroup: deckDB.id,
           refWord: Value<int>(wordID),
           archive: const Value(false)));
-      deck.cards.add(
-          QuizCard(answer: answer, question: question, example: "", id: newId));
+      deck.cards.add(QuizCard(answer: answer, question: question, example: "", id: newId));
     }
 
     updateDecks();
@@ -297,11 +316,10 @@ addExamplesToBase(List<String> examples, Word editWord) async {
       }
     }
 
-      await db
-          .into(db.sessions)
-          .insert(SessionsCompanion.insert(baseWord: wordToAdd.id, typesession: sessionName));
+    await db
+        .into(db.sessions)
+        .insert(SessionsCompanion.insert(baseWord: wordToAdd.id, typesession: sessionName));
     updateSessions();
-
   }
 
   void translateNeededWords() async {

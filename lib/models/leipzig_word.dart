@@ -53,8 +53,7 @@ class LeipzigWord {
       if (updatedItem != null && updatedItem.translatedName.isEmpty) {
         if (item.translatedName.isEmpty) {
           try {
-            var translatedString =
-                await translator.translate(item.name, addtoBase: false);
+            var translatedString = await translator.translate(item.name, addtoBase: false);
 
             var toWrite = item.copyWith(translatedName: translatedString);
             db.update(db.translatedWords).replace(toWrite);
@@ -70,20 +69,17 @@ class LeipzigWord {
     // return "ok";
   }
 
-  Future<List<AutocompleteDataHelper>> getAutocompleteLocal(
-      String partOfWord) async {
+  Future<List<AutocompleteDataHelper>> getAutocompleteLocal(String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
     var words = await db.getWordsByNameLike(partOfWord);
     result = words
-        .map((e) =>
-            AutocompleteDataHelper(isIntern: true, name: e.name, uuid: e.uuid))
+        .map((e) => AutocompleteDataHelper(isIntern: true, name: e.name, uuid: e.uuid))
         .toList();
 
     return result;
   }
 
-  Future<List<AutocompleteDataHelper>> getAutocomplete(
-      String partOfWord) async {
+  Future<List<AutocompleteDataHelper>> getAutocomplete(String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
     BaseOptions options = BaseOptions(
         receiveDataWhenStatusError: true,
@@ -107,8 +103,8 @@ class LeipzigWord {
         // var listRawData = json.decode(response.data);
         for (var item in listRawData) {
           var elem = LeipzigApiAutoComplite.fromJson(item);
-          result.add(AutocompleteDataHelper(
-              name: elem.word!, isIntern: false, uuid: elem.id.toString()));
+          result.add(
+              AutocompleteDataHelper(name: elem.word!, isIntern: false, uuid: elem.id.toString()));
         }
       }
     } catch (e) {
@@ -118,8 +114,7 @@ class LeipzigWord {
     return result;
   }
 
-  Future<List<AutocompleteDataHelper>> getAutocompleteVerbForm(
-      String partOfWord) async {
+  Future<List<AutocompleteDataHelper>> getAutocompleteVerbForm(String partOfWord) async {
     var result = <AutocompleteDataHelper>[];
     BaseOptions options = BaseOptions(
         receiveDataWhenStatusError: true,
@@ -127,8 +122,7 @@ class LeipzigWord {
         receiveTimeout: const Duration(seconds: 4) // 6
         );
     final dio = Dio(options);
-    String url =
-        "https://www.verbformen.de/suche/i/?w=${Uri.encodeFull(partOfWord)}";
+    String url = "https://www.verbformen.de/suche/i/?w=${Uri.encodeFull(partOfWord)}";
     try {
       final response = await dio.get(Uri.parse(url).toString());
 
@@ -146,9 +140,7 @@ class LeipzigWord {
 
             if (autocompleteName != null) {
               result.add(AutocompleteDataHelper(
-                  name: autocompleteName,
-                  isIntern: false,
-                  uuid: const Uuid().v4()));
+                  name: autocompleteName, isIntern: false, uuid: const Uuid().v4()));
             }
           }
         }
@@ -207,8 +199,7 @@ class LeipzigWord {
     return word;
   }
 
-  Future<LeipzigWord> parseDataExamplesWord(
-      LeipzigWord word, Word editWord) async {
+  Future<LeipzigWord> parseDataExamplesWord(LeipzigWord word, Word editWord) async {
     talker.info("start html parse ");
     if (word.rawHTMLExamples.isNotEmpty) {
       var listExamplesLoc = parseHtmlExamples(word.rawHTMLExamples);
@@ -263,10 +254,10 @@ class LeipzigWord {
 
     talker.info("start getOpenthesaurusFromInternet");
     onProgress(0.7);
-     wort = await wort.getOpenThesaurusSynonyms(wort);
+    wort = await wort.getOpenThesaurusSynonyms(wort);
     wort = await wort.getOpenthesaurusFromInternet();
     wort = await wort.parseOpenthesaurus(wort);
-   
+
     onProgress(0.8);
     await wort.saveRelationsDataDB(wort, db, editWord, appProvider);
     talker.info("end getOpenthesaurusFromInternet");
@@ -293,7 +284,6 @@ class LeipzigWord {
     return wort;
   }
 
-
   Future<LeipzigWord> getOpenThesaurusSynonyms(LeipzigWord wort) async {
     var dio = getDio();
 
@@ -302,7 +292,7 @@ class LeipzigWord {
           'https://www.openthesaurus.de/synonyme/search?q=${wort.name}&format=application/json'));
       if (response.statusCode == 200) {
         var openData = OpenThesaurusResponse.fromJson(response.data);
-        if (openData.synsets.length > 0) {
+        if (openData.synsets.isNotEmpty) {
           for (var element in openData.synsets[0].terms) {
             wort.synonyms.add(LeipzigSynonym(
                 element.term, "", "'https://www.openthesaurus.de/synonyme/${wort.name}"));
@@ -318,7 +308,6 @@ class LeipzigWord {
 
   Future<LeipzigWord> parseRawHtmlData(
       String name, Word editWord, AppDataProvider appProvider) async {
-
     if (rawHTML.isEmpty) {
       talker.info("1. parseRawHtmlData start ");
       getFromInternet(name).then((tempWort) async {
@@ -448,8 +437,7 @@ class LeipzigWord {
     try {
       Response response = await getLeipzigHtml(name, dio);
       if (response.statusCode == 200 && response.data.toString().isNotEmpty) {
-        talker.info(
-            "get leipzig data $name ${DateTime.now().microsecond - timeStart}");
+        talker.info("get leipzig data $name ${DateTime.now().microsecond - timeStart}");
         timeStart = DateTime.now().microsecond;
         result.rawHTML = response.data.toString();
         result.url = getUrlForLeipzigCorporaWord(name);
@@ -479,8 +467,8 @@ class LeipzigWord {
     return result;
   }
 
-  Future<Word?> addWordUpdateShort(String name, String description,
-      Word editWord, Language? baseLang) async {
+  Future<Word?> addWordUpdateShort(
+      String name, String description, Word editWord, Language? baseLang) async {
     var word = await db.getWordByName(name);
     if (word == null) {
       int id = await db.into(db.words).insert(WordsCompanion.insert(
@@ -490,9 +478,7 @@ class LeipzigWord {
             baseForm: "",
             important: "",
             rootWordID: editWord.id,
-            baseLang: editWord.id <= 0
-                ? (baseLang != null ? baseLang.id : 0)
-                : editWord.id,
+            baseLang: editWord.id <= 0 ? (baseLang != null ? baseLang.id : 0) : editWord.id,
           ));
       await addToSession(id);
 
@@ -522,14 +508,14 @@ class LeipzigWord {
         .insert(SessionsCompanion.insert(baseWord: id, typesession: formatted));
 
     try {
-
-    Word? word = await db.getWordById(id);
-    if (word != null) {
+      Word? word = await db.getWordById(id);
+      if (word != null) {
         QuizGroupData? quiz = await db.getQuizByNameOrId(formatted);
-      if (quiz == null) {
-        var id = await db.into(db.quizGroup).insert(QuizGroupCompanion.insert(name: formatted));
-          quiz = await db.getQuizByNameOrId(formatted);
-      }
+        if (quiz == null) {
+          var id = await db.into(db.quizGroup).insert(QuizGroupCompanion.insert(name: formatted));
+
+          quiz = await db.getQuizByNameOrId(formatted, id: id);
+        }
 
         if (quiz != null) {
           db.into(db.question).insert(QuestionCompanion.insert(
@@ -539,16 +525,13 @@ class LeipzigWord {
               refQuizGroup: quiz.id,
               archive: const Value(false)));
         }
-    }
+      }
     } catch (e) {
       talker.error("addToSession", e);
     }
-
-
   }
 
-  Future<Word?> addNewWord(
-      String name, Word editWord, Language? baseLang) async {
+  Future<Word?> addNewWord(String name, Word editWord, Language? baseLang) async {
     Word? word;
     String translatedName = "";
 
@@ -567,8 +550,7 @@ class LeipzigWord {
           baseForm: "",
           important: "",
           rootWordID: editWord.id,
-          baseLang:
-              editWord.id <= 0 ? leipzigTranslator.baseLang!.id : editWord.id,
+          baseLang: editWord.id <= 0 ? leipzigTranslator.baseLang!.id : editWord.id,
         ));
     await addToSession(id);
 
@@ -582,17 +564,14 @@ class LeipzigWord {
       await db.updateWord(word);
       // db.update(db.words).replace(word);
     }
-  
 
     return word;
   }
 
-  Future<bool> saveExamplesDataDB(
-      LeipzigWord word, DbHelper db, Word editWord) async {
+  Future<bool> saveExamplesDataDB(LeipzigWord word, DbHelper db, Word editWord) async {
     if (word.examples.isNotEmpty) {
       for (var item in word.examples) {
-        var example =
-            await db.getExampleByNameAndWord(item.value!, editWord.id);
+        var example = await db.getExampleByNameAndWord(item.value!, editWord.id);
         if (example != null) {
           continue;
         }
@@ -600,13 +579,13 @@ class LeipzigWord {
         if (exampleText != null) {
           await translator.translate(exampleText);
 
-          await db.into(db.examples).insert(ExamplesCompanion.insert(
-              baseWord: editWord.id, name: item.value!));
+          await db
+              .into(db.examples)
+              .insert(ExamplesCompanion.insert(baseWord: editWord.id, name: item.value!));
         }
       }
 
       await updateRawData(db, editWord, word);
-
     }
     return true;
   }
@@ -625,7 +604,6 @@ class LeipzigWord {
         wordToUpdate = editWord.copyWith(mean: mean);
         editWord = await db.updateWord(wordToUpdate);
       }
-
 
       appProvider.addMeansToBase(word.definitions, wordToUpdate);
 
@@ -648,7 +626,7 @@ class LeipzigWord {
     } catch (e) {
       talker.error("saveExamplesDataDB", e);
     }
-    
+
     await updateRawData(db, editWord, word);
 
     try {
@@ -675,12 +653,11 @@ class LeipzigWord {
 
             // translatedName = await translator.translate(item);
           } else {
-            await db.into(db.translatedWords).insert(
-                TranslatedWordsCompanion.insert(
-                    baseLang: translator.baseLang!.id,
-                    targetLang: translator.targetLanguage!.id,
-                    name: item,
-                    translatedName: ""));
+            await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+                baseLang: translator.baseLang!.id,
+                targetLang: translator.targetLanguage!.id,
+                name: item,
+                translatedName: ""));
           }
           await db.into(db.synonyms).insert(SynonymsCompanion.insert(
               name: item,
@@ -718,8 +695,7 @@ class LeipzigWord {
 
     if (word.kindOfWort == "Nomen" &&
         translator.inputLanguage == "de" &&
-        wordToUpdate.name.substring(0, 1).toLowerCase() ==
-            wordToUpdate.name.substring(0, 1)) {
+        wordToUpdate.name.substring(0, 1).toLowerCase() == wordToUpdate.name.substring(0, 1)) {
       var first = wordToUpdate.name.substring(0, 1).toUpperCase();
       var last = wordToUpdate.name.substring(1);
       var newName = "$first$last";
@@ -748,8 +724,8 @@ class LeipzigWord {
               translator.baseLang);
 
       if (baseFormWord != null) {
-        var toUpdate = wordToUpdate.copyWith(
-            rootWordID: baseFormWord.id, baseForm: word.baseWord);
+        wordToUpdate = await db.getWordById(wordToUpdate.id) ?? wordToUpdate;
+        var toUpdate = wordToUpdate.copyWith(rootWordID: baseFormWord.id, baseForm: word.baseWord);
         editWord = await db.updateWord(toUpdate);
         editWord = toUpdate;
       } else {
@@ -760,11 +736,9 @@ class LeipzigWord {
         var baseFormWord = await leipzigRecursWord.addWordUpdateShort(
             editWord.baseForm, "", editWord, translator.baseLang);
 
-        talker.info(
-            "start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
+        talker.info("start parseRawHtmlData for BaseForm ${baseFormWord!.name} from $name");
         leipzigRecursWord.parseRawHtmlData(name, baseFormWord, appProvider).then((onValue) {
-          talker.info(
-              "end parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
+          talker.info("end parseRawHtmlData for BaseForm ${baseFormWord.name} from $name");
         });
       }
       // parseRawHtmlData(onValue.name, toUpdate);
@@ -819,9 +793,7 @@ class LeipzigWord {
       }
       await db.updateLeipzigData(toUpdate);
     } else {
-      await db
-          .into(db.leipzigDataFromIntranet)
-          .insert(LeipzigDataFromIntranetCompanion.insert(
+      await db.into(db.leipzigDataFromIntranet).insert(LeipzigDataFromIntranetCompanion.insert(
             baseWord: editWord.id,
             url: word.url,
             html: word.rawHTML,
@@ -845,12 +817,9 @@ class LeipzigTranslator {
   final lt = SimplyTranslator(EngineType.libre);
 
   Future<int> addToBase(String input, String outputText) async {
-    Language? baseLangLocal =
-        (baseLang ?? await db.getLangByShortName(inputLanguage));
-    var targetLanguageLocal =
-        targetLanguage ?? await db.getLangByShortName(outputLanguage);
-    var translated = await db.getTranslatedWord(
-        input, baseLangLocal!.id, targetLanguageLocal!.id);
+    Language? baseLangLocal = (baseLang ?? await db.getLangByShortName(inputLanguage));
+    var targetLanguageLocal = targetLanguage ?? await db.getLangByShortName(outputLanguage);
+    var translated = await db.getTranslatedWord(input, baseLangLocal!.id, targetLanguageLocal!.id);
     if (translated.isNotEmpty) {
       if (outputText.isNotEmpty && translated[0].translatedName != outputText) {
         var toUpdate = translated[0].copyWith(translatedName: outputText);
@@ -858,14 +827,11 @@ class LeipzigTranslator {
       }
       return translated[0].id;
     } else {
-      int id = await db.into(db.translatedWords).insert(
-          TranslatedWordsCompanion.insert(
-              baseLang: baseLang == null ? baseLangLocal.id : baseLang!.id,
-              targetLang: targetLanguage == null
-                  ? targetLanguageLocal.id
-                  : targetLanguage!.id,
-              name: input,
-              translatedName: outputText));
+      int id = await db.into(db.translatedWords).insert(TranslatedWordsCompanion.insert(
+          baseLang: baseLang == null ? baseLangLocal.id : baseLang!.id,
+          targetLang: targetLanguage == null ? targetLanguageLocal.id : targetLanguage!.id,
+          name: input,
+          translatedName: outputText));
       return id;
     }
   }
@@ -873,10 +839,8 @@ class LeipzigTranslator {
   Future<String> translate(String inputText, {bool addtoBase = true}) async {
     var result = "";
 
-    Language? baseLangLocal =
-        baseLang ?? await db.getLangByShortName(inputLanguage);
-    Language? targetLanguageLocal =
-        targetLanguage ?? await db.getLangByShortName(outputLanguage);
+    Language? baseLangLocal = baseLang ?? await db.getLangByShortName(inputLanguage);
+    Language? targetLanguageLocal = targetLanguage ?? await db.getLangByShortName(outputLanguage);
     if (baseLangLocal != null &&
         targetLanguageLocal != null &&
         (baseLang == null || targetLanguage == null)) {
@@ -889,13 +853,13 @@ class LeipzigTranslator {
     // }
 
     try {
-      final translated = await translator.translate(inputText,
-          from: inputLanguage, to: outputLanguage);
+      final translated =
+          await translator.translate(inputText, from: inputLanguage, to: outputLanguage);
       result = translated.text;
     } catch (e) {
       try {
-        final translated = await lt.translateSimply(inputText,
-            from: inputLanguage, to: outputLanguage);
+        final translated =
+            await lt.translateSimply(inputText, from: inputLanguage, to: outputLanguage);
         result = encodeToHumanText(translated.translations.text.toString());
       } catch (e) {
         result = "";
@@ -917,10 +881,7 @@ class LeipzigTranslator {
     }
   }
 
-  LeipzigTranslator(
-      {this.inputLanguage = "de",
-      this.outputLanguage = "uk",
-      required this.db});
+  LeipzigTranslator({this.inputLanguage = "de", this.outputLanguage = "uk", required this.db});
 }
 
 class LeipzigSynonym {
@@ -928,8 +889,7 @@ class LeipzigSynonym {
   String translate;
   String leipzigHref = "";
   LeipzigSynonym(this.name, this.translate, this.leipzigHref);
-  Map<String, dynamic> toMap() =>
-      {"name": name, "translate": translate, "href": leipzigHref};
+  Map<String, dynamic> toMap() => {"name": name, "translate": translate, "href": leipzigHref};
 }
 
 class MapTextUrls {
@@ -966,8 +926,7 @@ class AutocompleteDataHelper {
   final String uuid;
   String unviewUnicode = "	";
 
-  AutocompleteDataHelper(
-      {required this.name, required this.isIntern, required this.uuid});
+  AutocompleteDataHelper({required this.name, required this.isIntern, required this.uuid});
 
   @override
   String toString() {
